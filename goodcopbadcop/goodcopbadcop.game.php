@@ -99,6 +99,7 @@ class goodcopbadcop extends Table
 
         // TODO: setup the initial game situation here
 				$this->initializeIntegrityCardDeck($players);
+				$this->initializeIntegrityCardVisibility($players);
 				$this->dealIntegrityCards($players);
 
         // Activate first player (which is in general a good idea :) )
@@ -120,7 +121,7 @@ class goodcopbadcop extends Table
     {
         $result = array();
 
-        $current_player_id = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
+        $currentPlayerId = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
 
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
@@ -128,6 +129,12 @@ class goodcopbadcop extends Table
         $result['players'] = self::getCollectionFromDb( $sql );
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
+				//$result['hand'] = $this->integrityCards->getCardsInLocation( $player_id ); // get this player's integrity cards
+
+				// get integrity cards for this player
+				$result['revealedCards'] = $this->getAllRevealedCards($currentPlayerId); // all cards that are revealed for everyone
+				$result['hiddenCardsIHaveSeen'] = $this->getHiddenCardsIHaveSeen($currentPlayerId); // all cards I've seen
+				$result['hiddenCardsIHaveNotSeen'] = $this->getHiddenCardsIHaveNotSeen($currentPlayerId); // get all the hidden cards I have NOT seen
 
         return $result;
     }
@@ -176,6 +183,22 @@ class goodcopbadcop extends Table
 
 				$this->integrityCards->createCards( $integrityCardsList, 'deck' ); // create the deck and override locations to deck
 				$this->integrityCards->shuffle( 'deck' ); // shuffle it
+		}
+
+		function initializeIntegrityCardVisibility($players)
+		{
+				$allIntegrityCards = $this->getAllIntegrityCards();
+				foreach( $players as $player_id => $player )
+				{
+						foreach( $allIntegrityCards as $integrityCard )
+						{
+								$card_id = $integrityCard['card_id'];
+								$insertQuery = "INSERT INTO playerCardVisibility (card_id,player_id,is_seen) VALUES ";
+								$insertQuery .= "(".$card_id.",".$player_id.",0) ";
+
+								self::DbQuery( $insertQuery );
+						}
+				}
 		}
 
 		function moveLeadersToInitialDeal()
@@ -232,6 +255,7 @@ class goodcopbadcop extends Table
 
 								$card['location_arg'] = $cardPosition; // set the card position to 1, 2, or 3 in this local scope
 								$this->integrityCards->moveCard($cardId, $player_id, $cardPosition); // set the card position to 1, 2, or 3 on the server
+								$this->setVisibilityOfIntegrityCard($cardId, $player_id, 1); // show that this player has seen this card
 
 								// log this card for debugging
 								$msgHandCard = "<b>Initial Integrity Cards:</b> id is $cardId with type of $cardType and type_arg of $cardTypeArg for this card.";
@@ -245,7 +269,47 @@ class goodcopbadcop extends Table
 								'cards' => $shuffledCards
 						 ) );
 				}
+		}
 
+		function getAllRevealedCards($playerId)
+		{
+				$sql = "SELECT card_id, card_type, card_type_arg, card_location, card_location_arg FROM integrityCards WHERE card_type_arg=1 ";
+				return self::getCollectionFromDb( $sql );
+		}
+
+		function getHiddenCardsIHaveSeen($playerId)
+		{
+				$sql = "SELECT * FROM `integrityCards` ic ";
+				$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
+				$sql .= "WHERE pcv.player_id=$playerId AND pcv.is_seen=1 and ic.card_type_arg=0 ";
+
+				return self::getCollectionFromDb( $sql );
+		}
+
+		function getHiddenCardsIHaveNotSeen($playerId)
+		{
+				// only give basic information... not the card values (since this player has not seen these yet)
+				$sql = "SELECT ic.card_id, ic.card_location, ic.card_location_arg FROM `integrityCards` ic ";
+				$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
+				$sql .= "WHERE pcv.player_id=$playerId AND pcv.is_seen=0 and ic.card_type_arg=0 ";
+				return self::getCollectionFromDb( $sql );
+		}
+
+		function getPlayerNumberFromPlayerId($playerId)
+		{
+				return self::getUniqueValueFromDb("SELECT player_no FROM player WHERE player_id=$playerId");
+		}
+
+		function getAllIntegrityCards()
+		{
+				return self::getObjectListFromDB( "SELECT * 
+																					 FROM integrityCards" );
+		}
+
+		function setVisibilityOfIntegrityCard($cardId, $playerId, $seenValue)
+		{
+				$sql = "UPDATE playerCardVisibility SET is_seen=$seenValue WHERE card_id=$cardId AND player_id=$playerId";
+				self::DbQuery( $sql );
 		}
 
 

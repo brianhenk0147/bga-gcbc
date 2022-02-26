@@ -41,3 +41,11 @@ CREATE TABLE IF NOT EXISTS `integrityCards` (
   `card_location_arg` int(11) NOT NULL,
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+
+CREATE TABLE IF NOT EXISTS `playerCardVisibility` (
+  `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `player_id` varchar(30) NOT NULL,
+  `is_seen` smallint(5) unsigned NOT NULL,
+  PRIMARY KEY (`card_id`,`player_id`)
+) ENGINE=InnoDB ;
