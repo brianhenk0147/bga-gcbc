@@ -74,6 +74,9 @@
 .player_holder_vertical {
     display:inline-block;
     height: 210px;
+
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .player_holder_horizontal {
@@ -147,6 +150,14 @@
     display: inline-block;
 }
 
+.reference_card_holder_vertical {
+    display: inline;
+}
+
+.reference_card_holder_horizontal {
+    display: inline;
+}
+
 .corner_box {
     display: inline-block;
     width: 205px;
@@ -162,30 +173,84 @@
 #center_area_top {
     display: inline-block;
     vertical-align: top;
-    width: 315px;
+    width: 335px;
     height: 150px;
 }
 
 #center_area_bottom {
     display: inline-block;
     vertical-align: top;
-    width: 315px;
+    width: 335px;
     height: 150px;
 }
 
-#row_dividing_board_horizontally {
-    height: 10px;
+#gun_row {
+    margin-left: auto;
+    margin-right: auto;
+    width: 216px;
+}
+
+.gun_holder {
+    display: inline;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+#upper_left_name_divider {
+    width: 205px;
+    height: 180px;
 }
 
 #board_area {
     margin-left: auto;
     margin-right: auto;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    width: 750px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 770px;
 
 }
 
 .board_row {
-    width: 750px;
+    width: 770px;
+
+    marin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* PLAYER NAMES */
+#player_a_name_holder {
+    float:right;
+}
+
+#player_b_name_holder {
+    display: block;
+}
+
+#player_c_name_holder {
+    display: block;
+    width: 205px;
+    height: 180px;
+}
+
+#player_d_name_holder {
+    display: block;
+    height: 180px;
+}
+
+#player_e_name_holder {
+    display: inline-block;
+    float:right;
+}
+
+#player_f_name_holder {
+    float:right;
+}
+
+#player_g_name_holder {
+    display: block;
+    height: 180px;
+}
+
+#player_h_name_holder {
+
 }
