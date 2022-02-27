@@ -54,8 +54,7 @@
                 </div>
             </div>
         </div>
-        <div id="divider_player_e_c" class="divider_player_horizontal">.
-        </div>
+
         <div id="player_c_area" class="player_holder_vertical">
             <div id="player_c_row_1" class="player_row_vertical">
                 <div id="player_c_name_holder" class="player_name_holder_vertical">namec
@@ -80,6 +79,7 @@
                 </div>
             </div>
         </div>
+
         <div id="upper_right_corner_box" class="corner_box">.
         </div>
     </div>
@@ -139,8 +139,7 @@
             </div>
         </div>
     </div>
-    <div id="row_dividing_board_horizontally" class="board_row">.
-    </div>
+
     <div id="board_row_3" class="board_row">
         <div id="player_g_area" class="player_holder_horizontal">
             <div id="player_g_row_1" class="player_row_horizontal">
@@ -224,8 +223,7 @@
                 </div>
             </div>
         </div>
-        <div id="divider_player_a_h" class="divider_player_horizontal">.
-        </div>
+
         <div id="player_h_area" class="player_holder_vertical">
             <div id="player_h_row_1" class="player_row_vertical">
                 <div id="player_h_name_holder" class="player_name_holder_vertical">namec
