@@ -49,3 +49,10 @@ CREATE TABLE IF NOT EXISTS `playerCardVisibility` (
   `is_seen` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`card_id`,`player_id`)
 ) ENGINE=InnoDB ;
+
+CREATE TABLE IF NOT EXISTS `playerPositioning` (
+  `player_asking` varchar(30) NOT NULL,
+  `player_id` varchar(30) NOT NULL,
+  `player_position` varchar(5) NOT NULL,
+  PRIMARY KEY (`player_asking`,`player_id`)
+) ENGINE=InnoDB ;

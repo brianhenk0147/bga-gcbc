@@ -67,12 +67,14 @@
     }
 */
 
+/* BOARD LAYOUT */
 #board_area div {
     outline: 1px solid red;
 }
 
 .player_holder_vertical {
     display:inline-block;
+    width: 180px;
     height: 210px;
 
     margin-left: 5px;
@@ -81,23 +83,20 @@
 
 .player_holder_horizontal {
     display:inline-block;
-    width: 210px;
+    width: 225px;
     height: 150px;
 }
 
 .player_row_vertical {
     display:block;
     height: 70px;
-    width: 150px;
-
-    margin-left: 5px;
-    margin-right: 5px;
+    width: 180px;
 }
 
 .player_row_horizontal {
-    display:block;
+    display:inline-block;
     height: 50px;
-    width: 210px;
+    width: 215px;
 }
 
 .first_equipment_active_holder_vertical {
@@ -105,8 +104,7 @@
 }
 
 .first_equipment_active_holder_horizontal {
-    display: inline-block;
-    width: 50px;
+    display: inline;
 }
 
 .gun_holder_vertical {
@@ -122,7 +120,7 @@
 }
 
 .other_equipment_active_holder_horizontal {
-    display: inline-block;
+    display: inline;
 }
 
 .integrity_card_holder_vertical {
@@ -130,7 +128,7 @@
 }
 
 .integrity_card_holder_horizontal {
-    display: inline-block;
+    display: inline;
 }
 
 .player_name_holder_vertical {
@@ -147,7 +145,7 @@
 }
 
 .equipment_hand_holder_horizontal {
-    display: inline-block;
+    display: inline;
 }
 
 .reference_card_holder_vertical {
@@ -166,8 +164,13 @@
 }
 
 .placeholder_horizontal {
-  display: inline-block;
-  width: 70px;
+  display: inline;
+}
+
+.card_placeholder_horizontal {
+    display: inline-block;
+    width: 70px;
+    height: 50px;
 }
 
 #center_area_top {
@@ -206,20 +209,18 @@
     margin-right: auto;
     margin-top: 10px;
     margin-bottom: 10px;
-    width: 770px;
+    width: 830px;
 
 }
 
 .board_row {
-    width: 770px;
-
-    marin-top: 10px;
-    margin-bottom: 10px;
+    width: 830px;
 }
 
 /* PLAYER NAMES */
 #player_a_name_holder {
     float:right;
+    vertical-align: baseline;
 }
 
 #player_b_name_holder {
@@ -248,9 +249,32 @@
 
 #player_g_name_holder {
     display: block;
-    height: 180px;
+    height: 125px;
 }
 
 #player_h_name_holder {
 
+}
+
+#player_g_a_win_condition_holder {
+  display: inline;
+}
+
+/* INTEGRITY CARDS */
+.integrity_card {
+    display: inline-block;
+    width: 50px;
+    height: 70px;
+    background-image: url('img/integrity_card_sprite_50w.jpg');
+}
+
+.component_rounding {
+    border-radius: 5px;
+    border: 1px black solid;
+
+    -moz-box-shadow: 3px 3px 3px 0px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 3px 3px 3px 0px rgba(0,0,0,0.4);
+    -o-box-shadow: 3px 3px 3px 0px rgba(0,0,0,0.4);
+    box-shadow: 3px 3px 3px 0px rgba(0,0,0,0.4);
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }

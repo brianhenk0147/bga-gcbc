@@ -98,6 +98,7 @@ class goodcopbadcop extends Table
         //self::initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
 
         // TODO: setup the initial game situation here
+				$this->initializePlayerPositioning($players); // set where each player sits around the table from each perspective
 				$this->initializeIntegrityCardDeck($players);
 				$this->initializeIntegrityCardVisibility($players);
 				$this->dealIntegrityCards($players);
@@ -185,6 +186,24 @@ class goodcopbadcop extends Table
 				$this->integrityCards->shuffle( 'deck' ); // shuffle it
 		}
 
+		function initializePlayerPositioning($players)
+		{
+				$allIntegrityCards = $this->getAllIntegrityCards();
+			  foreach( $players as $asking_id => $asking_player )
+				{
+						$askingPlayerOrderIndex = $this->getPlayerNumberFromPlayerId($asking_id); // the position in turn order of the asking player
+						foreach( $players as $player_id => $player )
+						{
+								$otherPlayerOrderIndex = $this->getPlayerNumberFromPlayerId($player_id); // the position in turn order of this player
+								$letterPosition = $this->getLetterOrderPosition($askingPlayerOrderIndex, $otherPlayerOrderIndex, count($players));
+								$insertQuery = "INSERT INTO playerPositioning (player_asking,player_id,player_position) VALUES ";
+								$insertQuery .= "(".$asking_id.",".$player_id.",'".$letterPosition."') ";
+
+								self::DbQuery( $insertQuery );
+						}
+				}
+		}
+
 		function initializeIntegrityCardVisibility($players)
 		{
 				$allIntegrityCards = $this->getAllIntegrityCards();
@@ -264,16 +283,16 @@ class goodcopbadcop extends Table
 								$cardPosition++; // move up to the next card position
 						}
 
-						// notify player about their starting integrity cards and tell them which team they are on
-						self::notifyPlayer( $player_id, 'startingIntegrityCards', '', array(
-								'cards' => $shuffledCards
-						 ) );
+						// notify player about their team (they will see the message in their log but the client won't receive it as a regular notification because notifications are not setup yet)
+						self::notifyPlayer( $player_id, 'newGameMessage', 'You are on the X Team. Your objective is to Y.', array() );
 				}
 		}
 
 		function getAllRevealedCards($playerId)
 		{
-				$sql = "SELECT card_id, card_type, card_type_arg, card_location, card_location_arg FROM integrityCards WHERE card_type_arg=1 ";
+				$sql = "SELECT ic.card_id, ic.card_type, ic.card_type_arg, ic.card_location, ic.card_location_arg, pp.player_position FROM `integrityCards` ic ";
+				$sql .= "JOIN `playerPositioning` pp ON (ic.card_location=pp.player_id AND pp.player_asking=$playerId) ";
+				$sql .= "WHERE card_type_arg=1 ";
 				return self::getCollectionFromDb( $sql );
 		}
 
@@ -281,6 +300,7 @@ class goodcopbadcop extends Table
 		{
 				$sql = "SELECT * FROM `integrityCards` ic ";
 				$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
+				$sql .= "JOIN `playerPositioning` pp ON (ic.card_location=pp.player_id AND pp.player_asking=$playerId) ";
 				$sql .= "WHERE pcv.player_id=$playerId AND pcv.is_seen=1 and ic.card_type_arg=0 ";
 
 				return self::getCollectionFromDb( $sql );
@@ -289,9 +309,11 @@ class goodcopbadcop extends Table
 		function getHiddenCardsIHaveNotSeen($playerId)
 		{
 				// only give basic information... not the card values (since this player has not seen these yet)
-				$sql = "SELECT ic.card_id, ic.card_location, ic.card_location_arg FROM `integrityCards` ic ";
+				$sql = "SELECT ic.card_id, ic.card_location, ic.card_location_arg, pp.player_position FROM `integrityCards` ic ";
 				$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
+				$sql .= "JOIN `playerPositioning` pp ON (ic.card_location=pp.player_id AND pp.player_asking=$playerId) ";
 				$sql .= "WHERE pcv.player_id=$playerId AND pcv.is_seen=0 and ic.card_type_arg=0 ";
+
 				return self::getCollectionFromDb( $sql );
 		}
 
@@ -302,7 +324,7 @@ class goodcopbadcop extends Table
 
 		function getAllIntegrityCards()
 		{
-				return self::getObjectListFromDB( "SELECT * 
+				return self::getObjectListFromDB( "SELECT *
 																					 FROM integrityCards" );
 		}
 
@@ -310,6 +332,19 @@ class goodcopbadcop extends Table
 		{
 				$sql = "UPDATE playerCardVisibility SET is_seen=$seenValue WHERE card_id=$cardId AND player_id=$playerId";
 				self::DbQuery( $sql );
+		}
+
+		function getLetterOrderPosition($askingPlayerOrder, $otherPlayerOrder, $numberOfPlayers)
+		{
+				$orderingArray = array('a','b','c','d','e','f','g','h');
+				$difference = $otherPlayerOrder - $askingPlayerOrder;
+				$newIndex = $difference; // if difference is positive, the correct place in the array is just the difference
+				if($difference < 0)
+				{ // the ordering difference between the two players is negative
+					$newIndex = $numberOfPlayers + $difference; // we need to subtract the difference from the max number of players to find the correct ordere
+				}
+
+				return $orderingArray[$newIndex];
 		}
 
 
