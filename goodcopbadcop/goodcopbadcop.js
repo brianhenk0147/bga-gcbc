@@ -110,6 +110,11 @@ function (dojo, declare) {
                 this.placeIntegrityCard(playerLetter, cardPosition, 'HIDDEN_NOT_SEEN', cardType, rotation); // put a face-down integrity card out
             }
 
+            // First Param: css class to target
+            // Second Param: type of events
+            // Third Param: the method that will be called when the event defined by the second parameter happen
+            this.addEventToClass( "integrity_card", "onclick", "onClickCardToInvestigate");
+
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
 
@@ -195,6 +200,19 @@ function (dojo, declare) {
                     this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' );
                     break;
 */
+                    case 'playerTurn':
+                        this.addActionButton( 'button_investigate', _('Investigate'), 'onClickInvestigateButton' );
+                    break;
+
+                    case 'investigateChooseCard':
+                        this.addActionButton( 'button_cancel', _('Cancel'), 'onClickInvestigateButton' );
+                    break;
+
+                    case 'askInvestigateReaction':
+                        this.addActionButton( 'button_useEquipment', _('Use Equipment'), 'onClickInvestigateButton' );
+                        this.addActionButton( 'button_passOnUseEquipment', _('Pass'), 'onClickPassOnUseEquipmentButton' );
+                    break;
+
                 }
             }
         },
@@ -322,6 +340,94 @@ function (dojo, declare) {
         },
 
         */
+
+        onClickInvestigateButton: function( evt )
+        {
+            console.log( 'onClickInvestigateButton' );
+
+            // Preventing default browser reaction
+            dojo.stopEvent( evt );
+
+            // Check that this action is possible (see "possibleactions" in states.inc.php)
+            if( ! this.checkAction( 'clickInvestigateButton' ) )
+            {   return; }
+
+            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/chooseCardToInvestigate.html", {
+                                                                    lock: true
+                                                                 },
+                         this, function( result ) {
+
+                            // What to do after the server call if it succeeded
+                            // (most of the time: nothing)
+
+                         }, function( is_error) {
+
+                            // What to do after the server call in anyway (success or failure)
+                            // (most of the time: nothing)
+
+                         } );
+        },
+
+        onClickCardToInvestigate: function( evt )
+        { // a player clicked on an integrity card
+            console.log('clicked integrity card iscurrentplayeractive() ' + this.isCurrentPlayerActive());
+
+            // Preventing default browser reaction
+            dojo.stopEvent( evt );
+
+            // Check that this action is possible (see "possibleactions" in states.inc.php)
+            if( ! this.checkAction( 'clickCardToInvestigate' ) )
+            {   return; }
+
+            var node = evt.currentTarget.id;
+            var playerPosition = node.split('_')[1]; // b, c, d, etc.
+            var cardPosition = node.split('_')[4]; // 1, 2, 3
+
+            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedCardToInvestigateCard.html", {
+                                                                    lock: true,
+                                                                    playerPosition: playerPosition,
+                                                                    cardPosition: cardPosition
+                                                                 },
+                         this, function( result ) {
+
+                            // What to do after the server call if it succeeded
+                            // (most of the time: nothing)
+
+                         }, function( is_error) {
+
+                            // What to do after the server call in anyway (success or failure)
+                            // (most of the time: nothing)
+
+                         }
+            );
+        },
+
+        onClickPassOnUseEquipmentButton: function( evt )
+        {
+            console.log( 'onClickPassOnUseEquipmentButton' );
+
+            // Preventing default browser reaction
+            dojo.stopEvent( evt );
+
+            // Check that this action is possible (see "possibleactions" in states.inc.php)
+            if( ! this.checkAction( 'clickPassOnUseEquipmentButton' ) )
+            {   return; }
+
+            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/passOnUseEquipment.html", {
+                                                                    lock: true
+                                                                 },
+                         this, function( result ) {
+
+                            // What to do after the server call if it succeeded
+                            // (most of the time: nothing)
+
+                         }, function( is_error) {
+
+                            // What to do after the server call in anyway (success or failure)
+                            // (most of the time: nothing)
+
+                         } );
+        },
 
 
         ///////////////////////////////////////////////////

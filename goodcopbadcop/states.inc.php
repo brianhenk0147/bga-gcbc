@@ -7,7 +7,7 @@
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
  * -----
- * 
+ *
  * states.inc.php
  *
  * goodcopbadcop game states description
@@ -49,7 +49,7 @@
 
 //    !! It is not a good idea to modify this file when a game is running !!
 
- 
+
 $machinestates = array(
 
     // The initial state. Please do not modify.
@@ -60,30 +60,48 @@ $machinestates = array(
         "action" => "stGameSetup",
         "transitions" => array( "" => 2 )
     ),
-    
+
     // Note: ID=2 => your first state
 
     2 => array(
     		"name" => "playerTurn",
-    		"description" => clienttranslate('${actplayer} must play a card or pass'),
-    		"descriptionmyturn" => clienttranslate('${you} must play a card or pass'),
+    		"description" => clienttranslate('${actplayer} is choosing their turn action.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose which action you will take.'),
     		"type" => "activeplayer",
-    		"possibleactions" => array( "playCard", "pass" ),
-    		"transitions" => array( "playCard" => 2, "pass" => 2 )
+    		"possibleactions" => array( "clickInvestigateButton" ),
+    		"transitions" => array( "investigateChoosenCard" => 3 )
     ),
-    
+
+    3 => array(
+    		"name" => "chooseCardToInvestigate",
+    		"description" => clienttranslate('${actplayer} is investigating.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose which Integrity Card you will investigate.'),
+    		"type" => "activeplayer",
+    		"possibleactions" => array( "clickCardToInvestigate", "cancelInvestigate" ),
+    		"transitions" => array( "askInvestigateReaction" => 4, "cancelAction" => 2 )
+    ),
+
+    4 => array(
+    		"name" => "askInvestigateReaction",
+    		"description" => clienttranslate('Other players are deciding if they will use an Equipment card.'),
+    		"descriptionmyturn" => clienttranslate('${you} may use Equipment in reaction to the investigation.'),
+    		"type" => "multipleactiveplayer",
+    		"possibleactions" => array( "useEquipment", "clickPassOnUseEquipmentButton" ),
+    		"transitions" => array( "useEquipment" => 2, "nextPlayerTurn" => 2 )
+    ),
+
 /*
     Examples:
-    
+
     2 => array(
         "name" => "nextPlayer",
         "description" => '',
         "type" => "game",
         "action" => "stNextPlayer",
-        "updateGameProgression" => true,   
+        "updateGameProgression" => true,
         "transitions" => array( "endGame" => 99, "nextPlayer" => 10 )
     ),
-    
+
     10 => array(
         "name" => "playerTurn",
         "description" => clienttranslate('${actplayer} must play a card or pass'),
@@ -91,10 +109,10 @@ $machinestates = array(
         "type" => "activeplayer",
         "possibleactions" => array( "playCard", "pass" ),
         "transitions" => array( "playCard" => 2, "pass" => 2 )
-    ), 
+    ),
 
-*/    
-   
+*/
+
     // Final state.
     // Please do not modify (and do not overload action/args methods).
     99 => array(
@@ -106,6 +124,3 @@ $machinestates = array(
     )
 
 );
-
-
-

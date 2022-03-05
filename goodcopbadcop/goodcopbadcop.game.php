@@ -383,6 +383,36 @@ class goodcopbadcop extends Table
 
     */
 
+		//
+		function chooseCardToInvestigate()
+		{
+				self::checkAction( 'clickInvestigateButton' ); // make sure we can take this action from this state
+
+				$player_id = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+
+				$this->gamestate->nextState( "investigateChoosenCard" ); // go to the state allowing the active player to choose a card to investigate
+		}
+
+		function clickedCardToInvestigateCard($playerPosition, $cardPosition)
+		{
+			self::checkAction( 'clickCardToInvestigate' ); // make sure we can take this action from this state
+
+			$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
+
+			$this->gamestate->nextState( "askInvestigateReaction" ); // go to the state allowing the active player to choose a card to investigate
+		}
+
+		function passOnUseEquipment()
+		{
+				self::checkAction( 'clickPassOnUseEquipmentButton' ); // make sure we can take this action from this state
+
+				$player_id = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+
+				// Make this player unactive now
+				// (and tell the machine state to use transtion "directionsChosen" if all players are now unactive
+				$this->gamestate->setPlayerNonMultiactive( $player_id, "nextPlayerTurn" );
+		}
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state arguments
