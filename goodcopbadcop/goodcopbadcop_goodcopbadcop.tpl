@@ -29,13 +29,13 @@
 <div id="board_area">
     <div id="board_row_1" class="board_row">
         <div id="upper_left_corner_box" class="corner_box">
-            <div id="player_e_name_holder" class="player_name_holder_vertical">nameE
+            <div id="player_e_name_holder" class="player_name_holder_vertical" style="color:#{PLAYER_e_COLOR}; font-weight: bold;">{PLAYER_e_NAME}
             </div>
 
             <div id="upper_left_name_divider">
             </div>
 
-            <div id="player_b_name_holder" class="player_name_holder_horizontal">nameB
+            <div id="player_b_name_holder" class="player_name_holder_horizontal" style="color:#{PLAYER_b_COLOR}; font-weight: bold;">{PLAYER_b_NAME}
             </div>
         </div>
         <div id="player_e_area" class="player_holder_vertical">
@@ -92,10 +92,10 @@
         </div>
 
         <div id="upper_right_corner_box" class="corner_box">
-            <div id="player_c_name_holder" class="player_name_holder_vertical">nameC
+            <div id="player_c_name_holder" class="player_name_holder_vertical" style="color:#{PLAYER_c_COLOR}; font-weight: bold;">{PLAYER_c_NAME}
             </div>
 
-            <div id="player_f_name_holder" class="player_name_holder_horizontal">nameF
+            <div id="player_f_name_holder" class="player_name_holder_horizontal" style="color:#{PLAYER_f_COLOR}; font-weight: bold;">{PLAYER_f_NAME}
             </div>
         </div>
     </div>
@@ -286,13 +286,13 @@
     <div id="board_row_4" class="board_row">
         <div id="bottom_left_corner_box" class="corner_box">
 
-          <div id="player_g_name_holder" class="player_name_holder_horizontal">nameG
+          <div id="player_g_name_holder" class="player_name_holder_horizontal" style="color:#{PLAYER_g_COLOR}; font-weight: bold;">{PLAYER_g_NAME}
           </div>
           <div id="player_g_a_win_condition_row">
               <div id="player_g_a_win_condition_holder">win
               </div>
 
-              <div id="player_a_name_holder" class="player_name_holder_vertical">nameA
+              <div id="player_a_name_holder" class="player_name_holder_vertical" style="color:#{PLAYER_a_COLOR}; font-weight: bold;">{PLAYER_a_NAME}
               </div>
           </div>
 
@@ -350,10 +350,10 @@
             </div>
         </div>
         <div id="bottom_right_corner_box" class="corner_box">
-            <div id="player_d_name_holder" class="player_name_holder_horizontal">nameD
+            <div id="player_d_name_holder" class="player_name_holder_horizontal" style="color:#{PLAYER_d_COLOR}; font-weight: bold;">{PLAYER_d_NAME}
             </div>
 
-            <div id="player_h_name_holder" class="player_name_holder_vertical">nameH
+            <div id="player_h_name_holder" class="player_name_holder_vertical" style="color:#{PLAYER_h_COLOR}; font-weight: bold;">{PLAYER_h_NAME}
             </div>
         </div>
     </div>

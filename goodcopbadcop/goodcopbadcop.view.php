@@ -31,9 +31,9 @@ class view_goodcopbadcop_goodcopbadcop extends game_view
     function getGameName() {
         return "goodcopbadcop";
     }
-    
+
   	function build_page( $viewArgs )
-  	{		
+  	{
   	    // Get players & players number
         $players = $this->game->loadPlayersBasicInfos();
         $players_nbr = count( $players );
@@ -42,45 +42,70 @@ class view_goodcopbadcop_goodcopbadcop extends game_view
 
 
         /*
-        
+
         // Examples: set the value of some element defined in your tpl file like this: {MY_VARIABLE_ELEMENT}
 
         // Display a specific number / string
         $this->tpl['MY_VARIABLE_ELEMENT'] = $number_to_display;
 
-        // Display a string to be translated in all languages: 
+        // Display a string to be translated in all languages:
         $this->tpl['MY_VARIABLE_ELEMENT'] = self::_("A string to be translated");
 
         // Display some HTML content of your own:
         $this->tpl['MY_VARIABLE_ELEMENT'] = self::raw( $some_html_code );
-        
+
         */
-        
+
         /*
-        
+
         // Example: display a specific HTML block for each player in this game.
         // (note: the block is defined in your .tpl file like this:
-        //      <!-- BEGIN myblock --> 
+        //      <!-- BEGIN myblock -->
         //          ... my HTML code ...
-        //      <!-- END myblock --> 
-        
+        //      <!-- END myblock -->
+
 
         $this->page->begin_block( "goodcopbadcop_goodcopbadcop", "myblock" );
         foreach( $players as $player )
         {
-            $this->page->insert_block( "myblock", array( 
+            $this->page->insert_block( "myblock", array(
                                                     "PLAYER_NAME" => $player['player_name'],
                                                     "SOME_VARIABLE" => $some_value
                                                     ...
                                                      ) );
         }
-        
+
         */
+
+        global $g_user;
+        $current_player_id = $g_user->get_id(); // get the ID of the player making the request (the perspective we are using)
+
+        // default the names to nothing so players who are not playing do not show a name
+        $this->tpl['PLAYER_a_NAME'] = "";
+        $this->tpl['PLAYER_b_NAME'] = "";
+        $this->tpl['PLAYER_c_NAME'] = "";
+        $this->tpl['PLAYER_d_NAME'] = "";
+        $this->tpl['PLAYER_e_NAME'] = "";
+        $this->tpl['PLAYER_f_NAME'] = "";
+        $this->tpl['PLAYER_g_NAME'] = "";
+        $this->tpl['PLAYER_h_NAME'] = "";
+
+        $playersForDisplay = $this->game->getPlayerDisplayInfo($current_player_id); // get all display properties for players
+
+        // set variables for each player for name and player color
+        foreach( $playersForDisplay as $player_id => $player )
+						{
+              $positionLetter = $player['player_position']; // a, b, c, etc.
+              $playerName = $player['player_name']; // the player's BGA account handle
+              $playerColor = $player['player_color']; // the color they are using in this game
+
+              $this->tpl['PLAYER_'.$positionLetter.'_NAME'] = $playerName; // store the player's name to use in the TPL file
+              $this->tpl['PLAYER_'.$positionLetter.'_COLOR'] = $playerColor; // store the player's color to use in the TPL file
+						}
+
 
 
 
         /*********** Do not change anything below this line  ************/
   	}
 }
-  
-

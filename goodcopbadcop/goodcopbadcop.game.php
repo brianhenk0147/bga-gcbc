@@ -347,6 +347,29 @@ class goodcopbadcop extends Table
 				return $orderingArray[$newIndex];
 		}
 
+		function getLetterOrderFromPlayerId($playerId)
+		{
+				return self::getUniqueValueFromDb("SELECT player_position FROM playerPositioning WHERE player_id=$playerId");
+		}
+
+		function getPlayerNameFromLetterOrder($playerAsking, $letterOrder)
+		{
+				$sql = "SELECT p.player_name FROM `playerPositioning` pp ";
+				$sql .= "JOIN `player` p ON p.player_id=pp.player_id ";
+				$sql .= "WHERE pp.player_asking=$playerAsking AND pp.player_position='$letterOrder' ";
+
+				return self::getUniqueValueFromDb($sql);
+		}
+
+		function getPlayerDisplayInfo($playerAsking)
+		{
+				$sql = "SELECT pp.player_position, p.player_name, p.player_color FROM `playerPositioning` pp ";
+				$sql .= "JOIN `player` p ON p.player_id=pp.player_id ";
+				$sql .= "WHERE pp.player_asking=$playerAsking ";
+
+				return self::getObjectListFromDB( $sql );
+		}
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
