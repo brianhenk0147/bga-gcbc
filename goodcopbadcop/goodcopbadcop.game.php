@@ -433,7 +433,7 @@ class goodcopbadcop extends Table
 
 				// Make this player unactive now
 				// (and tell the machine state to use transtion "directionsChosen" if all players are now unactive
-				$this->gamestate->setPlayerNonMultiactive( $player_id, "nextPlayerTurn" );
+				$this->gamestate->setPlayerNonMultiactive( $player_id, "endPlayerTurn" );
 		}
 
 
@@ -485,6 +485,21 @@ class goodcopbadcop extends Table
         $this->gamestate->nextState( 'some_gamestate_transition' );
     }
     */
+
+		// This is called in a "game" state after a player turn has ended.
+		function endTurnCleanup()
+		{
+				if(true)
+				{ // the turn order is going clockwise
+						$this->activeNextPlayer(); // go to the next player clockwise in turn order
+				}
+				else
+				{ // the turn order is going counter-clockwise
+						$this->activePrevPlayer(); // go to the next player counter-clockwise in turn order
+				}
+
+				$this->gamestate->nextState( "startNewPlayerTurn" ); // begin a new player's turn
+		}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Zombie

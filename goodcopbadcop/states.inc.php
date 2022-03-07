@@ -87,7 +87,16 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} may use Equipment in reaction to the investigation.'),
     		"type" => "multipleactiveplayer",
     		"possibleactions" => array( "useEquipment", "clickPassOnUseEquipmentButton" ),
-    		"transitions" => array( "useEquipment" => 2, "nextPlayerTurn" => 2 )
+    		"transitions" => array( "useEquipment" => 2, "endPlayerTurn" => 30 )
+    ),
+
+    30 => array(
+        "name" => "endPlayerTurn",
+        "description" => "",
+        "type" => "game",
+        "action" => "endTurnCleanup",
+        "updateGameProgression" => false,
+        "transitions" => array( "startNewPlayerTurn" => 2 )
     ),
 
 /*
