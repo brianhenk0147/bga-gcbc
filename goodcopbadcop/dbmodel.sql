@@ -32,6 +32,11 @@
 
 -- Example 2: add a custom field to the standard "player" table
 -- ALTER TABLE `player` ADD `player_my_custom_field` INT UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `last_player_investigated` varchar(30) NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `last_card_position_investigated` INT UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `last_card_position_revealed` INT UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `aiming_at` varchar(30) NOT NULL DEFAULT '';
+
 
 CREATE TABLE IF NOT EXISTS `integrityCards` (
   `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,

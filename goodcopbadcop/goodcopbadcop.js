@@ -209,7 +209,16 @@ function (dojo, declare) {
                     break;
 
                     case 'askInvestigateReaction':
-                        this.addActionButton( 'button_useEquipment', _('Use Equipment'), 'onClickInvestigateButton' );
+                        this.addActionButton( 'button_useEquipment', _('Use Equipment'), 'onClickPassOnUseEquipmentButton' );
+                        this.addActionButton( 'button_passOnUseEquipment', _('Pass'), 'onClickPassOnUseEquipmentButton' );
+                    break;
+
+                    case 'askAim':
+                        this.addActionButton( 'button_endTurn', _('End Turn'), 'onClickEndTurnButton' );
+                    break;
+
+                    case 'askEndTurnReaction':
+                        this.addActionButton( 'button_useEquipment', _('Use Equipment'), 'onClickPassOnUseEquipmentButton' );
                         this.addActionButton( 'button_passOnUseEquipment', _('Pass'), 'onClickPassOnUseEquipmentButton' );
                     break;
 
@@ -231,29 +240,8 @@ function (dojo, declare) {
         {
             console.log( "Entering placeIntegrityCard with playerLetter " + playerLetter + " cardPosition " + cardPosition + " visibilityToYou " + visibilityToYou + " cardType " + cardType + "." );
 
-            visibilityOffset = 0;
-            if(visibilityToYou == 'HIDDEN_NOT_SEEN')
-            {
-                visibilityOffset = 2;
-            }
-            else if (visibilityToYou == 'HIDDEN_SEEN')
-            {
-                visibilityOffset = 1;
-            }
-
-            cardTypeOffset = 0;
-            if(cardType == 'crooked')
-            {
-                cardTypeOffset = 1;
-            }
-            else if(cardType == 'honest')
-            {
-                cardTypeOffset = 2;
-            }
-            else if(cardType == 'kingpin')
-            {
-                cardTypeOffset = 3;
-            }
+            visibilityOffset = this.getVisibilityOffset(visibilityToYou); // get sprite X value for this card type
+            cardTypeOffset = this.getCardTypeOffset(cardType); // get sprite Y value for this card type
 
             cardHolderDiv = 'player_'+playerLetter+'_integrity_card_'+cardPosition+'_holder';
             dojo.place(
@@ -290,6 +278,40 @@ function (dojo, declare) {
             case 'h':
               return 0;
           }
+        },
+
+        getCardTypeOffset: function( cardType )
+        {
+            cardTypeOffset = 0;
+            if(cardType == 'crooked')
+            {
+                cardTypeOffset = 1;
+            }
+            else if(cardType == 'honest')
+            {
+                cardTypeOffset = 2;
+            }
+            else if(cardType == 'kingpin')
+            {
+                cardTypeOffset = 3;
+            }
+
+            return cardTypeOffset;
+        },
+
+        getVisibilityOffset: function( visibilityToYou )
+        {
+            visibilityOffset = 0;
+            if(visibilityToYou == 'HIDDEN_NOT_SEEN')
+            {
+                visibilityOffset = 2;
+            }
+            else if (visibilityToYou == 'HIDDEN_SEEN')
+            {
+                visibilityOffset = 1;
+            }
+
+            return visibilityOffset;
         },
 
 
@@ -429,6 +451,32 @@ function (dojo, declare) {
                          } );
         },
 
+        onClickEndTurnButton: function( evt )
+        {
+            console.log( 'onClickEndTurnButton' );
+
+            // Preventing default browser reaction
+            dojo.stopEvent( evt );
+
+            // Check that this action is possible (see "possibleactions" in states.inc.php)
+            if( ! this.checkAction( 'clickEndTurnButton' ) )
+            {   return; }
+
+            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedEndTurnButton.html", {
+                                                                    lock: true
+                                                                 },
+                         this, function( result ) {
+
+                            // What to do after the server call if it succeeded
+                            // (most of the time: nothing)
+
+                         }, function( is_error) {
+
+                            // What to do after the server call in anyway (success or failure)
+                            // (most of the time: nothing)
+
+                         } );
+        },
 
         ///////////////////////////////////////////////////
         //// Reaction to cometD notifications
@@ -459,6 +507,7 @@ function (dojo, declare) {
             //
 
             dojo.subscribe( 'newGameMessage', this, "notif_newGameMessage" ); // this won't actually be called since it happens in setup before notifications are setup
+            dojo.subscribe( 'viewCard', this, "notif_viewCard" );
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -482,6 +531,35 @@ function (dojo, declare) {
         {
             console.log( 'notif_newGameMessage' );
             console.log( notif );
-        }
+        },
+
+        notif_viewCard: function( notif )
+        {
+            console.log("Entered notif_viewCard.");
+
+            //var seenCard = notif.args.seenCard;
+            var playerLetter = notif.args.playerLetter;
+            var cardPosition = notif.args.cardPosition;
+            var cardType = notif.args.cardType;
+
+            console.log( "Seen Card:" );
+            console.log( "Player Letter: " + playerLetter );
+            console.log( "Card Position: " + cardPosition );
+            console.log( "Card Type: " + cardType );
+            console.log( "" );
+
+            //var playerLetter = seenCard['player_position']; // a, b, c, etc.
+            var rotation = this.getIntegrityCardRotation(playerLetter); // 0, 90, -90
+            //var cardPosition = seenCard['card_position'];
+            //var cardType = seenCard['card_type'];
+            var htmlId = "player_" + playerLetter + "_integrity_card_" + cardPosition;
+
+            visibilityOffset = this.getVisibilityOffset('HIDDEN_SEEN'); // get sprite X value for this card type
+            cardTypeOffset = this.getCardTypeOffset(cardType); // get sprite Y value for this card type
+
+            spriteX = this.integrityCardWidth*(visibilityOffset);
+            spriteY = this.integrityCardHeight*(cardTypeOffset);
+            dojo.style( htmlId, 'backgroundPosition', '-' + spriteX + 'px -' + spriteY + 'px' ); // update the integrity card for this player to the seen version of it... should be in format -${x}px -${y}px
+        },
    });
 });

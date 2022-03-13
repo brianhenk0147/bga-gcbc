@@ -93,4 +93,13 @@ class action_goodcopbadcop extends APP_GameAction
         self::ajaxResponse( );
     }
 
+    public function clickedEndTurnButton()
+    {
+      self::setAjaxMode();
+
+      $this->game->clickedEndTurnButton();
+
+      self::ajaxResponse( );
+    }
+
 }

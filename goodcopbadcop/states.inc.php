@@ -87,7 +87,43 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} may use Equipment in reaction to the investigation.'),
     		"type" => "multipleactiveplayer",
     		"possibleactions" => array( "useEquipment", "clickPassOnUseEquipmentButton" ),
-    		"transitions" => array( "useEquipment" => 2, "endPlayerTurn" => 30 )
+    		"transitions" => array( "useEquipment" => 2, "allPassedOnReactions" => 5 )
+    ),
+
+    5 => array(
+        "name" => "executeActionInvestigate",
+        "description" => "",
+        "type" => "game",
+        "action" => "executeActionInvestigate",
+        "updateGameProgression" => false,
+        "transitions" => array( "askAim" => 27 )
+    ),
+
+    27 => array(
+    		"name" => "askAim",
+    		"description" => clienttranslate('${actplayer} is deciding if they will change their aim.'),
+    		"descriptionmyturn" => clienttranslate('${you} must change your aim or end your turn.'),
+    		"type" => "activeplayer",
+    		"possibleactions" => array( "clickAimPlayerButton", "clickEndTurnButton" ),
+    		"transitions" => array( "aimAtPlayer" => 28, "endTurnReaction" => 29 )
+    ),
+
+    28 => array(
+    		"name" => "aimAtPlayer",
+    		"description" => clienttranslate('${actplayer} is aiming.'),
+    		"descriptionmyturn" => clienttranslate('${you} must aim at a player.'),
+    		"type" => "activeplayer",
+    		"possibleactions" => array( "clickAimPlayerButton", "clickCancelButton" ),
+    		"transitions" => array( "endTurn" => 29, "cancelAim" => 27 )
+    ),
+
+    29 => array(
+        "name" => "askEndTurnReaction",
+        "description" => clienttranslate('Other players are deciding if they will use an Equipment card at the end of this turn.'),
+        "descriptionmyturn" => clienttranslate('${you} may use Equipment at the end of this turn.'),
+        "type" => "multipleactiveplayer",
+        "possibleactions" => array( "useEquipment", "clickPassOnUseEquipmentButton" ),
+        "transitions" => array( "useEquipment" => 2, "allPassedOnReactions" => 30 )
     ),
 
     30 => array(

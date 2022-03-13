@@ -317,6 +317,11 @@ class goodcopbadcop extends Table
 				return self::getCollectionFromDb( $sql );
 		}
 
+		function getCardIdFromPlayerAndPosition($playerId, $positionId)
+		{
+				return self::getUniqueValueFromDb("SELECT card_id FROM integrityCards WHERE card_location=$playerId AND card_location_arg=$positionId");
+		}
+
 		function getPlayerNumberFromPlayerId($playerId)
 		{
 				return self::getUniqueValueFromDb("SELECT player_no FROM player WHERE player_id=$playerId");
@@ -352,6 +357,15 @@ class goodcopbadcop extends Table
 				return self::getUniqueValueFromDb("SELECT player_position FROM playerPositioning WHERE player_id=$playerId");
 		}
 
+		function getPlayerIdFromLetterOrder($playerAsking, $letterOrder)
+		{
+				$sql = "SELECT p.player_id FROM `playerPositioning` pp ";
+				$sql .= "JOIN `player` p ON p.player_id=pp.player_id ";
+				$sql .= "WHERE pp.player_asking=$playerAsking AND pp.player_position='$letterOrder' ";
+
+				return self::getUniqueValueFromDb($sql);
+		}
+
 		function getPlayerNameFromLetterOrder($playerAsking, $letterOrder)
 		{
 				$sql = "SELECT p.player_name FROM `playerPositioning` pp ";
@@ -368,6 +382,62 @@ class goodcopbadcop extends Table
 				$sql .= "WHERE pp.player_asking=$playerAsking ";
 
 				return self::getObjectListFromDB( $sql );
+		}
+
+		function getLastPlayerInvestigated($playerId)
+		{
+				return self::getUniqueValueFromDb("SELECT last_player_investigated FROM player WHERE player_id=$playerId");
+		}
+
+		function getLastCardPositionInvestigated($playerId)
+		{
+				return self::getUniqueValueFromDb("SELECT last_card_position_investigated FROM player WHERE player_id=$playerId");
+		}
+
+		function setLastPlayerInvestigated($playerInvestigating, $playerBeingInvestigated)
+		{
+				// set player.last_player_investigated
+				$sqlUpdate = "UPDATE player SET ";
+				$sqlUpdate .= "last_player_investigated=$playerBeingInvestigated WHERE ";
+				$sqlUpdate .= "player_id='$playerInvestigating'";
+
+				self::DbQuery( $sqlUpdate );
+		}
+
+		function setLastCardPositionInvestigated($playerInvestigating, $cardPosition)
+		{
+				// set player.last_card_position_investigated
+				$sqlUpdate = "UPDATE player SET ";
+				$sqlUpdate .= "last_card_position_investigated=$cardPosition WHERE ";
+				$sqlUpdate .= "player_id='$playerInvestigating'";
+
+				self::DbQuery( $sqlUpdate );
+		}
+
+		function getIntegrityCard($cardId, $playerAsking)
+		{
+				$sql = "SELECT pp.player_position AS player_position, ic.card_location_arg AS card_position, ic.card_type AS card_type FROM `integrityCards` ic ";
+				$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
+				$sql .= "JOIN `playerPositioning` pp ON (ic.card_location=pp.player_id AND pp.player_asking=$playerAsking) ";
+				$sql .= "WHERE pcv.player_id=$playerAsking AND ic.card_id=$cardId ";
+
+				//var_dump( $sqlUpdate );
+				//die('ok');
+
+				return self::getObjectListFromDB( $sql );
+		}
+
+		function isSeen($playerAsking, $playerTargeting, $cardPosition)
+		{
+				$sql = "SELECT pcv.is_seen FROM `integrityCards` ic ";
+				$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
+				$sql .= "JOIN `playerPositioning` pp ON (ic.card_location=pp.player_id AND pp.player_asking=$playerAsking) ";
+				$sql .= "WHERE pcv.player_id=$playerAsking AND ic.card_location=$playerTargeting AND ic.card_location_arg=$cardPosition ";
+
+				//var_dump( $sql );
+				//die('ok');
+
+				return self::getUniqueValueFromDb($sql);
 		}
 
 
@@ -411,7 +481,7 @@ class goodcopbadcop extends Table
 		{
 				self::checkAction( 'clickInvestigateButton' ); // make sure we can take this action from this state
 
-				$player_id = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+				$activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 
 				$this->gamestate->nextState( "investigateChoosenCard" ); // go to the state allowing the active player to choose a card to investigate
 		}
@@ -420,20 +490,45 @@ class goodcopbadcop extends Table
 		{
 			self::checkAction( 'clickCardToInvestigate' ); // make sure we can take this action from this state
 
+			$playerInvestigating = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+
+			$playerBeingInvestigated = $this->getPlayerIdFromLetterOrder($playerInvestigating, $playerPosition); // get the player ID of the player being investigated
+
+			$isSeen = $this->isSeen($playerInvestigating, $playerBeingInvestigated, $cardPosition);
+
+			if($isSeen != 0)
+			{ // hey... this card has already been seen
+					throw new BgaUserException( self::_("You can only choose hidden cards.") );
+			}
+
+			$this->setLastPlayerInvestigated($playerInvestigating, $playerBeingInvestigated); // set player.last_player_investigated
+			$this->setLastCardPositionInvestigated($playerInvestigating, $cardPosition); // set player.last_card_position_investigated
+
 			$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
 
 			$this->gamestate->nextState( "askInvestigateReaction" ); // go to the state allowing the active player to choose a card to investigate
 		}
 
+		// All players have passed on using their equipment. This could be during any of the equipment reaction states.
 		function passOnUseEquipment()
 		{
 				self::checkAction( 'clickPassOnUseEquipmentButton' ); // make sure we can take this action from this state
 
-				$player_id = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+				$currentPlayerId = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 
 				// Make this player unactive now
 				// (and tell the machine state to use transtion "directionsChosen" if all players are now unactive
-				$this->gamestate->setPlayerNonMultiactive( $player_id, "endPlayerTurn" );
+				$this->gamestate->setPlayerNonMultiactive( $currentPlayerId, "allPassedOnReactions" );
+		}
+
+		// The active player is asking to end their turn.
+		function clickedEndTurnButton()
+		{
+				self::checkAction( 'clickEndTurnButton' ); // make sure we can take this action from this state
+
+				$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
+
+				$this->gamestate->nextState( "endTurnReaction" ); // go to state where we ask if anyone wants to play equipment cards at the end of their turn
 		}
 
 
@@ -499,6 +594,36 @@ class goodcopbadcop extends Table
 				}
 
 				$this->gamestate->nextState( "startNewPlayerTurn" ); // begin a new player's turn
+		}
+
+		function executeActionInvestigate()
+		{
+				// update the integrity cards seen table
+				$playerWhoseTurnItIs = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+				$playerInvestigated = $this->getLastPlayerInvestigated($playerWhoseTurnItIs);
+				$positionOfCardInvestigated = $this->getLastCardPositionInvestigated($playerWhoseTurnItIs);
+
+				$cardId = $this->getCardIdFromPlayerAndPosition($playerInvestigated, $positionOfCardInvestigated);
+				$this->setVisibilityOfIntegrityCard($cardId, $playerWhoseTurnItIs, 1); // show that this player has seen this card
+
+				// notify the player who investigated of their new card
+				$seenCards = $this->getIntegrityCard($cardId, $playerWhoseTurnItIs); // get details about this card as a list of cards
+
+				foreach( $seenCards as $seenCard )
+				{ // go through each card (should only be 1)
+
+						$playerLetter = $seenCard['player_position']; // a, b, c, etc.
+						$cardPosition = $seenCard['card_position']; // 1, 2, 3
+						$cardType = $seenCard['card_type']; // honest, crooked, kingpin, agent
+
+						self::notifyPlayer( $playerWhoseTurnItIs, 'viewCard', '', array(
+												 'playerLetter' => $playerLetter,
+												 'cardPosition' => $cardPosition,
+												 'cardType' => $cardType
+						) );
+				}
+
+				$this->gamestate->nextState( "askAim" ); // begin a new player's turn
 		}
 
 //////////////////////////////////////////////////////////////////////////////
