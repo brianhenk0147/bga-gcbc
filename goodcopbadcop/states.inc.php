@@ -68,8 +68,8 @@ $machinestates = array(
     		"description" => clienttranslate('${actplayer} is choosing their turn action.'),
     		"descriptionmyturn" => clienttranslate('${you} must choose which action you will take.'),
     		"type" => "activeplayer",
-    		"possibleactions" => array( "clickInvestigateButton" ),
-    		"transitions" => array( "investigateChoosenCard" => 3 )
+    		"possibleactions" => array( "clickInvestigateButton", "clickArmButton" ),
+    		"transitions" => array( "investigateChooseCard" => 3, "armChooseCard" => 6 )
     ),
 
     3 => array(
@@ -77,7 +77,7 @@ $machinestates = array(
     		"description" => clienttranslate('${actplayer} is investigating.'),
     		"descriptionmyturn" => clienttranslate('${you} must choose which Integrity Card you will investigate.'),
     		"type" => "activeplayer",
-    		"possibleactions" => array( "clickCardToInvestigate", "cancelInvestigate" ),
+    		"possibleactions" => array( "clickOpponentIntegrityCard", "clickCancelAction" ),
     		"transitions" => array( "askInvestigateReaction" => 4, "cancelAction" => 2 )
     ),
 
@@ -96,13 +96,31 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeActionInvestigate",
         "updateGameProgression" => false,
+        "transitions" => array( "askAim" => 27, "endTurnReaction" => 29 )
+    ),
+
+    6 => array(
+    		"name" => "chooseCardToRevealForArm",
+    		"description" => clienttranslate('${actplayer} is choosing a card to reveal.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose which Integrity Card you will reveal.'),
+    		"type" => "activeplayer",
+    		"possibleactions" => array( "clickMyIntegrityCard", "clickCancelAction" ),
+    		"transitions" => array( "executeArm" => 7, "cancelAction" => 2 )
+    ),
+
+    7 => array(
+        "name" => "executeActionArm",
+        "description" => "",
+        "type" => "game",
+        "action" => "executeActionArm",
+        "updateGameProgression" => false,
         "transitions" => array( "askAim" => 27 )
     ),
 
     27 => array(
     		"name" => "askAim",
     		"description" => clienttranslate('${actplayer} is deciding if they will change their aim.'),
-    		"descriptionmyturn" => clienttranslate('${you} must change your aim or end your turn.'),
+    		"descriptionmyturn" => clienttranslate('${you} may change your aim.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickAimPlayerButton", "clickEndTurnButton" ),
     		"transitions" => array( "aimAtPlayer" => 28, "endTurnReaction" => 29 )

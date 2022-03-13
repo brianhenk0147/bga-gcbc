@@ -47,11 +47,11 @@
                 </div>
             </div>
             <div id="player_e_row_2" class="player_row_vertical">
-                <div id="player_e_integrity_card_3_holder" class="integrity_card_holder_vertical">
+                <div id="player_e_integrity_card_3_holder" class="integrity_card_holder_vertical opponent_integrity_card_slot">
                 </div>
-                <div id="player_e_integrity_card_2_holder" class="integrity_card_holder_vertical">
+                <div id="player_e_integrity_card_2_holder" class="integrity_card_holder_vertical opponent_integrity_card_slot">
                 </div>
-                <div id="player_e_integrity_card_1_holder" class="integrity_card_holder_vertical">
+                <div id="player_e_integrity_card_1_holder" class="integrity_card_holder_vertical opponent_integrity_card_slot">
                 </div>
             </div>
             <div id="player_e_row_3" class="player_row_vertical">
@@ -74,11 +74,11 @@
                 </div>
             </div>
             <div id="player_c_row_2" class="player_row_vertical">
-                <div id="player_c_integrity_card_3_holder" class="integrity_card_holder_vertical">
+                <div id="player_c_integrity_card_3_holder" class="integrity_card_holder_vertical opponent_integrity_card_slot">
                 </div>
-                <div id="player_c_integrity_card_2_holder" class="integrity_card_holder_vertical">
+                <div id="player_c_integrity_card_2_holder" class="integrity_card_holder_vertical opponent_integrity_card_slot">
                 </div>
-                <div id="player_c_integrity_card_1_holder" class="integrity_card_holder_vertical">
+                <div id="player_c_integrity_card_1_holder" class="integrity_card_holder_vertical opponent_integrity_card_slot">
                 </div>
             </div>
             <div id="player_c_row_3" class="player_row_vertical">
@@ -106,7 +106,7 @@
                   <div class="card_placeholder_horizontal">
                   </div>
                 </div>
-                <div id="player_b_integrity_card_1_holder" class="integrity_card_holder_horizontal">
+                <div id="player_b_integrity_card_1_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
                 </div>
                 <div id="player_b_other_equipment_active_holder" class="other_equipment_active_holder_horizontal">
                   <div class="card_placeholder_horizontal">
@@ -119,7 +119,7 @@
                   </div>
                 </div>
 
-                <div id="player_b_integrity_card_2_holder" class="integrity_card_holder_horizontal">
+                <div id="player_b_integrity_card_2_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
                 </div>
                 <div id="player_b_gun_holder" class="gun_holder_horizontal">
                   <div class="card_placeholder_horizontal">
@@ -131,7 +131,7 @@
                   <div class="card_placeholder_horizontal">
                   </div>
                 </div>
-                <div id="player_b_integrity_card_3_holder" class="integrity_card_holder_horizontal">
+                <div id="player_b_integrity_card_3_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
                 </div>
                 <div id="player_b_first_equipment_active_holder" class="first_equipment_active_holder_horizontal">
                   <div class="card_placeholder_horizontal">
@@ -149,7 +149,7 @@
                   </div>
                 </div>
 
-                <div id="player_f_integrity_card_1_holder" class="integrity_card_holder_horizontal">
+                <div id="player_f_integrity_card_1_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
                 </div>
 
                 <div id="player_f_reference_card_holder" class="reference_card_holder_horizontal">
@@ -165,7 +165,7 @@
                   </div>
                 </div>
 
-                <div id="player_f_integrity_card_2_holder" class="integrity_card_holder_horizontal">
+                <div id="player_f_integrity_card_2_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
                 </div>
 
                 <div id="player_f_equipment_hand_holder" class="equipment_hand_holder_horizontal">
@@ -178,7 +178,7 @@
                   <div class="card_placeholder_horizontal">
                   </div>
                 </div>
-                <div id="player_f_integrity_card_3_holder" class="integrity_card_holder_horizontal">
+                <div id="player_f_integrity_card_3_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
                 </div>
 
             </div>
@@ -193,7 +193,7 @@
                 <div class="card_placeholder_horizontal">
                 </div>
               </div>
-              <div id="player_g_integrity_card_1_holder" class="integrity_card_holder_horizontal">
+              <div id="player_g_integrity_card_1_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
               </div>
               <div id="player_g_other_equipment_active_holder" class="other_equipment_active_holder_horizontal">
                 <div class="card_placeholder_horizontal">
@@ -205,7 +205,7 @@
                 <div class="card_placeholder_horizontal">
                 </div>
               </div>
-              <div id="player_g_integrity_card_2_holder" class="integrity_card_holder_horizontal">
+              <div id="player_g_integrity_card_2_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
               </div>
               <div id="player_g_gun_holder" class="gun_holder_horizontal">
                 <div class="card_placeholder_horizontal">
@@ -218,7 +218,7 @@
                 </div>
               </div>
 
-              <div id="player_g_integrity_card_3_holder" class="integrity_card_holder_horizontal">
+              <div id="player_g_integrity_card_3_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
               </div>
               <div id="player_g_first_equipment_active_holder" class="first_equipment_active_holder_horizontal">
                 <div class="card_placeholder_horizontal">
@@ -228,13 +228,13 @@
       </div>
         <div id="center_area_bottom">
             <div id="gun_row">
-                <div id="gun_1_holder" class="gun_holder">gun1
+                <div id="gun_1_holder" class="gun_holder">
                 </div>
-                <div id="gun_2_holder" class="gun_holder">gun2
+                <div id="gun_2_holder" class="gun_holder">
                 </div>
-                <div id="gun_3_holder" class="gun_holder">gun3
+                <div id="gun_3_holder" class="gun_holder">
                 </div>
-                <div id="gun_4_holder" class="gun_holder">gun4
+                <div id="gun_4_holder" class="gun_holder">
                 </div>
             </div>
         </div>
@@ -245,7 +245,7 @@
                     </div>
                 </div>
 
-                <div id="player_d_integrity_card_1_holder" class="integrity_card_holder_horizontal">
+                <div id="player_d_integrity_card_1_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
                 </div>
 
                 <div id="player_d_reference_card_holder" class="reference_card_holder_horizontal">
@@ -262,7 +262,7 @@
                 </div>
 
 
-                <div id="player_d_integrity_card_2_holder" class="integrity_card_holder_horizontal">
+                <div id="player_d_integrity_card_2_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
                 </div>
 
                 <div id="player_d_equipment_hand_holder" class="equipment_hand_holder_horizontal">
@@ -276,7 +276,7 @@
                     <div class="card_placeholder_horizontal">
                     </div>
                 </div>
-                <div id="player_d_integrity_card_3_holder" class="integrity_card_holder_horizontal">
+                <div id="player_d_integrity_card_3_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
                 </div>
 
             </div>
@@ -309,11 +309,11 @@
 
             </div>
             <div id="player_a_row_2" class="player_row_vertical">
-                <div id="player_a_integrity_card_3_holder" class="integrity_card_holder_vertical">
+                <div id="player_a_integrity_card_3_holder" class="integrity_card_holder_vertical my_integrity_card_slot">
                 </div>
-                <div id="player_a_integrity_card_2_holder" class="integrity_card_holder_vertical">
+                <div id="player_a_integrity_card_2_holder" class="integrity_card_holder_vertical my_integrity_card_slot">
                 </div>
-                <div id="player_a_integrity_card_1_holder" class="integrity_card_holder_vertical">
+                <div id="player_a_integrity_card_1_holder" class="integrity_card_holder_vertical my_integrity_card_slot">
                 </div>
             </div>
             <div id="player_a_row_3" class="player_row_vertical">
@@ -335,11 +335,11 @@
 
             </div>
             <div id="player_h_row_2" class="player_row_vertical">
-                <div id="player_h_integrity_card_3_holder" class="integrity_card_holder_vertical">
+                <div id="player_h_integrity_card_3_holder" class="integrity_card_holder_vertical opponent_integrity_card_slot">
                 </div>
-                <div id="player_h_integrity_card_2_holder" class="integrity_card_holder_vertical">
+                <div id="player_h_integrity_card_2_holder" class="integrity_card_holder_vertical opponent_integrity_card_slot">
                 </div>
-                <div id="player_h_integrity_card_1_holder" class="integrity_card_holder_vertical">
+                <div id="player_h_integrity_card_1_holder" class="integrity_card_holder_vertical opponent_integrity_card_slot">
                 </div>
             </div>
             <div id="player_h_row_3" class="player_row_vertical">
@@ -373,6 +373,8 @@ var jstpl_some_game_item='<div class="my_game_item" id="my_game_item_${MY_ITEM_I
 <!-- match the class to the css class for the image location -->
 <!-- match the id to the js file when you dojo.place it -->
 var jstpl_integrityCard = '<div class="integrity_card component_rounding" id="player_${playerLetter}_integrity_card_${cardPosition}" style="background-position:-${x}px -${y}px">\
+                        </div>';
+var jstpl_gun = '<div class="gun component_rounding" id="gun_${gunId}">\
                         </div>';
 
 </script>

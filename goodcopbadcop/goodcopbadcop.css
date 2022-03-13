@@ -261,6 +261,15 @@
   display: inline;
 }
 
+/* GUNS */
+
+.gun {
+    display: inline-block;
+    width: 70px;
+    height: 50px;
+    background-image: url('img/gun_70w.jpg');
+}
+
 /* INTEGRITY CARDS */
 .integrity_card {
     display: inline-block;

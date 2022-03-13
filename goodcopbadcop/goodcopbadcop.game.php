@@ -102,6 +102,7 @@ class goodcopbadcop extends Table
 				$this->initializeIntegrityCardDeck($players);
 				$this->initializeIntegrityCardVisibility($players);
 				$this->dealIntegrityCards($players);
+				$this->initializeGuns($players);
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -136,6 +137,9 @@ class goodcopbadcop extends Table
 				$result['revealedCards'] = $this->getAllRevealedCards($currentPlayerId); // all cards that are revealed for everyone
 				$result['hiddenCardsIHaveSeen'] = $this->getHiddenCardsIHaveSeen($currentPlayerId); // all cards I've seen
 				$result['hiddenCardsIHaveNotSeen'] = $this->getHiddenCardsIHaveNotSeen($currentPlayerId); // get all the hidden cards I have NOT seen
+
+				// get gun details
+        $result['guns'] = $this->getGunsForPlayer($currentPlayerId);
 
         return $result;
     }
@@ -217,6 +221,31 @@ class goodcopbadcop extends Table
 
 								self::DbQuery( $insertQuery );
 						}
+				}
+		}
+
+		function initializeGuns($players)
+		{
+				$insertGun1Query = "INSERT INTO guns (gun_id,gun_held_by,gun_aimed_at) VALUES ";
+				$insertGun1Query .= "(1,'','') ";
+				self::DbQuery( $insertGun1Query );
+
+				$insertGun2Query = "INSERT INTO guns (gun_id,gun_held_by,gun_aimed_at) VALUES ";
+				$insertGun2Query .= "(2,'','') ";
+				self::DbQuery( $insertGun2Query );
+
+				if(count($players) > 4)
+				{ // 5+ players
+						$insertGun3Query = "INSERT INTO guns (gun_id,gun_held_by,gun_aimed_at) VALUES ";
+						$insertGun3Query .= "(3,'','') ";
+						self::DbQuery( $insertGun3Query );
+				}
+
+				if(count($players) > 6)
+				{ // 7+ players
+						$insertGun4Query = "INSERT INTO guns (gun_id,gun_held_by,gun_aimed_at) VALUES ";
+						$insertGun4Query .= "(4,'','') ";
+						self::DbQuery( $insertGun4Query );
 				}
 		}
 
@@ -313,6 +342,14 @@ class goodcopbadcop extends Table
 				$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
 				$sql .= "JOIN `playerPositioning` pp ON (ic.card_location=pp.player_id AND pp.player_asking=$playerId) ";
 				$sql .= "WHERE pcv.player_id=$playerId AND pcv.is_seen=0 and ic.card_type_arg=0 ";
+
+				return self::getCollectionFromDb( $sql );
+		}
+
+		function getGunsForPlayer($askingPlayer)
+		{
+				$sql = "SELECT * FROM `guns` g ";
+				$sql .= "LEFT JOIN `playerPositioning` pp ON (pp.player_id=g.gun_held_by AND pp.player_asking=$askingPlayer) ";
 
 				return self::getCollectionFromDb( $sql );
 		}
@@ -477,22 +514,36 @@ class goodcopbadcop extends Table
     */
 
 		//
-		function chooseCardToInvestigate()
+		function clickedInvestigateButton()
 		{
 				self::checkAction( 'clickInvestigateButton' ); // make sure we can take this action from this state
 
 				$activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 
-				$this->gamestate->nextState( "investigateChoosenCard" ); // go to the state allowing the active player to choose a card to investigate
+				$this->gamestate->nextState( "investigateChooseCard" ); // go to the state allowing the active player to choose a card to investigate
 		}
 
-		function clickedCardToInvestigateCard($playerPosition, $cardPosition)
+		// The active player selected an action but now would like to cancel it and choose a new action.
+		function clickedCancelAction()
 		{
-			self::checkAction( 'clickCardToInvestigate' ); // make sure we can take this action from this state
+				self::checkAction( 'clickCancelAction' ); // make sure we can take this action from this state
+
+				$this->gamestate->nextState( "cancelAction" ); // go back to start of turn
+		}
+
+		function clickedOpponentIntegrityCard($playerPosition, $cardPosition)
+		{
+			self::checkAction( 'clickOpponentIntegrityCard' ); // make sure we can take this action from this state
+
 
 			$playerInvestigating = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 
 			$playerBeingInvestigated = $this->getPlayerIdFromLetterOrder($playerInvestigating, $playerPosition); // get the player ID of the player being investigated
+
+			if(false)
+			{ // this player is not in the game
+					throw new BgaUserException( self::_("Please choose an integrity card of a player in the game.") );
+			}
 
 			$isSeen = $this->isSeen($playerInvestigating, $playerBeingInvestigated, $cardPosition);
 
@@ -507,6 +558,37 @@ class goodcopbadcop extends Table
 			$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
 
 			$this->gamestate->nextState( "askInvestigateReaction" ); // go to the state allowing the active player to choose a card to investigate
+		}
+
+		function clickedArmButton()
+		{
+				self::checkAction( 'clickArmButton' ); // make sure we can take this action from this state
+
+				$activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+				if(false)
+				{ // there are no guns available
+						throw new BgaUserException( self::_("All guns have been taken. Please choose a different action.") );
+				}
+
+				if(true)
+				{ // they have at least one hidden card
+						$this->gamestate->nextState( "armChooseCard" ); // go to the state allowing the active player to choose a card to reveal for arm
+				}
+				else
+				{
+					// go straight to reaction or aim
+				}
+
+		}
+
+		function clickedMyIntegrityCard($playerPosition, $cardPosition)
+		{
+			self::checkAction( 'clickMyIntegrityCard' ); // make sure we can take this action from this state
+
+
+
+
+			$this->gamestate->nextState( "executeArm" ); // go to the state allowing the active player to choose a card to investigate
 		}
 
 		// All players have passed on using their equipment. This could be during any of the equipment reaction states.
@@ -622,6 +704,22 @@ class goodcopbadcop extends Table
 												 'cardType' => $cardType
 						) );
 				}
+
+				if(true)
+				{ // this player IS holding a gun
+						$this->gamestate->nextState( "askAim" ); // begin a new player's turn
+				}
+				else
+				{ // this player is NOT holding a gun
+						$this->gamestate->nextState( "endTurnReaction" ); // begin a new player's turn
+				}
+
+		}
+
+		function executeActionArm()
+		{
+				// notify all players that a card is revealed
+				// make the active player the owner of the gun
 
 				$this->gamestate->nextState( "askAim" ); // begin a new player's turn
 		}

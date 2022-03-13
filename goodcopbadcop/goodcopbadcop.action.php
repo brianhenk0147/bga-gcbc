@@ -62,16 +62,16 @@ class action_goodcopbadcop extends APP_GameAction
 
     */
 
-    public function chooseCardToInvestigate()
+    public function clickedInvestigateButton()
     {
         self::setAjaxMode();
 
-        $this->game->chooseCardToInvestigate(); // tell the server that the current player is choosing a card to investigate
+        $this->game->clickedInvestigateButton(); // tell the server that the current player is choosing a card to investigate
 
         self::ajaxResponse( );
     }
 
-    public function clickedCardToInvestigateCard()
+    public function clickedOpponentIntegrityCard()
     {
         self::setAjaxMode();
 
@@ -79,7 +79,38 @@ class action_goodcopbadcop extends APP_GameAction
         $playerPosition = self::getArg( "playerPosition", AT_alphanum, true ); // a, b, c, etc.
         $cardPosition = self::getArg( "cardPosition", AT_posint, true ); // 1, 2, 3
 
-        $this->game->clickedCardToInvestigateCard( $playerPosition, $cardPosition );
+        $this->game->clickedOpponentIntegrityCard( $playerPosition, $cardPosition );
+
+        self::ajaxResponse( );
+    }
+
+    public function clickedCancelActionButton()
+    {
+        self::setAjaxMode();
+
+        $this->game->clickedCancelAction(); // tell the server that the current player wants to cancel their action
+
+        self::ajaxResponse( );
+    }
+
+    public function clickedArmButton()
+    {
+        self::setAjaxMode();
+
+        $this->game->clickedArmButton(); // tell the server that the current player is choosing a card to reveal for their Arm action
+
+        self::ajaxResponse( );
+    }
+
+    public function clickedMyIntegrityCard()
+    {
+        self::setAjaxMode();
+
+        // Retrieve arguments
+        $playerPosition = self::getArg( "playerPosition", AT_alphanum, true ); // a, b, c, etc.
+        $cardPosition = self::getArg( "cardPosition", AT_posint, true ); // 1, 2, 3
+
+        $this->game->clickedMyIntegrityCard( $playerPosition, $cardPosition );
 
         self::ajaxResponse( );
     }
