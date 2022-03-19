@@ -57,7 +57,7 @@
             <div id="player_e_row_3" class="player_row_vertical">
                 <div id="player_e_first_equipment_active_holder" class="first_equipment_active_holder_vertical">aceq
                 </div>
-                <div id="player_e_gun_holder" class="gun_holder_vertical">gun
+                <div id="player_e_gun_holder" class="gun_holder_vertical">
                 </div>
                 <div id="player_e_other_equipment_active_holder" class="other_equipment_active_holder_vertical">oteq
                 </div>
@@ -84,7 +84,7 @@
             <div id="player_c_row_3" class="player_row_vertical">
                 <div id="player_c_first_equipment_active_holder" class="first_equipment_active_holder_vertical">aceq
                 </div>
-                <div id="player_c_gun_holder" class="gun_holder_vertical">gun
+                <div id="player_c_gun_holder" class="gun_holder_vertical">
                 </div>
                 <div id="player_c_other_equipment_active_holder" class="other_equipment_active_holder_vertical">oteq
                 </div>
@@ -301,7 +301,7 @@
             <div id="player_a_row_1" class="player_row_vertical">
                 <div id="player_a_first_equipment_active_holder" class="first_equipment_active_holder_vertical">aceq
                 </div>
-                <div id="player_a_gun_holder" class="gun_holder_vertical">gun
+                <div id="player_a_gun_holder" class="gun_holder_vertical">
                 </div>
                 <div id="player_a_other_equipment_active_holder" class="other_equipment_active_holder_vertical">oteq
                 </div>
@@ -328,7 +328,7 @@
             <div id="player_h_row_1" class="player_row_vertical">
                 <div id="player_h_first_equipment_active_holder" class="first_equipment_active_holder_vertical">aceq
                 </div>
-                <div id="player_h_gun_holder" class="gun_holder_vertical">gun
+                <div id="player_h_gun_holder" class="gun_holder_vertical">
                 </div>
                 <div id="player_h_other_equipment_active_holder" class="other_equipment_active_holder_vertical">oteq
                 </div>
@@ -374,7 +374,7 @@ var jstpl_some_game_item='<div class="my_game_item" id="my_game_item_${MY_ITEM_I
 <!-- match the id to the js file when you dojo.place it -->
 var jstpl_integrityCard = '<div class="integrity_card component_rounding" id="player_${playerLetter}_integrity_card_${cardPosition}" style="background-position:-${x}px -${y}px">\
                         </div>';
-var jstpl_gun = '<div class="gun component_rounding" id="gun_${gunId}">\
+var jstpl_gun = '<div class="gun component_rounding" id="gun_${gunId}" style="background-position:-${x}px -${y}px">\
                         </div>';
 
 </script>

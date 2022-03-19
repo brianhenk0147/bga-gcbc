@@ -107,10 +107,21 @@ class action_goodcopbadcop extends APP_GameAction
         self::setAjaxMode();
 
         // Retrieve arguments
-        $playerPosition = self::getArg( "playerPosition", AT_alphanum, true ); // a, b, c, etc.
         $cardPosition = self::getArg( "cardPosition", AT_posint, true ); // 1, 2, 3
 
-        $this->game->clickedMyIntegrityCard( $playerPosition, $cardPosition );
+        $this->game->clickedMyIntegrityCard( $cardPosition );
+
+        self::ajaxResponse( );
+    }
+
+    public function clickedAimAtPlayerButton()
+    {
+        self::setAjaxMode();
+
+        // Retrieve arguments
+        $aimAtPlayerPosition = self::getArg( "letterAim", AT_alphanum, true ); // a, b, c, etc.
+
+        $this->game->clickedAimAtPlayerPosition( $aimAtPlayerPosition );
 
         self::ajaxResponse( );
     }

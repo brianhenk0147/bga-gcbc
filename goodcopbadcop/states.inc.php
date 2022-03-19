@@ -122,7 +122,8 @@ $machinestates = array(
     		"description" => clienttranslate('${actplayer} is deciding if they will change their aim.'),
     		"descriptionmyturn" => clienttranslate('${you} may change your aim.'),
     		"type" => "activeplayer",
-    		"possibleactions" => array( "clickAimPlayerButton", "clickEndTurnButton" ),
+        'args' => 'argGetOtherPlayerNames',
+    		"possibleactions" => array( "clickAimAtPlayerButton", "clickEndTurnButton" ),
     		"transitions" => array( "aimAtPlayer" => 28, "endTurnReaction" => 29 )
     ),
 

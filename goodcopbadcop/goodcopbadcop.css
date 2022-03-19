@@ -194,9 +194,10 @@
 }
 
 .gun_holder {
-    display: inline;
+    display: inline-block;
     margin-left: 2px;
     margin-right: 2px;
+    width: 80px;
 }
 
 #upper_left_name_divider {
@@ -265,6 +266,7 @@
 
 .gun {
     display: inline-block;
+    position: absolute; /* needed for a thing that slides */
     width: 70px;
     height: 50px;
     background-image: url('img/gun_70w.jpg');
