@@ -141,6 +141,7 @@ class goodcopbadcop extends Table
 				// get gun details
         $result['guns'] = $this->getGunsForPlayer($currentPlayerId);
 				$result['gunRotations'] = $this->getGunRotationsForPlayer($currentPlayerId);
+				$result['woundedTokens'] = $this->getWoundedTokensForPlayer($currentPlayerId);
 
         return $result;
     }
@@ -259,6 +260,18 @@ class goodcopbadcop extends Table
 				self::DbQuery( $sqlUpdate );
 		}
 
+		function setAllPlayerIntegrityCardsToRevealed($playerRevealingId)
+		{
+				$hiddenCards = $this->getHiddenCardsFromPlayer($playerRevealingId);
+
+				foreach( $hiddenCards as $integrityCard )
+				{
+						$card_id = $integrityCard['card_id'];
+						$cardPosition = $integrityCard['card_location_arg']; // 1, 2, 3
+						$this->revealCard($playerRevealingId, $cardPosition);
+				}
+		}
+
 		function getHonestCardQuantity($players)
 		{
 				//4 players=5
@@ -347,6 +360,14 @@ class goodcopbadcop extends Table
 				return self::getCollectionFromDb( $sql );
 		}
 
+		function getHiddenCardsFromPlayer($playerId)
+		{
+				$sql = "SELECT * FROM `integrityCards` ic ";
+				$sql .= "WHERE ic.card_location=$playerId AND ic.card_type_arg=0 ";
+
+				return self::getCollectionFromDb( $sql );
+		}
+
 		function getPlayersDeets()
 		{
 				$sql = "SELECT * FROM `player` ";
@@ -387,11 +408,6 @@ class goodcopbadcop extends Table
 				return $rotationArray;
 		}
 
-		function getGunIdHeldByPlayer($gunHolderPlayer)
-		{
-				return self::getUniqueValueFromDb("SELECT gun_id FROM `guns` WHERE gun_held_by=$gunHolderPlayer");
-		}
-
 		function getGunRotationFromLetters($gunHolderLetter, $aimedAtLetter)
 		{
 				if(is_null($gunHolderLetter) || is_null($aimedAtLetter))
@@ -401,10 +417,10 @@ class goodcopbadcop extends Table
 
 				// because it will be faster than querying a database table, create a 2D array to hold how much a gun should be rotated based on where it is aimed
 				$rotationArray = array();
-				$rotationArray['a'] = array( 'a' => 90, 'b' => -110, 'c' => -60, 'd' => -15, 'e' => -90, 'f' => -45, 'g' => -160, 'h' => 15);
+				$rotationArray['a'] = array( 'a' => 90, 'b' => 70, 'c' => -60, 'd' => -15, 'e' => -90, 'f' => -45, 'g' => -160, 'h' => 15);
 				$rotationArray['b'] = array( 'a' => 80, 'b' => 180, 'c' => -20, 'd' => 15, 'e' => -50, 'f' => 0, 'g' => 105, 'h' => 50);
 				$rotationArray['c'] = array( 'a' => -70, 'b' => -15, 'c' => -90, 'd' => 65, 'e' => 200, 'f' => 45, 'g' => 160, 'h' => 90);
-				$rotationArray['d'] = array( 'a' => 150, 'b' => 205, 'c' => 75, 'd' => 0, 'e' => 230, 'f' => -45, 'g' => 180, 'h' => 105);
+				$rotationArray['d'] = array( 'a' => -30, 'b' => 15, 'c' => 75, 'd' => 0, 'e' => 230, 'f' => -45, 'g' => 180, 'h' => 105);
 				$rotationArray['e'] = array( 'a' => 90, 'b' => -110, 'c' => -60, 'd' => -15, 'e' => -90, 'f' => -45, 'g' => -160, 'h' => 15);
 				$rotationArray['f'] = array( 'a' => 90, 'b' => -110, 'c' => -60, 'd' => -15, 'e' => -90, 'f' => -45, 'g' => -160, 'h' => 15);
 				$rotationArray['g'] = array( 'a' => 90, 'b' => -110, 'c' => -60, 'd' => -15, 'e' => -90, 'f' => -45, 'g' => -160, 'h' => 15);
@@ -434,12 +450,43 @@ class goodcopbadcop extends Table
 				return $isLeftArray[$gunHolderLetter][$aimedAtLetter];
 		}
 
+		// The ASKING PLAYER wants to know where WOUNDED TOKENS should be placed.
+		function getWoundedTokensForPlayer($askingPlayer)
+		{
+				$woundedTokens = array();
+
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				foreach( $players as $player )
+				{ // go through each player
+
+						$playerId = $player['player_id']; // the ID of the player we're notifying
+						$isWounded = $player['is_wounded']; // 1 if player is wounded
+
+						if($isWounded == 1)
+						{ // this player is wounded
+
+								$woundedPlayerLetterOrder = $this->getLetterOrderFromPlayerIds($askingPlayer, $playerId); // find the letter of the wounded player from the player asking's perspective
+								$leaderCardPosition = $this->getLeaderCardPositionFromPlayer($playerId); // the integrity card position of the leader card (1, 2, 3)
+								$cardType = $this->getCardIdFromPlayerAndPosition($playerId, $leaderCardPosition); // agent or kingpin
+
+								$woundedTokens[$playerId] = array( 'player_id' => $playerId, 'woundedPlayerLetterOrder' => $woundedPlayerLetterOrder, 'leaderCardPosition' => $leaderCardPosition, 'cardType' => $cardType); // save the wounded token info to the 2D array we will be returning
+						}
+				}
+
+				return $woundedTokens;
+		}
+
 		function getCardIdFromPlayerAndPosition($playerId, $positionId)
 		{
 				return self::getUniqueValueFromDb("SELECT card_id FROM integrityCards WHERE card_location=$playerId AND card_location_arg=$positionId");
 		}
 
-		function getCardType($playerId, $positionId)
+		function getCardTypeFromCardId($cardId)
+		{
+				return self::getUniqueValueFromDb("SELECT card_type FROM integrityCards WHERE card_id=$cardId");
+		}
+
+		function getCardTypeFromPlayerIdAndPosition($playerId, $positionId)
 		{
 				return self::getUniqueValueFromDb("SELECT card_type FROM integrityCards WHERE card_location=$playerId AND card_location_arg=$positionId");
 		}
@@ -498,6 +545,100 @@ class goodcopbadcop extends Table
 				return self::getUniqueValueFromDb($sql);
 		}
 
+		// Convert a player ID into a player NAME.
+		function getPlayerNameFromPlayerId($playerId)
+		{
+				$sql = "SELECT player_name FROM `player` ";
+				$sql .= "WHERE player_id=$playerId ";
+
+				return self::getUniqueValueFromDb($sql);
+		}
+
+		function getKingpinPlayerId()
+		{
+				$sql = "SELECT card_location FROM `integrityCards` ";
+				$sql .= "WHERE card_type='kingpin' ";
+
+				return self::getUniqueValueFromDb($sql);
+		}
+
+		function getAgentPlayerId()
+		{
+				$sql = "SELECT card_location FROM `integrityCards` ";
+				$sql .= "WHERE card_type='agent' ";
+
+				return self::getUniqueValueFromDb($sql);
+		}
+
+		function isPlayerALeader($playerId)
+		{
+				$kingpinPlayerId = $this->getKingpinPlayerId();
+				$agentPlayerId = $this->getAgentPlayerId();
+
+				if($playerId == $kingpinPlayerId || $playerId == $agentPlayerId)
+				{
+						return true;
+				}
+				else
+				{
+						return false;
+				}
+		}
+
+		// Returns true if the player is WOUNDED, false otherwise.
+		function isPlayerWounded($playerId)
+		{
+				$sql = "SELECT is_wounded FROM `player` ";
+				$sql .= "WHERE player_id=$playerId ";
+
+				$isWoundedInt = self::getUniqueValueFromDb($sql);
+
+				if($isWoundedInt == 1)
+				{ // player is wounded
+						return true;
+				}
+				else
+				{ // player is NOT wounded
+						return false;
+				}
+		}
+
+		// Returns true if the player is ELIMINATED, false otherwise.
+		function isPlayerEliminated($playerId)
+		{
+				$sql = "SELECT is_eliminated FROM `player` ";
+				$sql .= "WHERE player_id=$playerId ";
+
+				$isEliminatedInt = self::getUniqueValueFromDb($sql);
+
+				if($isEliminatedInt == 1)
+				{ // player is eliminated
+						return true;
+				}
+				else
+				{ // player is NOT eliminated
+						return false;
+				}
+		}
+
+		function isPlayerHoldingGun($playerId)
+		{
+				// get all guns held by this player
+				$sql = "SELECT gun_id FROM `guns` ";
+				$sql .= "WHERE gun_held_by=$playerId ";
+
+				$gunsHeldByPlayer = self::getObjectListFromDB( $sql );
+
+				if(count($gunsHeldByPlayer) > 0)
+				{ // player is holding a gun
+						return true;
+				}
+				else
+				{ // player is NOT holding a gun
+						return false;
+				}
+		}
+
 		function getPlayerDisplayInfo($playerAsking)
 		{
 				$sql = "SELECT pp.player_position, p.player_name, p.player_color FROM `playerPositioning` pp ";
@@ -520,6 +661,11 @@ class goodcopbadcop extends Table
 		function getLastCardPositionRevealed($playerId)
 		{
 				return self::getUniqueValueFromDb("SELECT last_card_position_revealed FROM player WHERE player_id=$playerId");
+		}
+
+		function getLeaderCardPositionFromPlayer($playerId)
+		{
+				return self::getUniqueValueFromDb("SELECT card_location_arg FROM integrityCards WHERE card_location=$playerId AND (card_type='agent' OR card_type='kingpin') LIMIT 1");
 		}
 
 		function setLastPlayerInvestigated($playerInvestigating, $playerBeingInvestigated)
@@ -592,22 +738,63 @@ class goodcopbadcop extends Table
 				return self::getObjectListFromDB( $sql );
 		}
 
-		function pickUpGun($playerWhoseTurnItIs)
+		// Get the PLAYER ID who is being TARGETED by a GUN.
+		function getPlayerIdOfGunTarget($gunId)
 		{
-				$guns = $this->getNextGunAvailable();
+				return self::getUniqueValueFromDb("SELECT gun_aimed_at FROM guns WHERE gun_id=$gunId");
+		}
+
+		// Get the PLAYER ID of the player HOLDING the GUN.
+		function getPlayerIdOfGunHolder($gunId)
+		{
+				return self::getUniqueValueFromDb("SELECT gun_held_by FROM guns WHERE gun_id=$gunId");
+		}
+
+		// Get the GUN held by a specific PLAYER ID.
+		function getGunIdHeldByPlayer($playerId)
+		{
+				return self::getUniqueValueFromDb("SELECT gun_id FROM guns WHERE gun_held_by=$playerId");
+		}
+
+		function pickUpGun($playerWhoArmed)
+		{
+				$guns = $this->getNextGunAvailable(); // get the next gun available
+				if(count($guns) < 1)
+				{ // no guns available
+						throw new feException( "There are no guns available." );
+				}
 
 				foreach( $guns as $gun )
 				{ // go through each card (should only be 1)
 
+						// UPDATE THE DATABASE
 						$gun_id = $gun['gun_id']; // 1, 2, 3, 4
 
 						$sqlUpdate = "UPDATE guns SET ";
-						$sqlUpdate .= "gun_held_by=$playerWhoseTurnItIs, gun_aimed_at='' WHERE ";
+						$sqlUpdate .= "gun_held_by=$playerWhoArmed, gun_aimed_at='' WHERE ";
 						$sqlUpdate .= "gun_id=$gun_id";
 
 						self::DbQuery( $sqlUpdate );
 
-						return $gun;
+						// NOTIFY EACH PLAYER
+						$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+						foreach( $players as $player )
+						{ // go through each player
+
+								$playerId = $player['player_id']; // the ID of the player we're notifying
+								$playerName = $player['player_name']; // the name of the player we're notifying
+								$letterOfPlayerWhoArmed = $this->getLetterOrderFromPlayerIds($playerId, $playerWhoArmed); // the letter order from the player who we are sending this to's perspective
+
+								// notify this player
+								self::notifyPlayer( $playerId, 'gunPickedUp', clienttranslate( '${player_name} has picked up a gun.' ), array(
+										 'playerArming' => $playerWhoArmed,
+										 'letterOfPlayerWhoArmed' => $letterOfPlayerWhoArmed,
+										 'gunId' => $gun_id,
+										 'player_name' => $playerName
+								) );
+						}
+
+						return $gun; // return the gun in case we need it and return just in case we have two next available guns for some strange reason
 				}
 		}
 
@@ -620,13 +807,109 @@ class goodcopbadcop extends Table
 				self::DbQuery( $sqlUpdate );
 		}
 
-		function revealCard($playerId, $cardPosition)
+		// Reveal a card for all players.
+		function revealCard($playerRevealingId, $cardPosition)
 		{
 					$sqlUpdate = "UPDATE integrityCards SET ";
 					$sqlUpdate .= "card_type_arg=1 WHERE ";
-					$sqlUpdate .= "card_location=$playerId AND card_location_arg=$cardPosition";
+					$sqlUpdate .= "card_location=$playerRevealingId AND card_location_arg=$cardPosition";
 
 					self::DbQuery( $sqlUpdate );
+
+					$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+
+					$playerName = $this->getPlayerNameFromPlayerId($playerRevealingId); // get the player's name who is revealing the card
+					$cardId = $this->getCardIdFromPlayerAndPosition($playerRevealingId, $cardPosition);
+					$cardType = $this->getCardTypeFromCardId($cardId);
+
+					foreach( $players as $player )
+					{ // go through each player
+							$playerWeAreNotifyingId = $player['player_id']; // the ID of the player we're notifying
+
+							$playerLetter = $this->getLetterOrderFromPlayerIds($playerWeAreNotifyingId, $playerRevealingId); // the letter order from the player who we are sending this to's perspective
+
+							// notify this player
+							self::notifyPlayer( $playerWeAreNotifyingId, 'revealIntegrityCard', clienttranslate( '${player_name} has revealed a ${card_type} card.' ), array(
+									 'player_name' => $playerName,
+									 'card_type' => $cardType,
+									 'card_position' => $cardPosition,
+									 'player_letter' => $playerLetter
+							) );
+					}
+		}
+
+		function dropGun($gunId)
+		{
+				$gunHolderPlayerId = $this->getPlayerIdOfGunHolder($gunId);
+
+				$sqlUpdate = "UPDATE guns SET ";
+				$sqlUpdate .= "gun_aimed_at='', gun_held_by='' WHERE ";
+				$sqlUpdate .= "gun_id=$gunId";
+
+				self::DbQuery( $sqlUpdate );
+
+			  $playerName = $this->getPlayerNameFromPlayerId($gunHolderPlayerId); // get the player's name who is dropping the gun
+
+				self::notifyAllPlayers( "dropGun", clienttranslate( '${player_name} has dropped their gun.' ), array(
+						'player_name' => $playerName,
+						'gunId' => $gunId
+				) );
+		}
+
+		function woundPlayer($playerId)
+		{
+				$sqlUpdate = "UPDATE player SET ";
+				$sqlUpdate .= "is_wounded=1 WHERE ";
+				$sqlUpdate .= "player_id=$playerId";
+
+				self::DbQuery( $sqlUpdate );
+
+				// NOTIFY EACH PLAYER
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				$playerName = $this->getPlayerNameFromPlayerId($playerId);
+				foreach( $players as $player )
+				{ // go through each player
+
+						$playerWeAreNotifyingId = $player['player_id']; // the ID of the player we're notifying
+						$leaderCardPosition = $this->getLeaderCardPositionFromPlayer($playerId); // 1, 2, 3
+						$letterOfLeaderHolder = $this->getLetterOrderFromPlayerIds($playerWeAreNotifyingId, $playerId); // the letter order from the player who we are sending this to's perspective
+						$cardType = $this->getCardTypeFromPlayerIdAndPosition($playerId, $leaderCardPosition);
+
+						// notify this player
+						self::notifyPlayer( $playerWeAreNotifyingId, 'woundPlayer', clienttranslate( '${player_name} has been wounded.' ), array(
+							'player_name' => $playerName,
+						  'player_id' => $playerId,
+						  'leader_card_position' => $leaderCardPosition,
+						  'letter_of_leader_holder' => $letterOfLeaderHolder,
+						  'card_type' => $cardType
+						) );
+				}
+		}
+
+		function eliminatePlayer($playerId)
+		{
+				$sqlUpdate = "UPDATE player SET ";
+				$sqlUpdate .= "is_eliminated=1 WHERE ";
+				$sqlUpdate .= "player_id=$playerId";
+
+				self::DbQuery( $sqlUpdate );
+
+				// NOTIFY EACH PLAYER
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				$playerName = $this->getPlayerNameFromPlayerId($playerId);
+				foreach( $players as $player )
+				{ // go through each player
+
+						$playerWeAreNotifyingId = $player['player_id']; // the ID of the player we're notifying
+
+						$letterOfPlayerWhoWasEliminated = $this->getLetterOrderFromPlayerIds($playerWeAreNotifyingId, $playerId); // the letter order from the player who we are sending this to's perspective
+
+						// notify this player
+						self::notifyPlayer( $playerWeAreNotifyingId, 'eliminatePlayer', clienttranslate( '${player_name} has been eliminated.' ), array(
+									 'letterOfPlayerWhoWasEliminated' => $letterOfPlayerWhoWasEliminated,
+									 'player_name' => $playerName
+						) );
+				}
 		}
 
 		function getOtherPlayers()
@@ -734,7 +1017,6 @@ class goodcopbadcop extends Table
 			$this->setLastCardPositionInvestigated($playerInvestigating, $cardPosition); // set player.last_card_position_investigated
 
 			$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
-
 			$this->gamestate->nextState( "askInvestigateReaction" ); // go to the state allowing the active player to choose a card to investigate
 		}
 
@@ -786,7 +1068,7 @@ class goodcopbadcop extends Table
 						$gunHolderLetter = $this->getLetterOrderFromPlayerIds($playerId, $gunHolderPlayer); // get the player letter of the gun holder from this player's perspective
 						$aimedAtLetter = $this->getLetterOrderFromPlayerIds($playerId, $aimedAtPlayer); // get the player letter of who it is aimed at from this player's perspective
 
-						$gunId = $this->getGunIdHeldByPlayer($gunHolderPlayer);
+						$gunId = $this->getGunIdHeldByPlayer($gunHolderPlayer); // get the GUN ID this player is holding
 						$degreesToRotate = $this->getGunRotationFromLetters($gunHolderLetter, $aimedAtLetter); // get how much the gun should be rotated based on player positions
 						$isPointingLeft = $this->getIsGunPointingLeft($gunHolderLetter, $aimedAtLetter); // check if the gun should be pointing left or right based on player positions and aim
 
@@ -800,6 +1082,25 @@ class goodcopbadcop extends Table
 
 				$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
 				$this->gamestate->nextState( "endTurnReaction" ); // allow for end of turn equipment reactions
+		}
+
+		function clickedShootButton()
+		{
+				self::checkAction( 'clickShootButton' ); // make sure we can take this action from this state
+
+				$gunHolderPlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+				$gunId = $this->getGunIdHeldByPlayer($gunHolderPlayerId); // get the gun ID this player is holding
+				$targetPlayerId = $this->getPlayerIdOfGunTarget($gunId); // get the player ID
+				$targetName = $this->getPlayerNameFromPlayerId($targetPlayerId); // convert the player ID in to a player NAME
+
+				// notify players that player A is attempting to shoot player B
+				self::notifyAllPlayers( "shootAttempt", clienttranslate( '${player_name} is attempting to shoot ${target_name}!' ), array(
+						'target_name' => $targetName,
+						'player_name' => self::getActivePlayerName()
+				) );
+
+				$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
+				$this->gamestate->nextState( "askShootReaction" ); // go to the state allowing the active player to choose a card to investigate
 		}
 
 		// All players have passed on using their equipment. This could be during any of the equipment reaction states.
@@ -922,14 +1223,14 @@ class goodcopbadcop extends Table
 						) );
 				}
 
-				if(true)
+				if($this->isPlayerHoldingGun($playerWhoseTurnItIs))
 				{ // this player IS holding a gun
-						$this->gamestate->nextState( "askAim" ); // begin a new player's turn
+						$this->gamestate->nextState( "askAim" ); // ask the player to aim their gun
 				}
 				else
 				{ // this player is NOT holding a gun
 						$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
-						$this->gamestate->nextState( "endTurnReaction" ); // begin a new player's turn
+						$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
 				}
 
 		}
@@ -939,34 +1240,66 @@ class goodcopbadcop extends Table
 				// make the active player the owner of the gun by updating the database
 				$playerWhoseTurnItIs = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 				$gun = $this->pickUpGun($playerWhoseTurnItIs);
-				$gunId = $gun['gun_id'];
 
 				// reveal the card of the player who armed
 				$integrityCardPositionRevealed = $this->getLastCardPositionRevealed($playerWhoseTurnItIs); // get the card position revealed
-				$this->revealCard($playerWhoseTurnItIs, $integrityCardPositionRevealed);
-
-				// notify all players to reveal the card for them and move the gun to the new owner
-				$cardTypeRevealed = $this->getCardType($playerWhoseTurnItIs, $integrityCardPositionRevealed); // crooked, honest, agent, kingpin
-				$players = $this->getPlayersDeets();
-				foreach( $players as $player )
-				{ // go through each player
-
-						$playerId = $player['player_id']; // the ID of the player we're notifying
-						$playerName = $player['player_name']; // the name of the player we're notifying
-						$letterOfPlayerWhoArmed = $this->getLetterOrderFromPlayerIds($playerId, $playerWhoseTurnItIs); // the letter order from the player who we are sending this to's perspective
-
-						// notify this player
-						self::notifyPlayer( $playerId, 'gunPickedUp', '', array(
-								 'playerArming' => $playerWhoseTurnItIs,
-								 'letterOfPlayerWhoArmed' => $letterOfPlayerWhoArmed,
-								 'integrityCardPositionRevealed' => $integrityCardPositionRevealed,
-								 'cardTypeRevealed' => $cardTypeRevealed,
-								 'gunId' => $gunId,
-								 'player_name' => $playerName
-						) );
-				}
+				$this->revealCard($playerWhoseTurnItIs, $integrityCardPositionRevealed); // reveal the integrity card from this player's perspective and notify all players
 
 				$this->gamestate->nextState( "askAim" ); // begin a new player's turn
+		}
+
+		// All equipment cards have been resolved in reaction to a SHOOT action so it's time to
+		// resolve the SHOOT action.
+		function executeActionShoot()
+		{
+				$playerWhoseTurnItIs = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+				$gunId = $this->getGunIdHeldByPlayer($playerWhoseTurnItIs); // get the GUN ID of the gun that was fired
+				$targetPlayerId = $this->getPlayerIdOfGunTarget($gunId); // get the PLAYER ID of the target of this gun
+
+				$shooterName = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
+				$targetName = $this->getPlayerNameFromPlayerId($targetPlayerId);
+				self::notifyAllPlayers( "executeGunShoot", clienttranslate( '${player_name} has shot ${target_name}.' ), array(
+						'target_name' => $targetName,
+						'player_name' => $shooterName
+				) );
+
+				$isTargetALeader = $this->isPlayerALeader($targetPlayerId); // see if the player shot was a LEADER
+				$isTargetWounded = $this->isPlayerWounded($targetPlayerId); // see if the player is WOUNDED
+
+				$this->setAllPlayerIntegrityCardsToRevealed($targetPlayerId); // reveal all of the target's cards in the database
+
+				// check for game over
+				if($isTargetALeader && $isTargetWounded)
+				{ // if you're shooting a wounded leader, the game ends
+						$this->gamestate->nextState( "endGame" );
+				}
+				else
+				{ // the game is not ending
+
+						if($isTargetALeader)
+						{ // a Leader is being shot for the first time
+
+								// give the target a wounded token
+								$this->woundPlayer($targetPlayerId); // wound the player
+
+								$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
+								$this->gamestate->nextState( "endTurnReaction" ); // we'll allow players to use equipment at the end of the turn
+						}
+						else
+						{ // a non-Leader is being shot
+
+								// set that player to eliminated state
+								$this->eliminatePlayer($targetPlayerId); // eliminate this player
+
+								$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
+								$this->gamestate->nextState( "endTurnReaction" ); // we'll allow players to use equipment at the end of the turn
+						}
+
+						$this->dropGun($gunId); // drop the gun in the database
+
+						// notify players about the shooting so they can see all that player's cards, update wounded tokens, and drop the gun (maybe notify them of which team that player is on and whether they are a Leader)
+
+				}
 		}
 
 //////////////////////////////////////////////////////////////////////////////

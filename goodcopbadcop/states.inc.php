@@ -68,8 +68,8 @@ $machinestates = array(
     		"description" => clienttranslate('${actplayer} is choosing their turn action.'),
     		"descriptionmyturn" => clienttranslate('${you} must choose which action you will take.'),
     		"type" => "activeplayer",
-    		"possibleactions" => array( "clickInvestigateButton", "clickArmButton" ),
-    		"transitions" => array( "investigateChooseCard" => 3, "armChooseCard" => 6 )
+    		"possibleactions" => array( "clickInvestigateButton", "clickArmButton", "clickShootButton" ),
+    		"transitions" => array( "investigateChooseCard" => 3, "armChooseCard" => 6, "askShootReaction" => 8 )
     ),
 
     3 => array(
@@ -84,7 +84,7 @@ $machinestates = array(
     4 => array(
     		"name" => "askInvestigateReaction",
     		"description" => clienttranslate('Other players are deciding if they will use an Equipment card.'),
-    		"descriptionmyturn" => clienttranslate('${you} may use Equipment in reaction to the investigation.'),
+    		"descriptionmyturn" => clienttranslate('${you} may use Equipment in reaction to the Investigate action.'),
     		"type" => "multipleactiveplayer",
     		"possibleactions" => array( "useEquipment", "clickPassOnUseEquipmentButton" ),
     		"transitions" => array( "useEquipment" => 2, "allPassedOnReactions" => 5 )
@@ -115,6 +115,24 @@ $machinestates = array(
         "action" => "executeActionArm",
         "updateGameProgression" => false,
         "transitions" => array( "askAim" => 27 )
+    ),
+
+    8 => array(
+    		"name" => "askShootReaction",
+    		"description" => clienttranslate('Other players are deciding if they will use an Equipment card.'),
+    		"descriptionmyturn" => clienttranslate('${you} may use Equipment in reaction to the Shoot action.'),
+    		"type" => "multipleactiveplayer",
+    		"possibleactions" => array( "useEquipment", "clickPassOnUseEquipmentButton" ),
+    		"transitions" => array( "useEquipment" => 2, "allPassedOnReactions" => 9 )
+    ),
+
+    9 => array(
+        "name" => "executeActionShoot",
+        "description" => "",
+        "type" => "game",
+        "action" => "executeActionShoot",
+        "updateGameProgression" => true,
+        "transitions" => array( "endTurnReaction" => 29, "endGame" => 99 )
     ),
 
     27 => array(

@@ -35,6 +35,8 @@
 ALTER TABLE `player` ADD `last_player_investigated` varchar(30) NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `last_card_position_investigated` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `last_card_position_revealed` INT UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `is_eliminated` INT UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `is_wounded` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `aiming_at` varchar(30) NOT NULL DEFAULT '';
 
 

@@ -257,8 +257,7 @@
             <div id="player_d_row_2" class="player_row_horizontal">
 
                 <div id="player_d_gun_holder" class="gun_holder_horizontal">
-                    <div class="card_placeholder_horizontal">
-                    </div>
+
                 </div>
 
 
@@ -375,6 +374,8 @@ var jstpl_some_game_item='<div class="my_game_item" id="my_game_item_${MY_ITEM_I
 var jstpl_integrityCard = '<div class="integrity_card component_rounding" id="player_${playerLetter}_integrity_card_${cardPosition}" style="background-position:-${x}px -${y}px">\
                         </div>';
 var jstpl_gun = '<div class="gun component_rounding" id="gun_${gunId}" style="background-position:-${x}px -${y}px">\
+                        </div>';
+var jstpl_wounded = '<div class="wounded_token" id="wounded_token_${cardType}">\
                         </div>';
 
 </script>

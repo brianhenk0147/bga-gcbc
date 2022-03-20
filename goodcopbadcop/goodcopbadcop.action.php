@@ -126,6 +126,15 @@ class action_goodcopbadcop extends APP_GameAction
         self::ajaxResponse( );
     }
 
+    public function clickedShootButton()
+    {
+        self::setAjaxMode();
+
+        $this->game->clickedShootButton(); // tell the server that the current player has decided to shoot
+
+        self::ajaxResponse( );
+    }
+
     public function passOnUseEquipment()
     {
         self::setAjaxMode();

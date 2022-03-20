@@ -74,8 +74,8 @@ function (dojo, declare) {
                 var playerLetter = card['player_position']; // a, b, c, etc.
                 var rotation = this.getIntegrityCardRotation(playerLetter); // 0, 90, -90
 
-                var cardPosition = 1;
-                var cardType = 'crooked';
+                var cardPosition = card['card_location_arg']; // 1, 2, 3
+                var cardType = card['card_type']; // kingpin, agent, honest, crooked
 
                 this.placeIntegrityCard(playerLetter, cardPosition, 'REVEALED', cardType, rotation); // put a revealed card face-up
             }
@@ -142,6 +142,20 @@ function (dojo, declare) {
                 console.log( "" );
 
                 this.rotateGun(gunId, rotation, isPointingLeft);
+            }
+
+            for( var i in gamedatas.woundedTokens )
+            {
+                var wound = gamedatas.woundedTokens[i];
+                var woundedPlayerLetterOrder = wound['woundedPlayerLetterOrder'];
+                var leaderCardPosition = wound['leaderCardPosition']; // 1, 2, 3
+                var cardType = wound['cardType']; // agent or kingpin
+
+                console.log( "Wounded Token:" );
+                console.log( wound );
+                console.log( "" );
+
+                this.placeWoundedToken(woundedPlayerLetterOrder, leaderCardPosition, cardType); // put the token on the integrity card
             }
 
             // First Param: css class to target
@@ -238,6 +252,7 @@ function (dojo, declare) {
                     case 'playerTurn':
                         this.addActionButton( 'button_investigate', _('Investigate'), 'onClickInvestigateButton' );
                         this.addActionButton( 'button_arm', _('Arm'), 'onClickArmButton' );
+                        this.addActionButton( 'button_shoot', _('Shoot'), 'onClickShootButton' );
                     break;
 
                     case 'chooseCardToInvestigate':
@@ -245,6 +260,7 @@ function (dojo, declare) {
                     break;
 
                     case 'askInvestigateReaction':
+                    case 'askShootReaction':
                         this.addActionButton( 'button_useEquipment', _('Use Equipment'), 'onClickPassOnUseEquipmentButton' );
                         this.addActionButton( 'button_passOnUseEquipment', _('Pass'), 'onClickPassOnUseEquipmentButton' );
                     break;
@@ -309,6 +325,7 @@ function (dojo, declare) {
             var cardTypeOffset = this.getCardTypeOffset(cardType); // get sprite Y value for this card type
 
             var cardHolderDiv = 'player_'+playerLetter+'_integrity_card_'+cardPosition+'_holder';
+            console.log( "Placing this integrity card in div " + cardHolderDiv );
             dojo.place(
                     this.format_block( 'jstpl_integrityCard', {
                         x: this.integrityCardWidth*(visibilityOffset),
@@ -419,6 +436,16 @@ function (dojo, declare) {
             dojo.style( gunDiv, 'backgroundPosition', '-' + gunSpriteX + 'px -' + gunSpriteY + 'px' ); // switch the gun to use the correct LEFT or RIGHT pointing image
 
             this.rotateTo( gunDiv, rotation ); // rotate the gun
+        },
+
+        placeWoundedToken: function(woundedPlayerLetterOrder, leaderCardPosition, cardType)
+        {
+            var htmlIdOfLeaderCard = 'player_' + woundedPlayerLetterOrder + '_integrity_card_' + leaderCardPosition;
+
+            dojo.place(
+                    this.format_block( 'jstpl_wounded', {
+                        cardType: cardType
+                    } ), htmlIdOfLeaderCard );
         },
 
 
@@ -613,6 +640,32 @@ function (dojo, declare) {
                          } );
         },
 
+        onClickShootButton: function( evt )
+        {
+            console.log( 'onClickShootButton' );
+
+            dojo.stopEvent( evt ); // Preventing default browser reaction
+
+            // Check that this action is possible (see "possibleactions" in states.inc.php)
+            if( ! this.checkAction( 'clickShootButton' ) )
+            {   return; }
+
+            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedShootButton.html", {
+                                                                    lock: true
+                                                                 },
+                         this, function( result ) {
+
+                            // What to do after the server call if it succeeded
+                            // (most of the time: nothing)
+
+                         }, function( is_error) {
+
+                            // What to do after the server call in anyway (success or failure)
+                            // (most of the time: nothing)
+
+                         } );
+        },
+
         onClickAimAtButton: function( evt )
         {
             console.log( 'onClickArmButton' );
@@ -728,6 +781,12 @@ function (dojo, declare) {
             dojo.subscribe( 'viewCard', this, "notif_viewCard" );
             dojo.subscribe( 'gunPickedUp', this, "notif_gunPickedUp" );
             dojo.subscribe( 'gunAimed', this, "notif_gunAimed" );
+            dojo.subscribe( 'shootAttempt', this, "notif_shootAttempt" );
+            dojo.subscribe( 'executeGunShoot', this, "notif_executeGunShoot" );
+            dojo.subscribe( 'dropGun', this, "notif_dropGun" );
+            dojo.subscribe( 'revealIntegrityCard', this, "notif_revealIntegrityCard" );
+            dojo.subscribe( 'eliminatePlayer', this, "notif_eliminatePlayer" );
+            dojo.subscribe( 'woundPlayer', this, "notif_woundPlayer" );
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -771,7 +830,7 @@ function (dojo, declare) {
             var htmlId = "player_" + playerLetter + "_integrity_card_" + cardPosition;
 
             // figure out how many cards to the left and down this is within the sprite based on the card type and its current state
-            visibilityOffset = this.getVisibilityOffset('REVEALED'); // get sprite X value for this card type
+            visibilityOffset = this.getVisibilityOffset('HIDDEN_SEEN'); // get sprite X value for this card type
             cardTypeOffset = this.getCardTypeOffset(cardType); // get sprite Y value for this card type
 
             // multiply by the card size to get the X and Y coordinate within the sprite
@@ -789,14 +848,11 @@ function (dojo, declare) {
 
             var gunId = notif.args.gunId;
             var playerArming = notif.args.playerArming;
-            var integrityCardPositionRevealed = notif.args.integrityCardPositionRevealed;
             var letterOfPlayerWhoArmed = notif.args.letterOfPlayerWhoArmed;
-            var cardTypeRevealed = notif.args.cardTypeRevealed;
 
             console.log( "Arm Info:" );
             console.log( "Gun ID: " + gunId );
             console.log( "Player ID: " + playerArming );
-            console.log( "Integrity Card Position: " + integrityCardPositionRevealed );
             console.log( "" );
 
             // move gun to the player who armed
@@ -804,25 +860,89 @@ function (dojo, declare) {
             var gunToMoveHtmlId = 'gun_' + gunId; // get the HTML ID of the gun we want to move
             var destinationHtmlId = 'player_' + letterOfPlayerWhoArmed + '_gun_holder';
 
+            this.slideToObject( gunToMoveHtmlId, destinationHtmlId, 1000, 750 ).play(); // slide it to its destination
+        },
+
+        notif_revealIntegrityCard: function( notif )
+        {
+            console.log("Entered notif_revealIntegrityCard.");
+
+            var integrityCardPositionRevealed = notif.args.card_position;
+            var cardTypeRevealed = notif.args.card_type;
+            var playerLetter = notif.args.player_letter;
+
+            console.log( "Reveal Info:" );
+            console.log( "Player Letter: " + playerLetter );
+            console.log( "Card Type: " + cardTypeRevealed );
+            console.log( "Integrity Card Position: " + integrityCardPositionRevealed );
+            console.log( "" );
+
             // update the integrity card for this player to the seen version of it... should be in format -${x}px -${y}px
             var visibilityOffset = this.getVisibilityOffset('REVEALED'); // get sprite X value for this card type
             var cardTypeOffset = this.getCardTypeOffset(cardTypeRevealed); // get sprite Y value for this card type
             var integrityCardSpriteX = this.integrityCardWidth*(visibilityOffset);
             var integrityCardSpriteY = this.integrityCardHeight*(cardTypeOffset);
-            var integrityCardRotation = this.getIntegrityCardRotation(letterOfPlayerWhoArmed); // 0, 90, -90
-            var integrityCardHtmlId = "player_" + letterOfPlayerWhoArmed + "_integrity_card_" + integrityCardPositionRevealed;
+            var integrityCardRotation = this.getIntegrityCardRotation(playerLetter); // 0, 90, -90
+            var integrityCardHtmlId = "player_" + playerLetter + "_integrity_card_" + integrityCardPositionRevealed;
             dojo.style( integrityCardHtmlId, 'backgroundPosition', '-' + integrityCardSpriteX + 'px -' + integrityCardSpriteY + 'px' ); // update the integrity card for this player to the seen version of it... should be in format -${x}px -${y}px
-
-            this.slideToObject( gunToMoveHtmlId, destinationHtmlId, 1000, 750 ).play(); // slide it to its destination
         },
 
         notif_gunAimed: function( notif )
         {
+            console.log("Entered notif_gunAimed.");
+
             var gunId = notif.args.gunId; // 1, 2, 3, 4
             var degreesToRotate = notif.args.degreesToRotate; // 0, 85, -15, etc.
             var isPointingLeft = notif.args.isPointingLeft; // get how many cards over on the sprite this is (whether it is pointing left or right)
 
             this.rotateGun(gunId, degreesToRotate, isPointingLeft); // switch to the left or right pointing image and rotate the gun to aim at the correct player
         },
+
+        notif_shootAttempt: function ( notif )
+        {
+            // we may not need to do anything here
+        },
+
+        notif_executeGunShoot: function( notif )
+        {
+            // we may not need to do anything here
+        },
+
+        notif_dropGun: function( notif )
+        {
+            console.log("Entered notif_dropGun.");
+
+            var gunId = notif.args.gunId; // 1, 2, 3, 4
+
+            // send the gun back to the middle
+            var gunToMoveHtmlId = 'gun_' + gunId; // get the HTML ID of the gun we want to move
+            var centerHolderHtmlId = 'gun_' + gunId + '_holder'; // the HTML ID of where we want to move the gun
+            this.slideToObject( gunToMoveHtmlId, centerHolderHtmlId, 1000, 750 ).play(); // slide it to its destination
+
+            $(gunToMoveHtmlId).style.removeProperty('transform'); // rotate the gun to 0
+        },
+
+        notif_eliminatePlayer: function( notif )
+        {
+            console.log("Entered notif_eliminatePlayer.");
+
+            var letterOfPlayerWhoWasEliminated = notif.args.letterOfPlayerWhoWasEliminated;
+            var htmlIdOfPlayerEliminatedArea = 'player_' + letterOfPlayerWhoWasEliminated + '_area';
+
+            var classToAdd = 'eliminated_player_area';
+            dojo.addClass( htmlIdOfPlayerEliminatedArea, classToAdd ); // add style to show this player is eliminated
+        },
+
+        notif_woundPlayer: function( notif )
+        {
+            console.log("Entered notif_woundPlayer.");
+
+            var positionOfLeaderCard = notif.args.leader_card_position;
+            var letterOfLeaderHolder = notif.args.letter_of_leader_holder;
+            var cardType = notif.args.card_type;
+
+            this.placeWoundedToken(letterOfLeaderHolder, positionOfLeaderCard, cardType); // put the token on the board
+        },
+
    });
 });
