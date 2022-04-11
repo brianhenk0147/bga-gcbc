@@ -104,7 +104,10 @@
 }
 
 .first_equipment_active_holder_horizontal {
-    display: inline;
+    display: inline-block;
+
+    width: 70px;
+    height: 50px;
 }
 
 .gun_holder_vertical {
@@ -127,7 +130,10 @@
 }
 
 .other_equipment_active_holder_horizontal {
-    display: inline;
+    display: inline-block;
+
+    width: 70px;
+    height: 50px;
 }
 
 .integrity_card_holder_vertical {
@@ -152,7 +158,10 @@
 }
 
 .equipment_hand_holder_horizontal {
-    display: inline;
+  display: inline-block;
+
+  width: 70px;
+  height: 50px;
 }
 
 .reference_card_holder_vertical {
@@ -160,7 +169,10 @@
 }
 
 .reference_card_holder_horizontal {
-    display: inline;
+  display: inline-block;
+
+  width: 70px;
+  height: 50px;
 }
 
 .corner_box {
@@ -171,7 +183,9 @@
 }
 
 .placeholder_horizontal {
-  display: inline;
+  display: inline-block;
+  width: 70px;
+  height: 50px;
 }
 
 .card_placeholder_horizontal {
@@ -305,4 +319,44 @@
     -o-box-shadow: 3px 3px 3px 0px rgba(0,0,0,0.4);
     box-shadow: 3px 3px 3px 0px rgba(0,0,0,0.4);
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
+}
+
+/* EQUIPMENT CARDS */
+.equipment_card_back
+{
+    width: 50px;
+    height: 70px;
+    background-image: url('img/equipment_card_sprite_50w.jpg');
+    background-position:-0px -0px;
+}
+
+.active_equipment_card
+{
+    display: inline-block;
+    position: absolute; /* needed for a thing that slides */
+    width: 50px;
+    height: 70px;
+    background-image: url('img/equipment_card_sprite_50w.jpg');
+    background-position:-0px -0px;
+}
+
+.large_equipment
+{
+    background-image: url('img/equipment_card_sprite_400w.jpg');
+    width: 400px;
+    height: 560px;
+
+    border-radius: 10px;
+    border: 1px black solid;
+}
+
+#active_equipment_center_holder
+{
+    float:none;
+    vertical-align: baseline;
+}
+
+.opponent_equipment_card_horizontal
+{
+    display: inline-block;
 }

@@ -55,7 +55,7 @@
                 </div>
             </div>
             <div id="player_e_row_3" class="player_row_vertical">
-                <div id="player_e_first_equipment_active_holder" class="first_equipment_active_holder_vertical">aceq
+                <div id="player_e_first_equipment_active_holder" class="first_equipment_active_holder_vertical">
                 </div>
                 <div id="player_e_gun_holder" class="gun_holder_vertical">
                 </div>
@@ -82,7 +82,7 @@
                 </div>
             </div>
             <div id="player_c_row_3" class="player_row_vertical">
-                <div id="player_c_first_equipment_active_holder" class="first_equipment_active_holder_vertical">aceq
+                <div id="player_c_first_equipment_active_holder" class="first_equipment_active_holder_vertical">
                 </div>
                 <div id="player_c_gun_holder" class="gun_holder_vertical">
                 </div>
@@ -103,8 +103,7 @@
         <div id="player_b_area" class="player_holder_horizontal">
             <div id="player_b_row_1" class="player_row_horizontal">
                 <div id="player_b_reference_card_holder" class="reference_card_holder_horizontal">
-                  <div class="card_placeholder_horizontal">
-                  </div>
+
                 </div>
                 <div id="player_b_integrity_card_1_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
                 </div>
@@ -115,8 +114,7 @@
             </div>
             <div id="player_b_row_2" class="player_row_horizontal">
                 <div id="player_b_equipment_hand_holder" class="equipment_hand_holder_horizontal">
-                  <div class="card_placeholder_horizontal">
-                  </div>
+
                 </div>
 
                 <div id="player_b_integrity_card_2_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
@@ -128,8 +126,7 @@
             </div>
             <div id="player_b_row_3" class="player_row_horizontal">
                 <div class="placeholder_horizontal">
-                  <div class="card_placeholder_horizontal">
-                  </div>
+
                 </div>
                 <div id="player_b_integrity_card_3_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
                 </div>
@@ -140,7 +137,8 @@
             </div>
         </div>
         <div id="center_area_top">
-
+            <div id="active_equipment_center_holder">
+            </div>
         </div>
         <div id="player_f_area" class="player_holder_horizontal">
             <div id="player_f_row_1" class="player_row_horizontal">
@@ -241,16 +239,14 @@
         <div id="player_d_area" class="player_holder_horizontal">
             <div id="player_d_row_1" class="player_row_horizontal">
                 <div id="player_d_other_equipment_active_holder" class="other_equipment_active_holder_horizontal">
-                    <div class="card_placeholder_horizontal">
-                    </div>
+                    
                 </div>
 
                 <div id="player_d_integrity_card_1_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
                 </div>
 
                 <div id="player_d_reference_card_holder" class="reference_card_holder_horizontal">
-                    <div class="card_placeholder_horizontal">
-                    </div>
+
                 </div>
 
             </div>
@@ -265,15 +261,13 @@
                 </div>
 
                 <div id="player_d_equipment_hand_holder" class="equipment_hand_holder_horizontal">
-                    <div class="card_placeholder_horizontal">
-                    </div>
+
                 </div>
 
             </div>
             <div id="player_d_row_3" class="player_row_horizontal">
                 <div id="player_d_first_equipment_active_holder" class="first_equipment_active_holder_horizontal">
-                    <div class="card_placeholder_horizontal">
-                    </div>
+
                 </div>
                 <div id="player_d_integrity_card_3_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
                 </div>
@@ -298,7 +292,7 @@
         </div>
         <div id="player_a_area" class="player_holder_vertical">
             <div id="player_a_row_1" class="player_row_vertical">
-                <div id="player_a_first_equipment_active_holder" class="first_equipment_active_holder_vertical">aceq
+                <div id="player_a_first_equipment_active_holder" class="first_equipment_active_holder_vertical">
                 </div>
                 <div id="player_a_gun_holder" class="gun_holder_vertical">
                 </div>
@@ -325,7 +319,7 @@
 
         <div id="player_h_area" class="player_holder_vertical">
             <div id="player_h_row_1" class="player_row_vertical">
-                <div id="player_h_first_equipment_active_holder" class="first_equipment_active_holder_vertical">aceq
+                <div id="player_h_first_equipment_active_holder" class="first_equipment_active_holder_vertical">
                 </div>
                 <div id="player_h_gun_holder" class="gun_holder_vertical">
                 </div>
@@ -376,6 +370,12 @@ var jstpl_integrityCard = '<div class="integrity_card component_rounding" id="pl
 var jstpl_gun = '<div class="gun component_rounding" id="gun_${gunId}" style="background-position:-${x}px -${y}px">\
                         </div>';
 var jstpl_wounded = '<div class="wounded_token" id="wounded_token_${cardType}">\
+                        </div>';
+var jstpl_equipmentCardBack = '<div class="equipment_card_back component_rounding">\
+                        </div>';
+var jstpl_largeEquipment = '<div class="large_equipment component_rounding" style="background-position:-${x}px -${y}px">\
+                        </div>';
+var jstpl_activeEquipment = '<div class="active_equipment_card component_rounding" id="player_${playerLetter}_active_equipment_${equipmentId}" style="background-position:-${x}px -${y}px">\
                         </div>';
 
 </script>

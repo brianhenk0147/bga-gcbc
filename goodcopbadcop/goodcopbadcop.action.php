@@ -114,14 +114,15 @@ class action_goodcopbadcop extends APP_GameAction
         self::ajaxResponse( );
     }
 
-    public function clickedAimAtPlayerButton()
+    public function clickedPlayer()
     {
         self::setAjaxMode();
 
         // Retrieve arguments
-        $aimAtPlayerPosition = self::getArg( "letterAim", AT_alphanum, true ); // a, b, c, etc.
+        $playerPosition = self::getArg( "letterAim", AT_alphanum, true ); // a, b, c, etc.
+        $playerId = self::getArg( "player", AT_alphanum, true ); // player ID
 
-        $this->game->clickedAimAtPlayerPosition( $aimAtPlayerPosition );
+        $this->game->clickedPlayer( $playerPosition, $playerId );
 
         self::ajaxResponse( );
     }
@@ -131,6 +132,36 @@ class action_goodcopbadcop extends APP_GameAction
         self::setAjaxMode();
 
         $this->game->clickedShootButton(); // tell the server that the current player has decided to shoot
+
+        self::ajaxResponse( );
+    }
+
+    public function clickedEquipButton()
+    {
+        self::setAjaxMode();
+
+        $this->game->clickedEquipButton(); // tell the server that the current player has decided to draw an equipment card
+
+        self::ajaxResponse( );
+    }
+
+    public function clickedUseEquipmentButton()
+    {
+        self::setAjaxMode();
+
+        $this->game->clickedUseEquipmentButton(); // tell the server that the current player has indicated that they want to use an equipment card
+
+        self::ajaxResponse( );
+    }
+
+    public function clickedMyEquipmentCard()
+    {
+        self::setAjaxMode();
+
+        // Retrieve arguments
+        $equipmentId = self::getArg( "equipmentId", AT_posint, true ); // a, b, c, etc.
+
+        $this->game->clickedMyEquipmentCard($equipmentId); // tell the server that the current player has decided to click on their equipment card (usually to use it)
 
         self::ajaxResponse( );
     }

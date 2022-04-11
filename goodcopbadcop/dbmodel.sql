@@ -49,10 +49,29 @@ CREATE TABLE IF NOT EXISTS `integrityCards` (
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
+CREATE TABLE IF NOT EXISTS `equipmentCards` (
+  `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `card_type` varchar(16) NOT NULL,
+  `card_type_arg` int(11) NOT NULL,
+  `card_location` varchar(30) NOT NULL,
+  `card_location_arg` int(11) NOT NULL,
+  `equipment_owner` int(11) NOT NULL,
+  `equipment_name` varchar(60) NOT NULL DEFAULT '',
+  `equipment_played_in_state` varchar(60) NOT NULL DEFAULT '',
+  `equipment_played_on_turn` varchar(30) NOT NULL DEFAULT '',
+  `equipment_is_active` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `equipment_target_1` varchar(30) NOT NULL DEFAULT '',
+  `equipment_target_2` varchar(30) NOT NULL DEFAULT '',
+  `player_target_1` varchar(30) NOT NULL DEFAULT '',
+  `player_target_2` varchar(30) NOT NULL DEFAULT '',
+  PRIMARY KEY (`card_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
 CREATE TABLE IF NOT EXISTS `guns` (
   `gun_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `gun_held_by` varchar(30) NOT NULL DEFAULT '',
   `gun_aimed_at` varchar(30) NOT NULL DEFAULT '',
+  `gun_state` varchar(30) NOT NULL DEFAULT 'center',
   PRIMARY KEY (`gun_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
