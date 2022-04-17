@@ -64,6 +64,8 @@ CREATE TABLE IF NOT EXISTS `equipmentCards` (
   `equipment_target_2` varchar(30) NOT NULL DEFAULT '',
   `player_target_1` varchar(30) NOT NULL DEFAULT '',
   `player_target_2` varchar(30) NOT NULL DEFAULT '',
+  `gun_target_1` varchar(30) NOT NULL DEFAULT '',
+  `gun_target_2` varchar(30) NOT NULL DEFAULT '',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -72,6 +74,8 @@ CREATE TABLE IF NOT EXISTS `guns` (
   `gun_held_by` varchar(30) NOT NULL DEFAULT '',
   `gun_aimed_at` varchar(30) NOT NULL DEFAULT '',
   `gun_state` varchar(30) NOT NULL DEFAULT 'center',
+  `gun_can_shoot` smallint(5) unsigned NOT NULL DEFAULT 1,
+  `gun_acquired_in_state` varchar(60) NOT NULL DEFAULT '',
   PRIMARY KEY (`gun_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 

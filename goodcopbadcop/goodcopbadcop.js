@@ -338,6 +338,7 @@ function (dojo, declare) {
                         }
                     break;
 
+                    case 'chooseEquipmentCardInAnyHand':
                     case 'chooseCardToInvestigate':
                         this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton' );
                     break;
@@ -353,6 +354,7 @@ function (dojo, declare) {
                     break;
 
                     case 'choosePlayer':
+                    case 'askAimOutOfTurn':
                     case 'askAim':
                         //this.addActionButton( 'button_endTurn', _('End Turn'), 'onClickEndTurnButton' );
 
@@ -814,6 +816,16 @@ function (dojo, declare) {
                     } ), htmlIdOfLeaderCard );
         },
 
+        removeWoundedToken: function(woundedCardId)
+        {
+            var woundedTokenHtml = 'wounded_token_' + woundedCardId;
+            var destination = 'gun_2_holder';
+
+            console.log( "slide " + woundedTokenHtml + " to " + destination );
+
+            this.slideToObjectAndDestroy( woundedTokenHtml, destination, 1000, 750 ); // slide it to its destination
+        },
+
         drawEquipmentCard: function(equipmentCardId, collectorNumber)
         {
             console.log( "Drawing equipment with equipment ID " + equipmentCardId + " and collector number " + collectorNumber + "." );
@@ -1032,8 +1044,8 @@ function (dojo, declare) {
                 for( var i in selectedCards )
                 { // go through selected cards
                     equipmentId = selectedCards[i].id;
-                    var htmlIdOfCard = 'myhand_item_' + equipmentId;
-                    console.log("selecting htmlIdOfCard:"+htmlIdOfCard);
+                    //var htmlIdOfCard = 'myhand_item_' + equipmentId;
+                    //console.log("selecting htmlIdOfCard:"+htmlIdOfCard);
                     //dojo.addClass( htmlIdOfCard, 'cardSelected' ); // give this card a new CSS class
 
                     //dojo.stopEvent( evt ); // Preventing default browser reaction
@@ -1345,6 +1357,7 @@ function (dojo, declare) {
             dojo.subscribe( 'revealIntegrityCard', this, "notif_revealIntegrityCard" );
             dojo.subscribe( 'eliminatePlayer', this, "notif_eliminatePlayer" );
             dojo.subscribe( 'woundPlayer', this, "notif_woundPlayer" );
+            dojo.subscribe( 'removeWoundedToken', this, "notif_removeWoundedToken" );
             dojo.subscribe( 'iDrawEquipmentCards', this, "notif_iDrawEquipmentCards" );
             dojo.subscribe( 'otherPlayerDrawsEquipmentCards', this, "notif_otherPlayerDrawsEquipmentCards" );
             dojo.subscribe( 'discardEquipmentCard', this, "notif_discardEquipmentCard" );
@@ -1507,6 +1520,15 @@ function (dojo, declare) {
             var cardType = notif.args.card_type;
 
             this.placeWoundedToken(letterOfLeaderHolder, positionOfLeaderCard, cardType); // put the token on the board
+        },
+
+        notif_removeWoundedToken: function( notif )
+        {
+            console.log("Entered notif_removeWoundedToken.");
+
+            var woundedCardId = notif.args.woundedCardId; // who is wounded... kingpin or agent
+
+            this.removeWoundedToken(woundedCardId); // put the token on the board
         },
 
         notif_iDrawEquipmentCards: function( notif )
