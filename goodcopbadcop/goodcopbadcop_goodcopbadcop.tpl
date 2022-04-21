@@ -43,7 +43,7 @@
                 <div id="player_e_reference_card_holder" class="reference_card_holder_vertical">ref
                 </div>
 
-                <div id="player_e_equipment_hand_holder" class="equipment_hand_holder_vertical">eqha
+                <div id="player_e_equipment_hand_holder" class="equipment_hand_holder_vertical">
                 </div>
             </div>
             <div id="player_e_row_2" class="player_row_vertical">
@@ -70,7 +70,7 @@
                 <div id="player_c_reference_card_holder" class="reference_card_holder_vertical">ref
                 </div>
 
-                <div id="player_c_equipment_hand_holder" class="equipment_hand_holder_vertical">eqha
+                <div id="player_c_equipment_hand_holder" class="equipment_hand_holder_vertical">
                 </div>
             </div>
             <div id="player_c_row_2" class="player_row_vertical">
@@ -239,7 +239,7 @@
         <div id="player_d_area" class="player_holder_horizontal">
             <div id="player_d_row_1" class="player_row_horizontal">
                 <div id="player_d_other_equipment_active_holder" class="other_equipment_active_holder_horizontal">
-                    
+
                 </div>
 
                 <div id="player_d_integrity_card_1_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot">
@@ -312,7 +312,7 @@
             <div id="player_a_row_3" class="player_row_vertical">
                 <div id="player_a_reference_card_holder" class="reference_card_holder_vertical">ref
                 </div>
-                <div id="player_a_equipment_hand_holder" class="equipment_hand_holder_vertical">eqha
+                <div id="player_a_equipment_hand_holder" class="equipment_hand_holder_vertical">
                 </div>
             </div>
         </div>
@@ -338,7 +338,7 @@
             <div id="player_h_row_3" class="player_row_vertical">
                 <div id="player_h_reference_card_holder" class="reference_card_holder_vertical">ref
                 </div>
-                <div id="player_h_equipment_hand_holder" class="equipment_hand_holder_vertical">eqha
+                <div id="player_h_equipment_hand_holder" class="equipment_hand_holder_vertical">
                 </div>
             </div>
         </div>
@@ -371,11 +371,16 @@ var jstpl_gun = '<div class="gun component_rounding" id="gun_${gunId}" style="ba
                         </div>';
 var jstpl_wounded = '<div class="wounded_token" id="wounded_token_${cardType}">\
                         </div>';
-var jstpl_equipmentCardBack = '<div class="equipment_card_back component_rounding">\
-                        </div>';
+
 var jstpl_largeEquipment = '<div class="large_equipment component_rounding" style="background-position:-${x}px -${y}px">\
                         </div>';
 var jstpl_activeEquipment = '<div class="active_equipment_card component_rounding" id="player_${playerLetter}_active_equipment_${equipmentId}" style="background-position:-${x}px -${y}px">\
+                        </div>';
+var jstpl_equipmentInHand = '<div class="hand_equipment_card component_rounding" id="player_${playerLetter}_hand_equipment_${equipmentId}" style="background-position:-${x}px -${y}px">\
+                        </div>';
+var jstpl_equipmentCardBack = '<div class="equipment_card_back component_rounding">\
+                        </div>';
+var jstpl_movingEquipmentCard = '<div class="moving_equipment_card_back component_rounding" id="moving_equipment_card" style="background-position:-${x}px -${y}px">\
                         </div>';
 
 </script>

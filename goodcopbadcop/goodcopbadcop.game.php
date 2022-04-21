@@ -159,6 +159,8 @@ class goodcopbadcop extends Table
 				$result['sharedActiveEquimentCards'] = $this->getSharedActiveEquipmentCards(); // get all the active equipment cards in the center
 				$result['playerActiveEquipmentCards'] = $this->getPlayerActiveEquipmentCards($currentPlayerId); // get all the active equipment cards targeting a specific player
 
+				$result['eliminatedPlayers'] = $this->getEliminatedPlayers($currentPlayerId);
+
         return $result;
     }
 
@@ -178,9 +180,11 @@ class goodcopbadcop extends Table
 
 				$integrityCards = $this->getAllIntegrityCards(); // get all the integrity cards in this game
 				$totalIntegrityCards = count($integrityCards); // get total number of integrity cards in this game
+
 				$players = $this->getPlayersDeets(); // get all the players in the game
 				$totalPlayers = count($players); // count the players in the game
-				$maxProgressionPerCard = 1 / $totalIntegrityCards; // the max number of progression you can get from this card is 1/total_integrity_cards
+
+				$maxProgressionPerCard = 100*(1 / $totalIntegrityCards); // the max number of progression you can get from this card is 1/total_integrity_cards
 
 				// go through each card and check the percentage of players who have seen that card
 				foreach( $integrityCards as $integrityCard )
@@ -202,10 +206,14 @@ class goodcopbadcop extends Table
 						$gameProgression += $progressionThisCardAdds; // add this card to our running total
 				}
 
-				// card_progression = max_progression * percentage_seen_card
-				// add up all card_progression to get game progression
+				if($gameProgression > 90)
+				{ // most of the cards are revealed
+						$numberOfUnwoundedLeaders = $this->countUnwoundedLeaders(); // count how many leaders are not yet wounded (1 or 2)
+						$gameProgression -= $numberOfUnwoundedLeaders; // we could be at 100% if all cards are revealed so let's subtract 1 for each wounded leader there is
+				}
 
         return $gameProgression;
+
     }
 
 
@@ -419,19 +427,19 @@ class goodcopbadcop extends Table
 		{
 				if($this->getPlayerRole($playerId) == 'honest_agent')
 				{ // honest leader
-						self::notifyPlayer( $playerId, 'newGameMessage', 'You are secretly on the LEADER of the HONEST Team. Your mission is to find and eliminate the KINGPIN while keeping your identity hidden as long as possible.', array() );
+						self::notifyPlayer( $playerId, 'newGameMessage', 'You are secretly the LEADER of the HONEST Team. Your mission is to find and eliminate the KINGPIN while keeping your identity hidden as long as possible.', array() );
 				}
 				elseif($this->getPlayerRole($playerId) == 'honest_cop')
 				{ // honest cop
-						self::notifyPlayer( $playerId, 'newGameMessage', 'You are secretly on the HONEST Team. Your mission is to find and eliminate the KINGPIN while helping your leader (the Agent) stay hidden and unharmed.', array() );
+						self::notifyPlayer( $playerId, 'newGameMessage', 'You are secretly on the HONEST Team. Your mission is to find and eliminate the KINGPIN while helping your leader (the AGENT) stay hidden and unharmed.', array() );
 				}
 				elseif($this->getPlayerRole($playerId) == 'crooked_kingpin')
 				{ // crooked leader
-						self::notifyPlayer( $playerId, 'newGameMessage', 'You are secretly on the LEADER of the CROOKED Team. Your mission is to find and eliminate the AGENT while keeping your identity hidden as long as possible.', array() );
+						self::notifyPlayer( $playerId, 'newGameMessage', 'You are secretly the LEADER of the CROOKED Team. Your mission is to find and eliminate the AGENT while keeping your identity hidden as long as possible.', array() );
 				}
 				else
 				{ // crooked cop
-						self::notifyPlayer( $playerId, 'newGameMessage', 'You are secretly on the CROOKED Team. Your mission is to find and eliminate the AGENT while helping your leader (the Kingpin) stay hidden and unharmed.', array() );
+						self::notifyPlayer( $playerId, 'newGameMessage', 'You are secretly on the CROOKED Team. Your mission is to find and eliminate the AGENT while helping your leader (the KINGPIN) stay hidden and unharmed.', array() );
 				}
 		}
 
@@ -828,6 +836,29 @@ class goodcopbadcop extends Table
 				return $isLeftArray[$gunHolderLetter][$aimedAtLetter];
 		}
 
+		function getEliminatedPlayers($askingPlayer)
+		{
+				$eliminatedPlayers = array();
+
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				foreach( $players as $player )
+				{ // go through each player
+
+						$playerId = $player['player_id']; // the ID of this player
+						$isEliminated = $player['player_eliminated']; // 1 if player is wounded
+
+						if($isEliminated == 1)
+						{ // this player is eliminated
+
+								$eliminatedPlayerLetterOrder = $this->getLetterOrderFromPlayerIds($askingPlayer, $playerId); // find the letter of the wounded player from the player asking's perspective
+
+								$eliminatedPlayers[$playerId] = array( 'playerId' => $playerId, 'playerLetter' => $eliminatedPlayerLetterOrder); // save the eliminated player info to the 2D array we will be returning
+						}
+				}
+
+				return $eliminatedPlayers;
+		}
+
 		// The ASKING PLAYER wants to know where WOUNDED TOKENS should be placed.
 		function getWoundedTokensForPlayer($askingPlayer)
 		{
@@ -1011,10 +1042,29 @@ class goodcopbadcop extends Table
 				}
 		}
 
+		function countUnwoundedLeaders()
+		{
+				$countUnwoundedLeaders = 0;
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				foreach( $players as $player )
+				{ // go through each player
+						$playerId = $player['player_id']; // the ID of the player we're notifying
+						if($this->isPlayerALeader($playerId))
+						{ // this is a leader
+								if(!$this->isPlayerWounded($playerId))
+								{ // they are NOT wounded
+										$countUnwoundedLeaders++;
+								}
+						}
+				}
+
+				return $countUnwoundedLeaders;
+		}
+
 		// Returns true if the player is ELIMINATED, false otherwise.
 		function isPlayerEliminated($playerId)
 		{
-				$sql = "SELECT is_eliminated FROM `player` ";
+				$sql = "SELECT player_eliminated FROM `player` ";
 				$sql .= "WHERE player_id=$playerId ";
 
 				$isEliminatedInt = self::getUniqueValueFromDb($sql);
@@ -1319,7 +1369,7 @@ class goodcopbadcop extends Table
 				}
 		}
 
-		function makePlayerEquipmentActive($cardId)
+		function makePlayerEquipmentActive($cardId, $targetPlayer)
 		{
 				$sqlUpdate = "UPDATE equipmentCards SET ";
 				$sqlUpdate .= "equipment_is_active=1,card_location='active' WHERE ";
@@ -1330,12 +1380,7 @@ class goodcopbadcop extends Table
 
 				self::DbQuery( $sqlUpdate );
 
-				$target1 = $this->getPlayerTarget1($cardId);
-				if($target1 == '')
-				{
-						throw new BgaUserException( self::_("null check $cardId") );
-				}
-				$targetPlayerName = $this->getPlayerNameFromPlayerId($target1);
+				$targetPlayerName = $this->getPlayerNameFromPlayerId($targetPlayer);
 
 				$collectorNumber = $this->getCollectorNumberFromId($cardId);
 				$equipmentName = $this->getEquipmentName($cardId); // get the name of this equipment
@@ -1347,7 +1392,7 @@ class goodcopbadcop extends Table
 				{ // go through each player
 						$playerId = $player['player_id']; // the ID of the player we're notifying
 						$playerLetterPlaying = $this->getLetterOrderFromPlayerIds($playerId, $equipmentOwner); // the letter order from the player who we are sending this to's perspective
-						$playerLetterReceiving = $this->getLetterOrderFromPlayerIds($playerId, $target1); // the letter order from the player who we are sending this to's perspective
+						$playerLetterReceiving = $this->getLetterOrderFromPlayerIds($playerId, $targetPlayer); // the letter order from the player who we are sending this to's perspective
 
 						self::notifyPlayer( $playerId, 'activatePlayerEquipment', clienttranslate( '${player_name} has activated ${equipment_name} targeting ${target_player_name}.' ), array(
 												 'player_name' => $equipmentOwnerPlayerName,
@@ -1484,8 +1529,16 @@ class goodcopbadcop extends Table
 								}
 
 						break;
+						case 4: // evidence bag
+						$ownerOfEvidenceBag = $this->getEquipmentCardOwner($equipmentCardId);
+						if($playerId == $ownerOfEvidenceBag)
+						{ // they are trying to give an equipment card to themselves
+								throw new BgaUserException( self::_("You must choose a player other than yourself.") );
+						}
+						return true;
+						break;
 						default:
-							return false;
+							throw new feException( "Unrecognized collector number:$collectorNumber");
 							break;
 				}
 		}
@@ -1806,8 +1859,8 @@ class goodcopbadcop extends Table
 								}
 								else
 								{ // the player or equipment has not yet been targeted
-										$equipmentCardTarget = $this->getEquipmentTarget1($equipmentCardId);
-										$playerTarget = $this->getPlayerTarget1($equipmentCardId);
+										$equipmentCardTarget = $this->getEquipmentTarget1($equipmentId);
+										$playerTarget = $this->getPlayerTarget1($equipmentId);
 										if( is_null($equipmentCardTarget) || $equipmentCardTarget == '')
 										{ // we don't have the equipment card target
 												$this->gamestate->nextState( "chooseEquipmentCardInAnyHand" );
@@ -2037,6 +2090,13 @@ class goodcopbadcop extends Table
 				return null; // return null if you can't find a player getting shot (which shouldn't happen)
 		}
 
+		function getPlayersOverEquipmentHandLimit()
+		{
+				$sql = "SELECT player_id, COUNT(player_id) equipmentCardsInHand FROM player p JOIN equipmentCards e ON p.player_id=e.equipment_owner GROUP BY player_id HAVING COUNT(player_id)>1";
+
+				return self::getObjectListFromDB( $sql );
+		}
+
 		// Get the PLAYER ID of the player HOLDING the GUN.
 		function getPlayerIdOfGunHolder($gunId)
 		{
@@ -2098,6 +2158,26 @@ class goodcopbadcop extends Table
 				$sqlUpdate .= "gun_held_by=$gunHolderPlayer";
 
 				self::DbQuery( $sqlUpdate );
+
+				$gunId = $this->getGunIdHeldByPlayer($gunHolderPlayer); // get the GUN ID this player is holding
+				$players = $this->getPlayersDeets(); // get list of players
+				foreach( $players as $player )
+				{ // go through each player
+						$playerId = $player['player_id'];
+
+						$gunHolderLetter = $this->getLetterOrderFromPlayerIds($playerId, $gunHolderPlayer); // get the player letter of the gun holder from this player's perspective
+						$aimedAtLetter = $this->getLetterOrderFromPlayerIds($playerId, $aimedAtPlayer); // get the player letter of who it is aimed at from this player's perspective
+
+						$degreesToRotate = $this->getGunRotationFromLetters($gunHolderLetter, $aimedAtLetter); // get how much the gun should be rotated based on player positions
+						$isPointingLeft = $this->getIsGunPointingLeft($gunHolderLetter, $aimedAtLetter); // check if the gun should be pointing left or right based on player positions and aim
+
+						// notify players individually of which gun is aimed at which player (a aimed at b)
+						self::notifyPlayer( $playerId, 'gunAimed', '', array(
+												 'degreesToRotate' => $degreesToRotate,
+												 'gunId' => $gunId,
+												 'isPointingLeft' => $isPointingLeft
+						) );
+				}
 		}
 
 		function investigateCard($cardId, $playerInvestigating)
@@ -2134,9 +2214,11 @@ class goodcopbadcop extends Table
 
 		function drawEquipmentCard($playerDrawingId, $numberToDraw)
 		{
+				$cardId = 0;
 				$cards = $this->equipmentCards->pickCards( $numberToDraw, 'deck', $playerDrawingId ); // draw a card
 				foreach($cards as $card)
 				{
+						$cardId = $card['id'];
 						$this->setEquipmentCardOwner($card['id'], $playerDrawingId);
 				}
 				$drawingPlayerName = $this->getPlayerNameFromPlayerId($playerDrawingId); // name of the player drawing
@@ -2156,17 +2238,15 @@ class goodcopbadcop extends Table
 						else
 						{ // tell others the number the other player drew
 								$drawingPlayerLetter = $this->getLetterOrderFromPlayerIds($playerId, $playerDrawingId); // the letter order from the player who we are sending this to's perspective
-								$cardIds = $this->getEquipmentCardIdsForPlayer($playerDrawingId);
-								foreach($cardIds as $id)
-								{
+
 										self::notifyPlayer( $playerId, 'otherPlayerDrawsEquipmentCards', clienttranslate( '${player_name} draws Equipment.' ), array(
 												 'player_name' => $drawingPlayerName,
 												 'drawing_player_id' => $playerDrawingId,
 												 'drawing_player_letter' => $drawingPlayerLetter,
 												 'number_drawn' => $numberToDraw,
-												 'card_ids_drawn' => $id
+												 'card_ids_drawn' => $cardId
 										) );
-								}
+
 						}
 				}
 
@@ -2233,6 +2313,34 @@ class goodcopbadcop extends Table
 				) );
 		}
 
+		function giveEquipmentFromOnePlayerToAnother($equipmentIdTargeted, $playerIdGivingEquipment, $playerIdGettingEquipment)
+		{
+				$this->setEquipmentCardOwner($equipmentIdTargeted, $playerIdGettingEquipment); // change the owner of the card in the database
+				$giverName = $this->getPlayerNameFromPlayerId($playerIdGivingEquipment);
+				$receiverName = $this->getPlayerNameFromPlayerId($playerIdGettingEquipment);
+				$collectorNumber = $this->getCollectorNumberFromId($equipmentIdTargeted);
+
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				foreach( $players as $player )
+				{ // go through each player
+						$playerWeAreNotifyingId = $player['player_id']; // the ID of the player we're notifying
+
+						$playerLetterGiving = $this->getLetterOrderFromPlayerIds($playerWeAreNotifyingId, $playerIdGivingEquipment);
+						$playerLetterReceiving = $this->getLetterOrderFromPlayerIds($playerWeAreNotifyingId, $playerIdGettingEquipment);
+//throw new feException( "player_name:$playerName equipment_id:$equipmentCardId collector_number:$collectorNumber player_letter:$playerLetter equipment_card_owner:$equipmentCardHolder" );
+
+						// notify this player
+						self::notifyPlayer( $playerWeAreNotifyingId, 'equipmentCardExchanged', clienttranslate( 'The equipment card held by ${player_name} is now held by ${player_name_2}.' ), array(
+							'player_name' => $giverName,
+							'player_name_2' => $receiverName,
+							'equipment_id_moving' => $equipmentIdTargeted,
+							'player_letter_giving' => $playerLetterGiving,
+							'player_letter_receiving' => $playerLetterReceiving,
+							'collector_number' => $collectorNumber
+						) );
+				}
+		}
+
 		function discardEquipmentCard($equipmentCardId)
 		{
 			//throw new feException( "equipmentCardId:$equipmentCardId");
@@ -2247,7 +2355,6 @@ class goodcopbadcop extends Table
 				$playerName = $this->getPlayerNameFromPlayerId($equipmentCardHolder); // get the player's name who is dropping the gun
 
 				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
-
 				foreach( $players as $player )
 				{ // go through each player
 						$playerWeAreNotifyingId = $player['player_id']; // the ID of the player we're notifying
@@ -2414,7 +2521,7 @@ class goodcopbadcop extends Table
 		function eliminatePlayer($playerId)
 		{
 				$sqlUpdate = "UPDATE player SET ";
-				$sqlUpdate .= "is_eliminated=1 WHERE ";
+				$sqlUpdate .= "player_eliminated=1 WHERE ";
 				$sqlUpdate .= "player_id=$playerId";
 
 				self::DbQuery( $sqlUpdate );
@@ -2432,7 +2539,8 @@ class goodcopbadcop extends Table
 						// notify this player
 						self::notifyPlayer( $playerWeAreNotifyingId, 'eliminatePlayer', clienttranslate( '${player_name} has been eliminated.' ), array(
 									 'letterOfPlayerWhoWasEliminated' => $letterOfPlayerWhoWasEliminated,
-									 'player_name' => $playerName
+									 'player_name' => $playerName,
+									 'eliminatedPlayerId' => $playerId
 						) );
 				}
 
@@ -2512,13 +2620,23 @@ class goodcopbadcop extends Table
 				{
 						case 2: // coffee
 							//throw new feException( "Resolve Coffee" );
-							$this->makePlayerEquipmentActive($equipmentId); // active this card
+							$target1 = $this->getPlayerTarget1($cardId);
+							if($target1 == '')
+							{
+									throw new BgaUserException( self::_("We do not have a valid target for this Equipment.") );
+							}
+
+							$this->makePlayerEquipmentActive($equipmentId, $target1); // activate this card
 
 						break;
 						case 8: // planted evidence
 							//throw new feException( "Resolve Planted Evidence" );
-
-							$this->makePlayerEquipmentActive($equipmentId); // active this card
+							$target1 = $this->getPlayerTarget1($equipmentId);
+							if($target1 == '')
+							{
+									throw new BgaUserException( self::_("We do not have a valid target for this Equipment.") );
+							}
+							$this->makePlayerEquipmentActive($equipmentId, $target1); // activate this card
 
 						break;
 						case 12: // smoke grenade
@@ -2574,10 +2692,15 @@ class goodcopbadcop extends Table
 
 						case 11: // restraining order
 								$target2 = $this->getPlayerTarget2($equipmentId); // get player target 2
-								$this->shootPlayer($target2); // shoot that player
+								$playerShooting = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+								$this->gamestate->changeActivePlayer( $playerShooting ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was when the equipment was played
+								//$playerShooting = $this->getEquipmentPlayedOnTurn($equipmentId); // get the turn in which this equipment was played since that is the player shooting
+								$this->aimGun($playerShooting, $target2); // update the gun in the database for who it is now aimed at
 
-								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
+								$this->gamestate->nextState( "askShootReaction" ); // go to the state allowing the active player to choose a card to investigate
+
+
 		//throw new feException( "player $playerWhoseTurnItWas is now the active player." );
 								$this->discardEquipmentCard($equipmentId); // discard the equipment card now that it is resolved
 						break;
@@ -2593,14 +2716,11 @@ class goodcopbadcop extends Table
 
 						case 4: // evidence bag
 
-								// get the ID of the targeted equipment
+								$equipmentIdTargeted = $this->getEquipmentTarget1($equipmentId); // get the ID of the targeted equipment
+								$playerIdGivingEquipment = $this->getEquipmentCardOwner($equipmentIdTargeted); // get the ID of the player giving the equipment
+								$playerIdGettingEquipment = $this->getPlayerTarget1($equipmentId); // get the player it is being given to
 
-								// get the player it is being given to
-
-								// make the equipment owner the new player
-
-								// if that player has more than 1 equipment, set them to active player so they can discard
-
+								$this->giveEquipmentFromOnePlayerToAnother($equipmentIdTargeted, $playerIdGivingEquipment, $playerIdGettingEquipment); // make the equipment owner the new player
 						break;
 
 						case 35: // med kit
@@ -2794,28 +2914,9 @@ class goodcopbadcop extends Table
 				{ // we chose a player to aim at
 						$gunHolderPlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 						$aimedAtPlayer = $this->getPlayerIdFromLetterOrder($gunHolderPlayer, $playerPosition); // get the player ID of the player being aimed at
-						$gunId = $this->getGunIdHeldByPlayer($gunHolderPlayer); // get the GUN ID this player is holding
+
 
 						$this->aimGun($gunHolderPlayer, $aimedAtPlayer); // update the gun in the database for who it is now aimed at
-
-						$players = $this->getPlayersDeets(); // get list of players
-						foreach( $players as $player )
-						{ // go through each player
-								$playerId = $player['player_id'];
-
-								$gunHolderLetter = $this->getLetterOrderFromPlayerIds($playerId, $gunHolderPlayer); // get the player letter of the gun holder from this player's perspective
-								$aimedAtLetter = $this->getLetterOrderFromPlayerIds($playerId, $aimedAtPlayer); // get the player letter of who it is aimed at from this player's perspective
-
-								$degreesToRotate = $this->getGunRotationFromLetters($gunHolderLetter, $aimedAtLetter); // get how much the gun should be rotated based on player positions
-								$isPointingLeft = $this->getIsGunPointingLeft($gunHolderLetter, $aimedAtLetter); // check if the gun should be pointing left or right based on player positions and aim
-
-								// notify players individually of which gun is aimed at which player (a aimed at b)
-								self::notifyPlayer( $playerId, 'gunAimed', '', array(
-														 'degreesToRotate' => $degreesToRotate,
-														 'gunId' => $gunId,
-														 'isPointingLeft' => $isPointingLeft
-								) );
-						}
 
 						if($stateName == "askAimOutOfTurn")
 						{ // we're choosing our aim potentially out of turn because we just got a gun from an equipment
@@ -2906,14 +3007,15 @@ class goodcopbadcop extends Table
 				}
 		}
 
-		function clickedMyEquipmentCard($equipmentId)
+		function clickedEquipmentCard($equipmentId)
 		{
-				self::checkAction( 'clickMyEquipmentCard' ); // make sure we can take this action from this state
+				self::checkAction( 'clickEquipmentCard' ); // make sure we can take this action from this state
 
 				$activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 				$collectorNumber = $this->getCollectorNumberFromId($equipmentId);
 
 				$canWeUseThisEquipmentNow = $this->validateEquipmentUsage($equipmentId); // see if it is valid to use this equipment right now
+
 
 //throw new feException( "clickedMyEquipmentCard stateName:$stateName currentPlayerId:$currentPlayerId collectorNumber:$collectorNumber" );
 				$stateName = $this->getStateName(); // get the name of the current state
@@ -2923,16 +3025,36 @@ class goodcopbadcop extends Table
 
 						$this->setStateAfterTurnAction($activePlayerId); // see which state we go into after completing this turn action
 				}
+				elseif($stateName == "discardOutOfTurn")
+				{ // we are discarding potentially out of turn
+						$this->discardEquipmentCard($equipmentId);
+
+						$this->gamestate->nextState( "afterDiscardedOutOfTurn" ); // go to a "game" state where we can figure out who's supposed to go next since this was potentially done out of turn order
+				}
+				elseif($stateName == "chooseEquipmentCardInAnyHand")
+				{ // we have clicked on this Equipment to target it
+						$equipmentIdInUse = $this->getEquipmentCardIdInUse(); // get the ID of the equipment card being use
+						$this->setEquipmentCardTarget($equipmentIdInUse, $equipmentId); // set the target1 of the equipment card in use to this equipment card chosen
+
+						$this->gamestate->nextState( "choosePlayer" ); // after choosing which equipment to target with Evidence Bag, we want to choose a player (if we use this state for other equipment cards, we may need choose the next state differently)
+				}
 				else
 				{ // we have clicked on this equipment to use it
 
+						// notify that the equipment was used
+						$equipmentCardName = $this->getEquipmentName($equipmentId); // get the name of the equipment card
+						self::notifyAllPlayers( "playEquipment", clienttranslate( '${player_name} is playing ${equipment_name}.' ), array(
+								'player_name' => self::getActivePlayerName(),
+								'equipment_name' => $equipmentCardName
+						) );
+
 						// save the state name for this equipment so we know where to go back afterwards
 						$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-						$this->setEquipmentCardState($playerWhoseTurnItIs, $equipmentId, $stateName);
+						$this->setEquipmentCardState($playerWhoseTurnItIs, $equipmentId, $stateName); // set this equipment to being PLAYING
 
 						// send us to the state that will ask for input or move forward to playing
 						//$equipmentId = $this->getEquipmentCardIdInUse();
-						$this->setStateForEquipment($equipmentId);
+						$this->setStateForEquipment($equipmentId); // see which state we should move to next
 				}
 		}
 
@@ -2977,19 +3099,62 @@ class goodcopbadcop extends Table
 				}
 				elseif($gunAcquiredInState == "chooseEquipmentToPlayReactInvestigate")
 				{
+						$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
 						$this->gamestate->nextState("askInvestigateReaction"); // go back to that state
 				}
 				elseif($gunAcquiredInState == "chooseEquipmentToPlayReactShoot")
 				{
+						$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
 						$this->gamestate->nextState("askShootReaction"); // go back to that state
 				}
 				elseif($gunAcquiredInState == "chooseEquipmentToPlayEndOfTurn")
 				{
+						$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
 						$this->gamestate->nextState("endTurnReaction"); // go back to that state
 				}
 				else
 				{ // we shouldn't get here
+						$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
 						$this->gamestate->nextState("endTurnReaction"); // go back to that state
+				}
+		}
+
+		// This is called in a "game" state after someone draws an Equipment card out of turn and they are over their hand limit. We need to figure out which state we need
+		// to go back to and which player is active.
+		function afterDiscardedOutOfTurn()
+		{
+			//throw new feException( "afterDiscardedOutOfTurn" );
+
+				$equipmentId = $this->getEquipmentCardIdInUse(); // find the equipment in use
+				$playedInState = $this->getEquipmentPlayedInState($equipmentId); // find the state we need to return to after that equipment is resolve
+
+				// figure out who the next player should be
+				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active because someone might be aiming after picking up a gun off-turn)
+				$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // change to the player it's turn it's supposed to be
+
+				if($playedInState == "chooseEquipmentToPlayOnYourTurn")
+				{
+						$this->gamestate->nextState("playerTurn"); // go back to that state
+				}
+				elseif($playedInState == "chooseEquipmentToPlayReactInvestigate")
+				{
+						$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
+						$this->gamestate->nextState("askInvestigateReaction"); // go back to that state
+				}
+				elseif($playedInState == "chooseEquipmentToPlayReactShoot")
+				{
+						$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
+						$this->gamestate->nextState("askShootReaction"); // go back to that state
+				}
+				elseif($playedInState == "chooseEquipmentToPlayEndOfTurn")
+				{
+						$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
+						$this->gamestate->nextState("endTurnReaction"); // go back to that state
+				}
+				else
+				{ // we shouldn't get here
+						$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
+						$this->gamestate->nextState("endTurnReaction"); // default go to end of turn
 				}
 		}
 
@@ -3091,7 +3256,14 @@ class goodcopbadcop extends Table
 				$newActivePlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 				$this->setGameStateValue("CURRENT_PLAYER", $newActivePlayer);
 
-				$this->gamestate->nextState( "startNewPlayerTurn" ); // begin a new player's turn
+				if($this->isPlayerEliminated($newActivePlayer))
+				{ // skip the player if they are eliminated
+							$this->endTurnCleanup(); // recursively call this
+				}
+				else
+				{ // the player is NOT eliminated
+						$this->gamestate->nextState( "startNewPlayerTurn" ); // begin a new player's turn
+				}
 		}
 
 		function executeActionInvestigate()
@@ -3169,23 +3341,36 @@ class goodcopbadcop extends Table
 		function executeEquipmentPlay()
 		{
 				$equipmentId = $this->getEquipmentCardIdInUse(); // get the ID of the equipment card that is being played
-				$equipmentCardName = $this->getEquipmentName($equipmentId); // get the name of the equipment card
-
-				// notify that the equipment was used
-				self::notifyAllPlayers( "playEquipment", clienttranslate( '${player_name} is playing ${equipment_name}.' ), array(
-						'player_name' => self::getActivePlayerName(),
-						'equipment_name' => $equipmentCardName
-				) );
 
 				$stateName = $this->getEquipmentPlayedInState($equipmentId); // get the state in which this equipment was played (DO THIS BEFORE RESOLVING BECAUSE DISCARDING WILL CLEAR IT)
 
 				$this->resolveEquipment($equipmentId); // take all the input saved in the database and resolve the equipment card
 
 				$unaimedGuns = $this->getHeldUnaimedGuns(); // see if we have an unaimed guns held by a player
+				$playersOverEquipmentCardLimit = $this->getPlayersOverEquipmentHandLimit(); // get any players over the equipment card hand limit
+				if(count($playersOverEquipmentCardLimit) > 0)
+				{ // someone is over the equipment card hand limit
+						foreach($playersOverEquipmentCardLimit as $player)
+						{ // go through each player over the hand limit
+								$playerIdOverLimit = $player['player_id'];
 
-				if(count($unaimedGuns) < 1)
-				{ // this is no unaimed gun
+								$this->gamestate->changeActivePlayer($playerIdOverLimit); // make that player active so they can aim it
+								$this->gamestate->nextState( "askDiscardOutOfTurn" );
+						}
+				}
+				elseif(count($unaimedGuns) > 0)
+				{ // there IS an unaimed gun
+							foreach($unaimedGuns as $unaimedGun)
+							{ // go through each unaimed gun (there should only be 1)
+									$gunId = $unaimedGun['gun_id'];
 
+									$gunHolder = $this->getPlayerIdOfGunHolder($gunId); // get the player holding the unaimed gun
+									$this->gamestate->changeActivePlayer($gunHolder); // make that player active so they can aim it
+									$this->gamestate->nextState( "askAimOutOfTurn" );
+							}
+				}
+				else
+				{ // there are no special situations we need to handle
 						if($stateName == "chooseEquipmentToPlayOnYourTurn")
 						{ // this was NOT played in reaction to something
 
@@ -3207,20 +3392,14 @@ class goodcopbadcop extends Table
 								$this->gamestate->setAllPlayersMultiactive(); // set all players to active (TODO: only set players holding an equipment card to be active)
 								$this->gamestate->nextState( "askShootReaction" ); // go back to allowing other players to play equipment (which state depends on the state we came from)
 						}
+						elseif($stateName == "chooseEquipmentCardInAnyHand")
+						{
+								$nextState = $this->getEquipmentPlayedInState($equipmentId); // get the state this was played in
+								$this->gamestate->nextState( $nextState ); // go back to allowing other players to play equipment (which state depends on the state we came from)
+						}
 						else
 						{ // this was played in reaction to something
 								throw new feException( "Unknown equipment usage state: ".$stateName );
-						}
-				}
-				else
-				{ // there IS an unaimed gun
-						foreach($unaimedGuns as $unaimedGun)
-						{ // go through each unaimed gun (there should only be 1)
-								$gunId = $unaimedGun['gun_id'];
-
-								$gunHolder = $this->getPlayerIdOfGunHolder($gunId); // get the player holding the unaimed gun
-								$this->gamestate->changeActivePlayer($gunHolder); // make that player active so they can aim it
-								$this->gamestate->nextState( "askAimOutOfTurn" );
 						}
 				}
 		}

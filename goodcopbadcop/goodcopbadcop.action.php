@@ -154,14 +154,14 @@ class action_goodcopbadcop extends APP_GameAction
         self::ajaxResponse( );
     }
 
-    public function clickedMyEquipmentCard()
+    public function clickedEquipmentCard()
     {
         self::setAjaxMode();
 
         // Retrieve arguments
         $equipmentId = self::getArg( "equipmentId", AT_posint, true ); // a, b, c, etc.
 
-        $this->game->clickedMyEquipmentCard($equipmentId); // tell the server that the current player has decided to click on their equipment card (usually to use it)
+        $this->game->clickedEquipmentCard($equipmentId); // tell the server that the current player has decided to click on their equipment card (usually to use it)
 
         self::ajaxResponse( );
     }

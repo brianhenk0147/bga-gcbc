@@ -328,6 +328,17 @@
     height: 70px;
     background-image: url('img/equipment_card_sprite_50w.jpg');
     background-position:-0px -0px;
+    cursor: pointer;
+}
+
+.moving_equipment_card_back
+{
+    width: 50px;
+    height: 70px;
+    position: absolute; /* needed for a thing that slides */
+    background-image: url('img/equipment_card_sprite_50w.jpg');
+    background-position:-0px -0px;
+    cursor: pointer;
 }
 
 .active_equipment_card
@@ -338,6 +349,19 @@
     height: 70px;
     background-image: url('img/equipment_card_sprite_50w.jpg');
     background-position:-0px -0px;
+    cursor: pointer;
+}
+
+.hand_equipment_card
+{
+    display: inline-block;
+    /*position: absolute; /* needed for a thing that slides */
+    position: relative;
+    width: 50px;
+    height: 70px;
+    background-image: url('img/equipment_card_sprite_50w.jpg');
+    background-position:-0px -0px;
+    cursor: pointer;
 }
 
 .large_equipment
