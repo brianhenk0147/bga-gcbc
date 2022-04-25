@@ -138,6 +138,7 @@
 
 .integrity_card_holder_vertical {
     display: inline;
+    position: relative; /* required to make it move around */
 }
 
 .integrity_card_holder_horizontal {
@@ -352,6 +353,19 @@
     cursor: pointer;
 }
 
+.active_center_equipment_card
+{
+  display: inline-block;
+  position: relative;; /* needed for a thing that slides */
+  width: 50px;
+  height: 70px;
+  background-image: url('img/equipment_card_sprite_50w.jpg');
+  background-position:-0px -0px;
+  cursor: pointer;
+  margin-left: 150px;
+
+}
+
 .hand_equipment_card
 {
     display: inline-block;
@@ -376,9 +390,16 @@
 
 #active_equipment_center_holder
 {
-    float:none;
-    vertical-align: baseline;
+  width: 335px;
+  height: 100px;
+  position: relative;
+  left: 50%;
+  top: 50%;
+
+  margin-top: 20px;
+  margin-left: -167px;
 }
+
 
 .opponent_equipment_card_horizontal
 {

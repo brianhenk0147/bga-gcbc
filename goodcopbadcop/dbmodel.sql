@@ -62,6 +62,8 @@ CREATE TABLE IF NOT EXISTS `equipmentCards` (
   `equipment_is_active` smallint(5) unsigned NOT NULL DEFAULT 0,
   `equipment_target_1` varchar(30) NOT NULL DEFAULT '',
   `equipment_target_2` varchar(30) NOT NULL DEFAULT '',
+  `equipment_target_3` varchar(30) NOT NULL DEFAULT '',
+  `equipment_target_4` varchar(30) NOT NULL DEFAULT '',
   `player_target_1` varchar(30) NOT NULL DEFAULT '',
   `player_target_2` varchar(30) NOT NULL DEFAULT '',
   `gun_target_1` varchar(30) NOT NULL DEFAULT '',
@@ -81,10 +83,11 @@ CREATE TABLE IF NOT EXISTS `guns` (
 
 
 CREATE TABLE IF NOT EXISTS `playerCardVisibility` (
-  `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `visibility_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `card_id` int(10) unsigned NOT NULL,
   `player_id` varchar(30) NOT NULL,
   `is_seen` smallint(5) unsigned NOT NULL,
-  PRIMARY KEY (`card_id`,`player_id`)
+  PRIMARY KEY (`visibility_id`)
 ) ENGINE=InnoDB ;
 
 CREATE TABLE IF NOT EXISTS `playerPositioning` (
