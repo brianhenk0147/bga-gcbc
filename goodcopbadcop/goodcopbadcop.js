@@ -196,12 +196,13 @@ function (dojo, declare) {
                 var collectorNumber = activeEquipmentCard['card_type_arg']; // collector number
                 var equipmentId = activeEquipmentCard['card_id']; // equipment ID
                 var playerLetter = activeEquipmentCard['playerLetterOrder'];
+                var rotation = this.getIntegrityCardRotation(playerLetter); // 0, 90, -90
 
                 console.log( "Active Equipment Card:" );
                 console.log( activeEquipmentCard );
                 console.log( "" );
 
-                this.placeActiveCentralEquipmentCard(equipmentId, collectorNumber, playerLetter); // place an equipment card in the center of the table
+                this.placeActiveCentralEquipmentCard(equipmentId, collectorNumber, playerLetter, rotation); // place an equipment card in the center of the table
             }
 
             // active PLAYER equipment cards
@@ -434,7 +435,7 @@ console.log("eliminated players ");
                     case 'askShootReaction':
                     case 'askEndTurnReaction':
 
-                        this.addActionButton( 'button_PauseToUseEquipment', _('Use Equipment or Pause'), 'onClick_PauseToUseEquipment' );
+                        this.addActionButton( 'button_PauseToUseEquipment', _('Use Equipment'), 'onClick_PauseToUseEquipment' );
                         this.addActionButton( 'button_PassOnUseEquipment', _('Pass'), 'onClick_PassOnEquipmentUse', null, false, 'red' );
 
                         //this.addTooltip( 'button_useEquipment', _('Pause the timer and consider using equipment.'), '' ); // add a tooltip to explain
@@ -449,6 +450,63 @@ console.log("eliminated players ");
                     case 'chooseEquipmentToPlayReactShoot':
                     case 'chooseEquipmentToPlayReactEndOfTurn':
                         this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
+                    break;
+
+                    case 'discardEquipment':
+                      var buttonListDiscard = args.buttonList;
+                      console.log("buttonListDiscard:");
+                      console.log(buttonListDiscard);
+
+                      /*
+                      console.log("keys:")
+                      const keys = Object.keys(buttonListDiscard);
+                      for (const key of keys) {
+                      console.log(key);
+                      }
+                      */
+                      const buttonKeysDiscard = Object.keys(buttonListDiscard);
+                      for (const buttonKey of buttonKeysDiscard)
+                      { // go through each player
+                          //console.log("buttonKey:" + buttonKey);
+
+                          var buttonLabel = buttonListDiscard[buttonKey]['buttonLabel'];
+                          var isDisabled = buttonListDiscard[buttonKey]['isDisabled'];
+                          var hoverOverText = buttonListDiscard[buttonKey]['hoverOverText']; // hover over text or '' if we don't want a hover over
+                          var actionName = buttonListDiscard[buttonKey]['actionName']; // shoot, useEquipment
+                          var equipmentId = buttonListDiscard[buttonKey]['equipmentId'];  // only used for equipment to specify which equipment in case of more than one in hand
+                          var makeRed = buttonListDiscard[buttonKey]['makeRed'];
+                          //console.log("buttonLabel:" + buttonLabel);
+
+                          var buttonId = 'button_' + actionName;
+                          //console.log("buttonId:" + buttonId);
+                          if(equipmentId && equipmentId != '')
+                          {
+                              buttonId += '_' + equipmentId; // add on the equipment ID if this is an equipment we are using
+                          }
+
+                          var clickMethod = 'onClick_' + actionName;
+                          //console.log("clickMethod:" + clickMethod);
+                          if(makeRed == true)
+                          { // make this button red
+                              this.addActionButton( buttonId, _(buttonLabel), clickMethod, null, false, 'red' );
+                          }
+                          else
+                          { // keep this button the default blue
+                              this.addActionButton( buttonId, _(buttonLabel), clickMethod );
+                          }
+
+                          if (isDisabled == true)
+                          { // we want to disble this button
+                             dojo.addClass( buttonId, 'disabled'); //disable the button
+                          }
+
+                          if(hoverOverText && hoverOverText != '')
+                          { // there is a hover over text we want to add
+                              this.addTooltip( buttonId, _(hoverOverText), '' ); // add a tooltip to explain why it is disabled or how to use it
+                          }
+
+                      }
+
                     break;
 
                 }
@@ -485,10 +543,11 @@ console.log("eliminated players ");
 
             this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber); // add a large version of the equipment whenever you hover over it
             dojo.connect( $(equipmentHtmlId), 'onclick', this, 'onClickEquipmentCard' ); // re-add the onclick connection (since the attachToNewParent broke it)
+            dojo.addClass( equipmentHtmlId, 'cardHighlighted'); // highlight the card just investigated
         },
 
         // PLACE active card in center area.
-        placeActiveCentralEquipmentCard: function(equipmentId, collectorNumber, playerLetter)
+        placeActiveCentralEquipmentCard: function(equipmentId, collectorNumber, playerLetter, rotation)
         {
             var htmlIdCenterHolder = "active_equipment_center_holder"; // the HTML ID of the container for the card
             var equipmentHtmlId = "center_active_equipment_" + equipmentId; // the HTML ID of the card
@@ -512,6 +571,7 @@ console.log("eliminated players ");
             //dojo.addClass( nodeId, 'my_equipment_card' ); // add the class
 
             dojo.connect( $(equipmentHtmlId), 'onclick', this, 'onClickEquipmentCard' ); // re-add the onclick connection
+            return equipmentHtmlId;
         },
 
         playActivePlayerEquipmentCardFromHand: function(equipmentId, collectorNumber, playerLetterPlaying, playerLetterReceiving, rotation)
@@ -535,6 +595,8 @@ console.log("eliminated players ");
 
             this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber); // add a large version of the equipment whenever you hover over it
             dojo.connect( $(equipmentHtmlId), 'onclick', this, 'onClickEquipmentCard' ); // re-add the onclick connection (since the attachToNewParent broke it)
+
+            dojo.addClass( equipmentHtmlId, 'cardHighlighted'); // highlight the card just investigated
         },
 
         placeActivePlayerEquipmentCard: function(equipmentId, collectorNumber, playerLetter, rotation)
@@ -562,6 +624,8 @@ console.log("eliminated players ");
             var delay = 0; // any delay before it appears
             this.addTooltipHtml( newCardHtmlId, html, delay ); // add the tooltip with the above configuration
             //dojo.addClass( nodeId, 'my_equipment_card' ); // add the class
+
+            return newCardHtmlId;
         },
 
         addLargeEquipmentTooltip(htmlIdToAddItTo, collectorNumber)
@@ -576,25 +640,27 @@ console.log("eliminated players ");
         },
 
         // cardHolderDiv = the div in which we should place this card (it might move right afterwards)
-        placeMyEquipmentCard: function(equipmentCardId, collectorNumber, cardHolderDiv)
+        placeMyEquipmentCard: function(equipmentCardId, collectorNumber, initialPlacementDiv)
         {
             var playerLetter = 'a';
+            var finalCardHolderDiv = 'player_'+playerLetter+'_equipment_hand_holder';
 
-            if(!cardHolderDiv)
+            if(!initialPlacementDiv)
             { // we did not pass in an argument for where the card should be placed
-                cardHolderDiv  = 'player_'+playerLetter+'_equipment_hand_holder';
+                initialPlacementDiv  = finalCardHolderDiv;
             }
 
-            console.log( "Placing this equipment card with collector number " + collectorNumber + " in div " + cardHolderDiv );
+            console.log( "Placing this equipment card with collector number " + collectorNumber + " in div " + initialPlacementDiv );
             dojo.place(
                     this.format_block( 'jstpl_equipmentInHand', {
                         x: this.equipmentCardWidth*(this.getEquipmentSpriteX(collectorNumber)),
                         y: this.equipmentCardHeight*(this.getEquipmentSpriteY(collectorNumber)),
                         playerLetter: playerLetter,
                         equipmentId: equipmentCardId
-                    } ), cardHolderDiv );
-
+                    } ), initialPlacementDiv );
             var cardDiv = 'player_'+playerLetter+'_hand_equipment_'+equipmentCardId;
+            this.attachToNewParent( cardDiv, finalCardHolderDiv ); // move this in the DOM to the new player's active equipment holder (must be done BEFORE sliding because it breaks all connections to it)
+
             var rotation = 0;
             this.rotateTo( cardDiv, rotation );
             console.log("Adding onclick event to div:" + cardDiv);
@@ -608,6 +674,9 @@ console.log("eliminated players ");
             } ); // the HTML (image) to be displayed
             var delay = 0; // any delay before it appears
             this.addTooltipHtml( cardDiv, html, delay ); // add the tooltip with the above configuration
+
+
+            dojo.style( cardDiv, 'marginTop', '10px' );
 
             return cardDiv; // return the HTML ID of the card so we can slide it after placement
         },
@@ -632,6 +701,25 @@ console.log("eliminated players ");
             this.rotateTo( cardHtmlId, rotation );
             dojo.addClass( cardHtmlId, 'opponent_equipment_card_horizontal' ); // add the class
             dojo.connect( $(cardHtmlId), 'onclick', this, 'onClickEquipmentCard' );
+
+            if(playerLetterOrder == 'a' || playerLetterOrder == 'h')
+            {
+                dojo.style( cardHtmlId, 'marginTop', '10px' );
+            }
+            if(playerLetterOrder == 'c' || playerLetterOrder == 'e')
+            {
+                dojo.style( cardHtmlId, 'marginBottom', '10px' );
+            }
+            if(playerLetterOrder == 'b' || playerLetterOrder == 'g')
+            {
+                dojo.style( cardHtmlId, 'marginRight', '30px' );
+            }
+            if(playerLetterOrder == 'd' || playerLetterOrder == 'f')
+            {
+                dojo.style( cardHtmlId, 'marginLeft', '20px' );
+            }
+
+            return cardHtmlId;
         },
 
         placeIntegrityCard: function(playerLetter, cardPosition, visibilityToYou, cardType, rotation)
@@ -654,6 +742,7 @@ console.log("eliminated players ");
             var cardDiv = 'player_'+playerLetter+'_integrity_card_'+cardPosition;
             this.rotateTo( cardDiv, rotation );
 
+            return cardDiv;
         },
 
         getIntegrityCardRotation: function( playerPosition )
@@ -826,6 +915,8 @@ console.log("eliminated players ");
                         x: 0,
                         y: 0
                     } ), gunHolderDiv );
+
+            return 'gun_'+gunId;
         },
 
         rotateGun: function(gunId, rotation, isPointingLeft)
@@ -848,6 +939,8 @@ console.log("eliminated players ");
             dojo.style( gunDiv, 'backgroundPosition', '-' + gunSpriteX + 'px -' + gunSpriteY + 'px' ); // switch the gun to use the correct LEFT or RIGHT pointing image
 
             this.rotateTo( gunDiv, rotation ); // rotate the gun
+
+            return gunDiv;
         },
 
         placeWoundedToken: function(woundedPlayerLetterOrder, leaderCardPosition, cardType)
@@ -858,6 +951,8 @@ console.log("eliminated players ");
                     this.format_block( 'jstpl_wounded', {
                         cardType: cardType
                     } ), htmlIdOfLeaderCard );
+
+            return htmlIdOfLeaderCard;
         },
 
         removeWoundedToken: function(woundedCardId)
@@ -912,8 +1007,7 @@ console.log("eliminated players ");
 
             //this.slideToObjectAndDestroy( cardHtmlId, destinationHtmlId, 500, 0 ); // slide it to its destination
             this.slideToObject( cardHtmlId, destinationHtmlId, 500, 0 ).play(); // slide it to its destination
-
-
+            dojo.addClass( cardHtmlId, 'cardHighlighted'); // highlight the card just investigated
         },
 
         drawOpponentEquipmentCard: function(letterPositionOfPlayerDrawing, equipmentCardId)
@@ -932,7 +1026,8 @@ console.log("eliminated players ");
             this.slideToObjectAndDestroy( cardHtmlId, destinationHtmlId, 1000, 0 ); // slide it to its destination
 
             // put the back of an equipment card in this player's equipment card hand spot
-            this.placeOpponentEquipmentCard(letterPositionOfPlayerDrawing, equipmentCardId);
+            var cardDiv = this.placeOpponentEquipmentCard(letterPositionOfPlayerDrawing, equipmentCardId);
+            dojo.addClass( cardDiv, 'cardHighlighted'); // highlight the card just investigated
         },
 
 
@@ -1101,15 +1196,49 @@ console.log("eliminated players ");
             );
         },
 
-        onClickEquipmentCard: function( evt )
+        onClick_DiscardEquipment: function( evt )
         {
+            console.log( 'onClick_DiscardEquipment' );
+
             var node = evt.currentTarget.id;
-            var equipmentId = node.split('_')[4]; // a, b, c, d, etc.
-            console.log( "eqcard clicked:"+equipmentId);
+            console.log( 'id is ' + node);
+            var equipmentId = node.split('_')[2]; // a, b, c, d, etc.
+
             if(this.checkPossibleActions('clickEquipmentCard'))
             { // we are allowed to select cards based on our current state
                 dojo.stopEvent( evt ); // Preventing default browser reaction
-                this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedEquipmentCard.html", {
+                this.clickEquipmentCard(equipmentId);
+            }
+            else
+            {
+                this.showMessage( _("You cannot do anything with this right now."), 'error' );
+                return;
+            }
+        },
+
+        onClickEquipmentCard: function( evt )
+        {
+            console.log( 'onClickEquipmentCard' );
+
+            var node = evt.currentTarget.id;
+            var equipmentId = node.split('_')[4]; // a, b, c, d, etc.
+            if(this.checkPossibleActions('clickEquipmentCard'))
+            { // we are allowed to select cards based on our current state
+                dojo.stopEvent( evt ); // Preventing default browser reaction
+
+                this.clickEquipmentCard(equipmentId);
+            }
+            else
+            {
+                  this.showMessage( _("You cannot do anything with this right now."), 'error' );
+                  return;
+            }
+        },
+
+        clickEquipmentCard: function( equipmentId )
+        {
+            console.log( "eqcard clicked:"+equipmentId);
+            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedEquipmentCard.html", {
                                                                         equipmentId: equipmentId,
                                                                         lock: true
                                                                      },
@@ -1123,13 +1252,8 @@ console.log("eliminated players ");
                                 // What to do after the server call in anyway (success or failure)
                                 // (most of the time: nothing)
 
-                             } );
-            }
-            else
-            {
-                this.showMessage( _("You cannot do anything with this right now."), 'error' );
-                return;
-            }
+            } );
+
         },
 
         onClick_PauseToUseEquipment: function( evt )
@@ -1435,6 +1559,9 @@ console.log("eliminated players ");
             dojo.subscribe( 'activatePlayerEquipment', this, "notif_activatePlayerEquipment" );
             dojo.subscribe( 'equipmentCardExchanged', this, "notif_equipmentCardExchanged" );
             dojo.subscribe( 'integrityCardsExchanged', this, "notif_integrityCardsExchanged" );
+            dojo.subscribe( 'investigationAttempt', this, "notif_investigationAttempt" );
+            dojo.subscribe( 'endTurn', this, "notif_endTurn" );
+            dojo.subscribe( 'investigationComplete', this, "notif_investigationComplete" );
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -1509,6 +1636,9 @@ console.log("eliminated players ");
             var destinationHtmlId = 'player_' + letterOfPlayerWhoArmed + '_gun_holder';
 
             this.slideToObject( gunToMoveHtmlId, destinationHtmlId, 1000, 750 ).play(); // slide it to its destination
+
+            console.log("highlighting id "+gunToMoveHtmlId);
+            dojo.addClass( gunToMoveHtmlId, 'cardHighlighted'); // highlight the card just investigated
         },
 
         notif_revealIntegrityCard: function( notif )
@@ -1533,6 +1663,9 @@ console.log("eliminated players ");
             var integrityCardRotation = this.getIntegrityCardRotation(playerLetter); // 0, 90, -90
             var integrityCardHtmlId = "player_" + playerLetter + "_integrity_card_" + integrityCardPositionRevealed;
             dojo.style( integrityCardHtmlId, 'backgroundPosition', '-' + integrityCardSpriteX + 'px -' + integrityCardSpriteY + 'px' ); // update the integrity card for this player to the seen version of it... should be in format -${x}px -${y}px
+
+            console.log("highlighting id "+integrityCardHtmlId);
+            dojo.addClass( integrityCardHtmlId, 'cardHighlighted'); // highlight the card just investigated
         },
 
         notif_gunAimed: function( notif )
@@ -1544,11 +1677,14 @@ console.log("eliminated players ");
             var isPointingLeft = notif.args.isPointingLeft; // get how many cards over on the sprite this is (whether it is pointing left or right)
 
             this.rotateGun(gunId, degreesToRotate, isPointingLeft); // switch to the left or right pointing image and rotate the gun to aim at the correct player
+            dojo.addClass( 'gun_'+gunId, 'cardHighlighted'); // highlight the card just investigated
         },
 
         notif_shootAttempt: function ( notif )
         {
-            // we may not need to do anything here
+            var gunId = notif.args.gunId; // 1, 2, 3, 4
+
+            dojo.addClass( 'gun_'+gunId, 'cardHighlighted'); // highlight the card just investigated
         },
 
         notif_executeGunShoot: function( notif )
@@ -1568,6 +1704,8 @@ console.log("eliminated players ");
             this.slideToObject( gunToMoveHtmlId, centerHolderHtmlId, 1000, 750 ).play(); // slide it to its destination
 
             $(gunToMoveHtmlId).style.removeProperty('transform'); // rotate the gun to 0
+
+            dojo.addClass( gunToMoveHtmlId, 'cardHighlighted'); // highlight the card just investigated
         },
 
         notif_eliminatePlayer: function( notif )
@@ -1599,6 +1737,10 @@ console.log("eliminated players ");
             var cardType = notif.args.card_type;
 
             this.placeWoundedToken(letterOfLeaderHolder, positionOfLeaderCard, cardType); // put the token on the board
+
+            var woundedHtmlId = "wounded_token_"+cardType;
+            console.log("wounded token id "+woundedHtmlId);
+            dojo.addClass( woundedHtmlId, 'cardHighlighted'); // highlight the wounded token
         },
 
         notif_removeWoundedToken: function( notif )
@@ -1761,6 +1903,30 @@ console.log("eliminated players ");
             var rotation2 = this.getIntegrityCardRotation(playerLetter2); // 0, 90, -90
             this.rotateTo( card2HtmlId, rotation1 ); // rotate it depending on who it's now in front of
             this.rotateTo( card1HtmlId, rotation2 ); // rotate it depending on who it's now in front of
+
+            dojo.addClass( card2HtmlId, 'cardHighlighted'); // highlight the card just investigated
+            dojo.addClass( card1HtmlId, 'cardHighlighted'); // highlight the card just investigated
+        },
+
+        notif_investigationAttempt: function( notif )
+        {
+            console.log("Entered notif_investigationAttempt");
+            var playerLetterOfPlayerInvestigated = notif.args.playerLetterInvestigated;
+            var cardPositionInvestigated = notif.args.cardPositionTargeted;
+            var cardInvestigatedHtmlId = "player_" + playerLetterOfPlayerInvestigated + "_integrity_card_" + cardPositionInvestigated;
+console.log("highlighting id "+cardInvestigatedHtmlId);
+            dojo.addClass( cardInvestigatedHtmlId, 'cardHighlighted'); // highlight the card just investigated
+        },
+
+        notif_investigationComplete: function( notif )
+        {
+            dojo.query( '.cardHighlighted' ).removeClass( 'cardHighlighted' ); // remove all card highlights
+        },
+
+        notif_endTurn: function( notif )
+        {
+            console.log("Entered notif_endTurn");
+            dojo.query( '.cardHighlighted' ).removeClass( 'cardHighlighted' ); // remove all card highlights
         }
 
    });

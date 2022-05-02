@@ -70,7 +70,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetPlayerTurnButtonList',
     		"possibleactions" => array( "clickInvestigateButton", "clickArmButton", "clickShootButton", "clickEquipButton", "clickEquipmentCard" ),
-    		"transitions" => array( "investigateChooseCard" => 3, "armChooseCard" => 6, "askShootReaction" => 8, "equipChooseCard" => 10, "useEquipment" => 15, "executeEquip" => 11, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "endTurnReaction" => 29, "executeArm" => 7 )
+    		"transitions" => array( "investigateChooseCard" => 3, "armChooseCard" => 6, "askShootReaction" => 8, "equipChooseCard" => 10, "useEquipment" => 15, "executeEquip" => 11, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "endTurnReaction" => 29, "executeArm" => 7, "executeEquipment" => 31 )
     ),
 
     3 => array(
@@ -159,6 +159,7 @@ $machinestates = array(
     		"description" => clienttranslate('${actplayer} is discarding Equipment.'),
     		"descriptionmyturn" => clienttranslate('${you} must choose an Equipment to discard.'),
     		"type" => "activeplayer",
+        'args' => 'argGetPlayerTurnDiscardToDiscardButtonList',
     		"possibleactions" => array( "clickEquipmentCard" ),
     		"transitions" => array( "askAim" => 27, "endTurnReaction" => 29 )
     ),

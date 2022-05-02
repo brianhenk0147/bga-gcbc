@@ -40,7 +40,7 @@
         </div>
         <div id="player_e_area" class="player_holder_vertical">
             <div id="player_e_row_1" class="player_row_vertical">
-                <div id="player_e_reference_card_holder" class="reference_card_holder_vertical">ref
+                <div id="player_e_reference_card_holder" class="reference_card_holder_vertical">
                 </div>
 
                 <div id="player_e_equipment_hand_holder" class="equipment_hand_holder_vertical">
@@ -59,7 +59,7 @@
                 </div>
                 <div id="player_e_gun_holder" class="gun_holder_vertical">
                 </div>
-                <div id="player_e_other_equipment_active_holder" class="other_equipment_active_holder_vertical">oteq
+                <div id="player_e_other_equipment_active_holder" class="other_equipment_active_holder_vertical">
                 </div>
             </div>
         </div>
@@ -67,7 +67,7 @@
         <div id="player_c_area" class="player_holder_vertical">
             <div id="player_c_row_1" class="player_row_vertical">
 
-                <div id="player_c_reference_card_holder" class="reference_card_holder_vertical">ref
+                <div id="player_c_reference_card_holder" class="reference_card_holder_vertical">
                 </div>
 
                 <div id="player_c_equipment_hand_holder" class="equipment_hand_holder_vertical">
@@ -86,7 +86,7 @@
                 </div>
                 <div id="player_c_gun_holder" class="gun_holder_vertical">
                 </div>
-                <div id="player_c_other_equipment_active_holder" class="other_equipment_active_holder_vertical">oteq
+                <div id="player_c_other_equipment_active_holder" class="other_equipment_active_holder_vertical">
                 </div>
             </div>
         </div>
@@ -282,7 +282,7 @@
           <div id="player_g_name_holder" class="player_name_holder_horizontal" style="color:#{PLAYER_g_COLOR}; font-weight: bold;">{PLAYER_g_NAME}
           </div>
           <div id="player_g_a_win_condition_row">
-              <div id="player_g_a_win_condition_holder">win
+              <div id="player_g_a_win_condition_holder">
               </div>
 
               <div id="player_a_name_holder" class="player_name_holder_vertical" style="color:#{PLAYER_a_COLOR}; font-weight: bold;">{PLAYER_a_NAME}
@@ -296,7 +296,7 @@
                 </div>
                 <div id="player_a_gun_holder" class="gun_holder_vertical">
                 </div>
-                <div id="player_a_other_equipment_active_holder" class="other_equipment_active_holder_vertical">oteq
+                <div id="player_a_other_equipment_active_holder" class="other_equipment_active_holder_vertical">
                 </div>
 
 
@@ -310,7 +310,7 @@
                 </div>
             </div>
             <div id="player_a_row_3" class="player_row_vertical">
-                <div id="player_a_reference_card_holder" class="reference_card_holder_vertical">ref
+                <div id="player_a_reference_card_holder" class="reference_card_holder_vertical">
                 </div>
                 <div id="player_a_equipment_hand_holder" class="equipment_hand_holder_vertical">
                 </div>
@@ -323,7 +323,7 @@
                 </div>
                 <div id="player_h_gun_holder" class="gun_holder_vertical">
                 </div>
-                <div id="player_h_other_equipment_active_holder" class="other_equipment_active_holder_vertical">oteq
+                <div id="player_h_other_equipment_active_holder" class="other_equipment_active_holder_vertical">
                 </div>
 
             </div>
@@ -336,7 +336,7 @@
                 </div>
             </div>
             <div id="player_h_row_3" class="player_row_vertical">
-                <div id="player_h_reference_card_holder" class="reference_card_holder_vertical">ref
+                <div id="player_h_reference_card_holder" class="reference_card_holder_vertical">
                 </div>
                 <div id="player_h_equipment_hand_holder" class="equipment_hand_holder_vertical">
                 </div>

@@ -67,9 +67,35 @@
     }
 */
 
+/* HIGHLIGHTING */
+.cardHighlighted
+{
+    /*box-shadow: 00px 0px 10px 20px #edd40d !important; /* in order: x offset, y offset, blur size, spread size, color */
+    box-shadow: 0 0 10px 10px rgba(229, 13, 140, 1);
+  	/*transform: scale(1);*/
+  	animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  	0% {
+  		/*transform: scale(0.95);*/
+  		box-shadow: 0 0 10px 5px rgba(229, 13, 140, 0.7);
+  	}
+
+  	70% {
+  		/*transform: scale(1);*/
+  		box-shadow: 0 0 10px 10px rgba(229, 13, 140, 0.2);
+  	}
+
+  	100% {
+  		/*transform: scale(0.95);*/
+  		box-shadow: 0 0 10px 5px rgba(229, 13, 140, 0.2);
+  	}
+}
+
 /* BOARD LAYOUT */
 #board_area div {
-    outline: 1px solid red;
+    /*outline: 1px solid red;*/
 }
 
 .player_holder_vertical {
@@ -79,12 +105,16 @@
 
     margin-left: 5px;
     margin-right: 5px;
+
+    vertical-align: top;
+
 }
 
 .player_holder_horizontal {
     display:inline-block;
     width: 225px;
     height: 150px;
+
 }
 
 .player_row_vertical {
@@ -160,7 +190,6 @@
 
 .equipment_hand_holder_horizontal {
   display: inline-block;
-
   width: 70px;
   height: 50px;
 }
@@ -238,6 +267,7 @@
 
 .board_row {
     width: 830px;
+    height: 205px;
 }
 
 /* PLAYER NAMES */
