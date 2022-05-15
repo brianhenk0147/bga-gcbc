@@ -95,7 +95,7 @@
 
 /* BOARD LAYOUT */
 #board_area div {
-    /*outline: 1px solid red;*/
+    outline: 1px solid red;
 }
 
 .player_holder_vertical {
@@ -125,7 +125,7 @@
 
 .player_row_horizontal {
     display:inline-block;
-    height: 50px;
+    height: 55px;
     width: 215px;
 }
 
@@ -195,7 +195,9 @@
 }
 
 .reference_card_holder_vertical {
-    display: inline;
+    display: inline-block;
+    width: 50px;
+    height: 70px;
 }
 
 .reference_card_holder_horizontal {
@@ -210,6 +212,12 @@
     width: 205px;
     height: 205px;
     vertical-align: top;
+}
+
+.placeholder_vertical {
+  display: inline-block;
+  width: 50px;
+  height: 70px;
 }
 
 .placeholder_horizontal {
@@ -229,6 +237,7 @@
     vertical-align: top;
     width: 335px;
     height: 150px;
+    background-image: url('img/bga_center_mat.jpg');
 }
 
 #center_area_bottom {
@@ -238,22 +247,11 @@
     height: 150px;
 }
 
-#gun_row {
-    margin-left: auto;
-    margin-right: auto;
-    width: 216px;
-}
+#qr_code {
+    width: 151px;
+    height: 160px;
 
-.gun_holder {
-    display: inline-block;
-    margin-left: 2px;
-    margin-right: 2px;
-    width: 80px;
-}
-
-#upper_left_name_divider {
-    width: 205px;
-    height: 180px;
+    background-image: url('img/qr-code-follow_150w.png');
 }
 
 #board_area {
@@ -265,9 +263,20 @@
 
 }
 
-.board_row {
+.board_row_vertical {
     width: 830px;
-    height: 205px;
+    height: 215px;
+
+    margin-top: 7px;
+    margin-bottom: 7px;
+}
+
+.board_row_horizontal {
+    width: 830px;
+    height: 175px;
+
+    margin-top: 7px;
+    margin-bottom: 7px;
 }
 
 /* PLAYER NAMES */
@@ -283,7 +292,7 @@
 #player_c_name_holder {
     display: block;
     width: 205px;
-    height: 180px;
+    height: 20px;
 }
 
 #player_d_name_holder {
@@ -294,6 +303,8 @@
 
 #player_e_name_holder {
     display: inline-block;
+    width: 205px;
+    height: 20px;
     float:right;
 }
 
@@ -314,7 +325,33 @@
   display: inline;
 }
 
+#upper_left_name_divider {
+    width: 205px;
+    height: 180px;
+}
+
+#upper_right_name_divider {
+    width: 205px;
+    height: 160px;
+}
+
 /* GUNS */
+
+#gun_row {
+
+    width: 335px;
+    height: 60px;
+}
+
+.gun_holder {
+    display: inline-block;
+    margin-left: 11px;
+    margin-right: 0px;
+    width: 70px;
+    height: 50px;
+
+    float: left;
+}
 
 .gun {
     display: inline-block;
@@ -353,6 +390,14 @@
 }
 
 /* EQUIPMENT CARDS */
+#equipment_deck
+{
+    width: 50px;
+    height: 70px;
+    background-image: url('img/equipment_card_sprite_50w.jpg');
+    background-position:-0px -0px;
+}
+
 .equipment_card_back
 {
     width: 50px;
@@ -392,7 +437,6 @@
   background-image: url('img/equipment_card_sprite_50w.jpg');
   background-position:-0px -0px;
   cursor: pointer;
-  margin-left: 150px;
 
 }
 
@@ -418,17 +462,58 @@
     border: 1px black solid;
 }
 
+.large_equipment_name
+{
+    margin-top: 38px;
+    margin-left: 40px;
+    margin-right: 45px;
+    font-size: 30px;
+    font-weight: bolder;
+}
+
+.large_equipment_effect
+{
+    margin-top: 320px;
+    margin-left: 45px;
+    margin-right: 45px;
+    font-size: 18px;
+}
+
+#center_logo_buffer
+{
+    display: inline-block;
+    width: 190px;
+    height: 90px;
+}
+
 #active_equipment_center_holder
 {
-  width: 335px;
-  height: 100px;
-  position: relative;
-  left: 50%;
-  top: 50%;
+  display: inline;
+    width: 50px;
+    height: 70px;
 
-  margin-top: 20px;
-  margin-left: -167px;
+    margin-left: 8px;
+    margin-right: 12px;
+    margin-top: 12px;
+    margin-bottom: 8px;
+
+    float: right;
 }
+
+#equipment_deck
+{
+  display: inline;
+    width: 50px;
+    height: 70px;
+
+    margin-left: 8px;
+    margin-right: 12px;
+    margin-top: 12px;
+    margin-bottom: 8px;
+
+    float: right;
+}
+
 
 
 .opponent_equipment_card_horizontal
