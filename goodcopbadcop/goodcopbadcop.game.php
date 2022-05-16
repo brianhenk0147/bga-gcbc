@@ -864,10 +864,27 @@ class goodcopbadcop extends Table
 		{
 				// smoke grenade is card_type_arg=12
 
+				$cardArray = array(); // this is what we will return
+
 				$sql = "SELECT * FROM `equipmentCards` ";
 				$sql .= "WHERE equipment_is_active=1 AND card_type_arg=12 ";
 
-				return self::getObjectListFromDB( $sql );
+				$cards = self::getObjectListFromDB( $sql );
+
+				$index = 0;
+				foreach( $cards as $card )
+				{
+						$cardId = $card['card_id'];
+						$collectorNumber = $card['card_type_arg'];
+						$equipName = $this->getTranslatedEquipmentName($collectorNumber);
+						$equipEffect = $this->getTranslatedEquipmentEffect($collectorNumber);
+
+						$cardArray[$index] = array( 'card_id' => $cardId, 'card_type_arg' => $collectorNumber, 'equip_name' => $equipName, 'equip_effect' => $equipEffect );
+
+						$index++;
+				}
+
+				return $cardArray;
 		}
 
 		function isCoffeeActive()

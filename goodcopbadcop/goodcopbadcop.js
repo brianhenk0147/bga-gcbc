@@ -228,14 +228,15 @@ function (dojo, declare) {
                 var activeEquipmentCard = gamedatas.sharedActiveEquimentCards[i];
                 var collectorNumber = activeEquipmentCard['card_type_arg']; // collector number
                 var equipmentId = activeEquipmentCard['card_id']; // equipment ID
-                var playerLetter = activeEquipmentCard['playerLetterOrder'];
                 var rotation = this.getIntegrityCardRotation(playerLetter); // 0, 90, -90
+                var equipName = activeEquipmentCard['equip_name'];
+                var equipEffect = activeEquipmentCard['equip_effect'];
 
                 console.log( "Active Equipment Card:" );
                 console.log( activeEquipmentCard );
                 console.log( "" );
 
-                this.placeActiveCentralEquipmentCard(equipmentId, collectorNumber, playerLetter, rotation); // place an equipment card in the center of the table
+                this.placeActiveCentralEquipmentCard(equipmentId, collectorNumber, rotation, equipName, equipEffect); // place an equipment card in the center of the table
             }
 
             // active PLAYER equipment cards
@@ -589,7 +590,7 @@ console.log("eliminated players ");
         },
 
         // PLACE active card in center area.
-        placeActiveCentralEquipmentCard: function(equipmentId, collectorNumber, playerLetter, rotation)
+        placeActiveCentralEquipmentCard: function(equipmentId, collectorNumber, rotation, equipName, equipEffect)
         {
             var htmlIdCenterHolder = "active_equipment_center_holder"; // the HTML ID of the container for the card
             var equipmentHtmlId = "center_active_equipment_" + equipmentId; // the HTML ID of the card
@@ -603,7 +604,7 @@ console.log("eliminated players ");
                         equipmentId: equipmentId
                     } ), htmlIdCenterHolder );
 
-            this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber); // add a hoverover tooltip with a bigger version of the card
+            this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber, equipName, equipEffect); // add a hoverover tooltip with a bigger version of the card
             //dojo.addClass( nodeId, 'my_equipment_card' ); // add the class
 
             dojo.connect( $(equipmentHtmlId), 'onclick', this, 'onClickEquipmentCard' ); // re-add the onclick connection
