@@ -271,12 +271,12 @@ console.log("eliminated players ");
             // First Param: css class to target
             // Second Param: type of events
             // Third Param: the method that will be called when the event defined by the second parameter happen
-            this.addEventToClass( "opponent_integrity_card_slot", "onclick", "onClickOpponentIntegrityCard" );
-            this.addEventToClass( "my_integrity_card_slot", "onclick", "onClickMyIntegrityCard" );
+            this.addEventToClass( "integrity_card", "onclick", "onClickIntegrityCard" );
             //this.addEventToClass( "hand_equipment_card", "onclick", "onClickEquipmentCard" );
 
+            var followText = _("FOLLOW");
             var qrCodeId = "center_logo_buffer";
-            var html = '<div id="qr_code"></div>';
+            var html = '<div id="qr_code"></div><div id="qr_code_follow">'+followText+'</div>';
             var delay = 0; // any delay before it appears
             this.addTooltipHtml( qrCodeId, html, delay ); // add the tooltip with the above configuration
 
@@ -312,7 +312,8 @@ console.log("eliminated players ");
            */
 
 
-            case 'dummmy':
+            case 'chooseEquipmentCardInAnyHand':
+                dojo.query( '.cardHighlighted' ).removeClass( 'cardHighlighted' ); // remove all card highlights to reduce confusion
                 break;
             }
         },
@@ -442,6 +443,7 @@ console.log("eliminated players ");
                         this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton' );
                     break;
 
+                    case 'chooseAnotherPlayer':
                     case 'choosePlayer':
                     case 'askAimOutOfTurn':
                     case 'askAim':
@@ -565,6 +567,61 @@ console.log("eliminated players ");
 
         */
 
+        /** Override this function to inject html into log items. This is a built-in BGA method.  */
+        /* @Override */
+        format_string_recursive : function(log, args) {
+            try {
+                if (log && args && !args.processed) {
+                    args.processed = true;
+
+
+                    // list of special keys we want to replace with images
+                    var keys = ['equipment_name','player_name_2','equip_name','target_player_name','target_name'];
+
+                    //console.log("Looking through keys:" + keys);
+                    for ( var i in keys) {
+                        var key = keys[i];
+                        args[key] = this.getTokenDiv(key, args);
+
+                    }
+                }
+            } catch (e) {
+                console.error(log,args,"Exception thrown", e.stack);
+            }
+            return this.inherited(arguments);
+        },
+
+        getTokenDiv : function(key, args)
+        {
+            //console.log("key:"+key);
+            //console.log(args);
+            var token_id = args[key];
+            if(!token_id)
+              return '';
+            //console.log("token_id:"+token_id);
+            var logid = "log" + (this.globalid++) + "_" + token_id.substring(0,3);
+
+            var playerColor = this.gamedatas.player_colors[token_id];
+            if(playerColor)
+            { // player name
+                return "<span id="+logid+" style=\"color:#" + playerColor + ";font-weight:bolder;\">" + token_id + "</span>";
+            }
+            else
+            { // equipment card name
+                var delay = 0; // any delay before it appears
+                this.addTooltipHtml( logid, this.getEquipmentEffectByName(token_id), delay );
+
+                return "<span id="+logid+" class=\"message_log_equipment\">" + this.clienttranslate_string(token_id) + "</span>";
+            }
+
+            return "'" + this.clienttranslate_string(token_id) + "'";
+       },
+
+       getEquipmentEffectByName : function(key)
+       {
+            return this.gamedatas.equipment_effects[key].effect; // get name for the key, from static table for example
+       },
+
         // PLAY actice cards to the center area FROM HAND.
         playActiveCentralEquipmentCardFromHand: function(equipmentId, collectorNumber, playerLetter, equipName, equipEffect)
         {
@@ -631,8 +688,8 @@ console.log("eliminated players ");
             dojo.style( equipmentHtmlId, 'backgroundPosition', '-' + spriteX + 'px -' + spriteY + 'px' );
 
             this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber, equipName, equipEffect); // add a large version of the equipment whenever you hover over it
+            console.log("connecting " + equipmentHtmlId + " to onClickEquipmentCard");
             dojo.connect( $(equipmentHtmlId), 'onclick', this, 'onClickEquipmentCard' ); // re-add the onclick connection (since the attachToNewParent broke it)
-
             dojo.addClass( equipmentHtmlId, 'cardHighlighted'); // highlight the card just investigated
         },
 
@@ -654,6 +711,7 @@ console.log("eliminated players ");
             this.rotateTo( newCardHtmlId, rotation );
 
             this.addLargeEquipmentTooltip(newCardHtmlId, collectorNumber, equipName, equipEffect); // add a hoverover tooltip with a bigger version of the card
+            dojo.connect( $(newCardHtmlId), 'onclick', this, 'onClickEquipmentCard' );
 
             //dojo.addClass( nodeId, 'my_equipment_card' ); // add the class
 
@@ -663,6 +721,7 @@ console.log("eliminated players ");
         // Add a hoverover tooltip with a bigger version of the card.
         addLargeEquipmentTooltip(htmlIdToAddItTo, collectorNumber, equipName, equipEffect)
         {
+            console.log("Showing large equipment tooltip for collector number:"+collectorNumber);
             var html = this.format_block( 'jstpl_largeEquipment', {
                 x: this.largeEquipmentCardWidth*(this.getEquipmentSpriteX(collectorNumber)),
                 y: this.largeEquipmentCardHeight*(this.getEquipmentSpriteY(collectorNumber)),
@@ -1052,7 +1111,7 @@ console.log("eliminated players ");
             console.log( "Drawing equipment with equipment ID " + equipmentCardId + " and collector number " + collectorNumber + "." );
             var playerLetterOrder = 'a';
 
-            var startHtmlId = 'player_boards';
+            var startHtmlId = 'equipment_deck';
             var destinationHtmlId = 'player_'+playerLetterOrder+'_equipment_hand_holder';
 /*
             dojo.place(
@@ -1074,7 +1133,7 @@ console.log("eliminated players ");
 
         drawOpponentEquipmentCard: function(letterPositionOfPlayerDrawing, equipmentCardId)
         {
-            var startHtmlId = 'player_boards';
+            var startHtmlId = 'equipment_deck';
             var destinationHtmlId = 'player_'+letterPositionOfPlayerDrawing+'_equipment_hand_holder';
 
             dojo.place(
@@ -1228,69 +1287,68 @@ console.log("eliminated players ");
                          } );
         },
 
-        onClickOpponentIntegrityCard: function( evt )
+        onClickIntegrityCard: function( evt )
         { // a player clicked on an opponent's integrity card
-            console.log('clicked OPPONENT integrity card iscurrentplayeractive() ' + this.isCurrentPlayerActive());
+            console.log('clicked integrity card iscurrentplayeractive() ' + this.isCurrentPlayerActive());
 
             dojo.stopEvent( evt ); // Preventing default browser reaction
-
-            // Check that this action is possible (see "possibleactions" in states.inc.php)
-            if( ! this.checkAction( 'clickOpponentIntegrityCard' ) )
-            {   return; }
 
             var node = evt.currentTarget.id;
             var playerPosition = node.split('_')[1]; // b, c, d, etc.
             var cardPosition = node.split('_')[4]; // 1, 2, 3
+            dojo.addClass( node, 'cardHighlighted'); // highlight the card
 
-            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedOpponentIntegrityCard.html", {
-                                                                    lock: true,
-                                                                    playerPosition: playerPosition,
-                                                                    cardPosition: cardPosition
-                                                                 },
-                         this, function( result ) {
+            console.log("clicked player position " + playerPosition + " and card position " + cardPosition );
 
-                            // What to do after the server call if it succeeded
-                            // (most of the time: nothing)
+            if(playerPosition == "a")
+            { // clicked MY integrity card
 
-                         }, function( is_error) {
+                // Check that this action is possible (see "possibleactions" in states.inc.php)
+                if( ! this.checkAction( 'clickMyIntegrityCard' ) )
+                {   return; }
 
-                            // What to do after the server call in anyway (success or failure)
-                            // (most of the time: nothing)
+                this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedMyIntegrityCard.html", {
+                                                                        lock: true,
+                                                                        cardPosition: cardPosition
+                                                                     },
+                             this, function( result ) {
 
-                         }
-            );
-        },
+                                // What to do after the server call if it succeeded
+                                // (most of the time: nothing)
 
-        onClickMyIntegrityCard: function( evt )
-        { // a player clicked on their own integrity card
-            console.log('clicked MY integrity card iscurrentplayeractive() ' + this.isCurrentPlayerActive());
+                             }, function( is_error) {
 
-            dojo.stopEvent( evt ); // Preventing default browser reaction
+                                // What to do after the server call in anyway (success or failure)
+                                // (most of the time: nothing)
 
-            // Check that this action is possible (see "possibleactions" in states.inc.php)
-            if( ! this.checkAction( 'clickMyIntegrityCard' ) )
-            {   return; }
+                             }
+                );
+            }
+            else
+            { // clicked OPPONENT integrity card
 
-            var node = evt.currentTarget.id;
-            var playerPosition = node.split('_')[1]; // b, c, d, etc.
-            var cardPosition = node.split('_')[4]; // 1, 2, 3
+                // Check that this action is possible (see "possibleactions" in states.inc.php)
+                if( ! this.checkAction( 'clickOpponentIntegrityCard' ) )
+                {   return; }
 
-            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedMyIntegrityCard.html", {
-                                                                    lock: true,
-                                                                    cardPosition: cardPosition
-                                                                 },
-                         this, function( result ) {
+                this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedOpponentIntegrityCard.html", {
+                                                                        lock: true,
+                                                                        playerPosition: playerPosition,
+                                                                        cardPosition: cardPosition
+                                                                     },
+                             this, function( result ) {
 
-                            // What to do after the server call if it succeeded
-                            // (most of the time: nothing)
+                                // What to do after the server call if it succeeded
+                                // (most of the time: nothing)
 
-                         }, function( is_error) {
+                             }, function( is_error) {
 
-                            // What to do after the server call in anyway (success or failure)
-                            // (most of the time: nothing)
+                                // What to do after the server call in anyway (success or failure)
+                                // (most of the time: nothing)
 
-                         }
-            );
+                             }
+                );
+            }
         },
 
         onClick_DiscardEquipment: function( evt )
@@ -1304,6 +1362,7 @@ console.log("eliminated players ");
             if(this.checkPossibleActions('clickEquipmentCard'))
             { // we are allowed to select cards based on our current state
                 dojo.stopEvent( evt ); // Preventing default browser reaction
+                dojo.addClass( node, 'cardHighlighted'); // highlight the card
                 this.clickEquipmentCard(equipmentId);
             }
             else
@@ -1322,7 +1381,7 @@ console.log("eliminated players ");
             if(this.checkPossibleActions('clickEquipmentCard'))
             { // we are allowed to select cards based on our current state
                 dojo.stopEvent( evt ); // Preventing default browser reaction
-
+                dojo.addClass( node, 'cardHighlighted'); // highlight the card
                 this.clickEquipmentCard(equipmentId);
             }
             else
@@ -1417,6 +1476,27 @@ console.log("eliminated players ");
         onClick_PassOnTurn: function( evt )
         {
             console.log( 'onClick_PassOnTurn' );
+
+            dojo.stopEvent( evt ); // Preventing default browser reaction
+
+            // Check that this action is possible (see "possibleactions" in states.inc.php)
+            if( ! this.checkAction( 'clickPassButton' ) )
+            {   return; }
+
+            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedPassButton.html", {
+                                                                    lock: true
+                                                                 },
+                         this, function( result ) {
+
+                            // What to do after the server call if it succeeded
+                            // (most of the time: nothing)
+
+                         }, function( is_error) {
+
+                            // What to do after the server call in anyway (success or failure)
+                            // (most of the time: nothing)
+
+                         } );
         },
 
         onClick_Equip: function( evt )
@@ -1654,7 +1734,8 @@ console.log("eliminated players ");
             dojo.subscribe( 'discardActivePlayerEquipmentCard', this, "notif_discardActivePlayerEquipmentCard" );
             dojo.subscribe( 'activateCentralEquipment', this, "notif_activateCentralEquipment" );
             dojo.subscribe( 'activatePlayerEquipment', this, "notif_activatePlayerEquipment" );
-            dojo.subscribe( 'equipmentCardExchanged', this, "notif_equipmentCardExchanged" );
+            dojo.subscribe( 'handEquipmentCardExchanged', this, "notif_handEquipmentCardExchanged" );
+            dojo.subscribe( 'activeEquipmentCardExchanged', this, "notif_activeEquipmentCardExchanged" );
             dojo.subscribe( 'integrityCardsExchanged', this, "notif_integrityCardsExchanged" );
             dojo.subscribe( 'investigationAttempt', this, "notif_investigationAttempt" );
             dojo.subscribe( 'endTurn', this, "notif_endTurn" );
@@ -1926,7 +2007,7 @@ console.log("eliminated players ");
             { // this card exists
                 //dojo.destroy( equipmentHtmlId ); // destroy it
 
-                var destination = 'player_boards'; // the HTML ID of where we want to move it
+                var destination = 'equipment_deck'; // the HTML ID of where we want to move it
                 this.slideToObjectAndDestroy( equipmentHtmlId, destination, 1000, 0 ); // slide it to its destination
             }
 
@@ -1946,7 +2027,7 @@ console.log("eliminated players ");
             { // this card exists
                 //dojo.destroy(equipmentHtmlId); // destroy equipment card since it is discarded
 
-                var destination = 'player_boards'; // the HTML ID of where we want to move it
+                var destination = 'equipment_deck'; // the HTML ID of where we want to move it
                 this.slideToObjectAndDestroy( equipmentHtmlId, destination, 1000, 0 ); // slide it to its destination
             }
         },
@@ -1981,9 +2062,9 @@ console.log("eliminated players ");
             this.playActivePlayerEquipmentCardFromHand(equipmentId, collectorNumber, playerLetterPlaying, playerLetterReceiving, rotation, equipName, equipEffect);
         },
 
-        notif_equipmentCardExchanged: function( notif )
+        notif_handEquipmentCardExchanged: function( notif )
         {
-            console.log("Entered notif_equipmentCardExchanged");
+            console.log("Entered notif_handEquipmentCardExchanged");
             var equipmentId = notif.args.equipment_id_moving;
             var collectorNumber = notif.args.collector_number;
             var playerLetterGiving = notif.args.player_letter_giving;
@@ -2011,12 +2092,32 @@ console.log("eliminated players ");
 
             if(playerLetterReceiving == 'a')
             {
-                var cardHtmlId = this.placeMyEquipmentCard(equipmentId, collectorNumber, startHolderHtmlId, equipName, equipEffect);
+                var cardHtmlId = this.placeMyEquipmentCard(equipmentId, collectorNumber, null, equipName, equipEffect);
             }
             else
             {
                 this.placeOpponentEquipmentCard(playerLetterReceiving, equipmentId);
             }
+        },
+
+        notif_activeEquipmentCardExchanged: function( notif )
+        {
+            console.log("Entered notif_activeEquipmentCardExchanged");
+            var equipmentId = notif.args.equipment_id_moving;
+            var collectorNumber = notif.args.collector_number;
+            var playerLetterGiving = notif.args.player_letter_giving;
+            var playerLetterReceiving = notif.args.player_letter_receiving;
+            var equipName = notif.args.equipment_name;
+            var equipEffect = notif.args.equipment_effect;
+
+            var cardHtmlId = 'player_'+playerLetterGiving+'_active_equipment_'+equipmentId; // the HTML of the card moving
+            var destinationHolderHtmlId = 'player_'+playerLetterReceiving+'_first_equipment_active_holder'; // the place where the RECEIVER will hold the card
+
+            this.slideToObject( cardHtmlId, destinationHolderHtmlId, 1000, 750 ).play(); // slide it to its destination
+
+            var rotation = this.getIntegrityCardRotation(playerLetterReceiving); // 0, 90, -90
+            this.rotateTo( cardHtmlId, rotation ); // rotate it depending on who it's now in front of
+
         },
 
         notif_integrityCardsExchanged: function( notif )
@@ -2032,10 +2133,28 @@ console.log("eliminated players ");
             var card2HtmlId = "player_"+playerLetter2+"_integrity_card_"+card2Position; // integrity card 2
             var card2HolderHtmlId = "player_"+playerLetter2+"_integrity_card_"+card2Position+"_holder"; // original location of integrity card 2 (future location of integrity card 1)
 
+
+
+
             console.log("sliding from " + card1HtmlId + " to " + card2HolderHtmlId);
-            this.slideToObject( card1HtmlId, card2HolderHtmlId, 1000, 750 ).play(); // slide it to its new destination
+            this.attachToNewParent( card1HtmlId, card2HolderHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
+            //this.slideToObject( card1HtmlId, card2HolderHtmlId, 1000, 750 ).play(); // slide it to its new destination
+            var anim1 = this.slideToObject(card1HtmlId, card2HolderHtmlId, 1000, 750);
+            dojo.connect(anim1, 'onEnd', function(node)
+            { // do the following after the animation ends
+                dojo.addClass( card1HtmlId, 'integrity_card_reset' ); // reset to default because the animation messes it up
+            });
+            anim1.play();
+
             console.log("sliding from " + card2HtmlId + " to " + card1HolderHtmlId);
-            this.slideToObject( card2HtmlId, card1HolderHtmlId, 1000, 750 ).play(); // slide it to its new destination
+            this.attachToNewParent( card2HtmlId, card1HolderHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
+            //this.slideToObject( card2HtmlId, card1HolderHtmlId, 1000, 750 ).play(); // slide it to its new destination
+            var anim2 = this.slideToObject(card2HtmlId, card1HolderHtmlId, 1000, 750);
+            dojo.connect(anim2, 'onEnd', function(node)
+            { // do the following after the animation ends
+                dojo.addClass( card2HtmlId, 'integrity_card_reset' ); // reset to default because the animation messes it up
+            });
+            anim2.play();
 
             var rotation1 = this.getIntegrityCardRotation(playerLetter1); // 0, 90, -90
             var rotation2 = this.getIntegrityCardRotation(playerLetter2); // 0, 90, -90
@@ -2044,6 +2163,9 @@ console.log("eliminated players ");
 
             dojo.addClass( card2HtmlId, 'cardHighlighted'); // highlight the card just investigated
             dojo.addClass( card1HtmlId, 'cardHighlighted'); // highlight the card just investigated
+
+
+
         },
 
         notif_investigationAttempt: function( notif )

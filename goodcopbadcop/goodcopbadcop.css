@@ -95,7 +95,7 @@
 
 /* BOARD LAYOUT */
 #board_area div {
-    outline: 1px solid red;
+    /*outline: 1px solid red;*/
 }
 
 .player_holder_vertical {
@@ -248,10 +248,14 @@
 }
 
 #qr_code {
-    width: 151px;
-    height: 160px;
+    width: 150px;
+    height: 150px;
 
-    background-image: url('img/qr-code-follow_150w.png');
+    background-image: url('img/qr-code_150w.png');
+}
+
+#qr_code_follow {
+    text-align: center;
 }
 
 #board_area {
@@ -372,10 +376,17 @@
 /* INTEGRITY CARDS */
 .integrity_card {
     display: inline-block;
+    position: relative; /* needed for a thing that slides */
     width: 50px;
     height: 70px;
     background-image: url('img/integrity_card_sprite_50w.jpg');
     cursor: pointer;
+}
+
+.integrity_card_reset
+{
+    top: 0px !important;
+    left: 0px !important;
 }
 
 .component_rounding {
@@ -468,12 +479,13 @@
     margin-left: 40px;
     margin-right: 45px;
     font-size: 30px;
+    line-height: 32px;
     font-weight: bolder;
 }
 
 .large_equipment_effect
 {
-    margin-top: 320px;
+    margin-top: 325px;
     margin-left: 45px;
     margin-right: 45px;
     font-size: 18px;
@@ -514,9 +526,13 @@
     float: right;
 }
 
-
-
 .opponent_equipment_card_horizontal
 {
     display: inline-block;
+}
+
+.message_log_equipment
+{
+    font-weight: bolder;
+    background-color: #d8ccb8;
 }

@@ -55,16 +55,19 @@ $stats_type = array(
         "turns_number" => array("id"=> 10,
                     "name" => totranslate("Turns taken"),
                     "type" => "int" ),
-        "honest_at_start" => array("id"=> 11,
+        "winning_team" => array("id"=> 13,
+                    "name" => totranslate("Winning team"),
+                    "type" => "int" ),
+        "honest_at_start" => array("id"=> 14,
                     "name" => totranslate("Honest players at start"),
                     "type" => "int" ),
-        "crooked_at_start" => array("id"=> 12,
+        "crooked_at_start" => array("id"=> 15,
                     "name" => totranslate("Crooked players at start"),
                     "type" => "int" ),
-        "honest_at_end" => array("id"=> 13,
+        "honest_at_end" => array("id"=> 16,
                     "name" => totranslate("Honest players at end"),
                     "type" => "int" ),
-        "crooked_at_end" => array("id"=> 14,
+        "crooked_at_end" => array("id"=> 17,
                     "name" => totranslate("Crooked players at end"),
                     "type" => "int" ),
 
@@ -88,12 +91,36 @@ $stats_type = array(
         "turns_number" => array("id"=> 10,
                     "name" => totranslate("Number of turns"),
                     "type" => "int" ),
-        "investigations_completed" => array("id"=> 11,
+        "starting_role" => array("id"=> 11,
+                    "name" => totranslate("Starting role"),
+                    "type" => "int" ),
+        "ending_role" => array("id"=> 12,
+                    "name" => totranslate("Ending role"),
+                    "type" => "int" ),
+        "investigations_completed" => array("id"=> 20,
                     "name" => totranslate("Investigations completed"),
                     "type" => "int" ),
-        "equipment_acquired" => array("id"=> 12,
+        "equipment_acquired" => array("id"=> 21,
                     "name" => totranslate("Equipment acquired"),
                     "type" => "int" ),
+        "equipment_used" => array("id"=> 22,
+                    "name" => totranslate("Equipment used"),
+                    "type" => "int" ),
+        "guns_acquired" => array("id"=> 23,
+                    "name" => totranslate("Guns acquired"),
+                    "type" => "int" ),
+        "guns_aimed_at_me" => array("id"=> 24,
+                    "name" => totranslate("Guns aimed at me"),
+                    "type" => "int" ),
+        "opponents_shot" => array("id"=> 25,
+                    "name" => totranslate("Opponents shot"),
+                    "type" => "int" ),
+        "teammates_shot" => array("id"=> 26,
+                    "name" => totranslate("Teammates shot"),
+                    "type" => "int" ),
+        "bullets_taken" => array("id"=> 27,
+                    "name" => totranslate("Bullets taken"),
+                    "type" => "int" )
 
 /*
         Examples:
@@ -108,6 +135,30 @@ $stats_type = array(
                                 "type" => "float" )
 
 */
+    ),
+    "value_labels" => array(
+		    11 => array(
+			       0 => totranslate("Honest Agent"),
+			       1 => totranslate("Honest Cop"),
+			       2 => totranslate("Crooked Kingpin"),
+ 			       3 => totranslate("Crooked Cop"),
+             4 => totranslate("Zombie Infector"),
+             5 => totranslate("Zombie Minion")
+		    ),
+        12 => array(
+			       0 => totranslate("Honest Agent"),
+			       1 => totranslate("Honest Cop"),
+			       2 => totranslate("Crooked Kingpin"),
+ 			       3 => totranslate("Crooked Cop"),
+             4 => totranslate("Zombie Infector"),
+             5 => totranslate("Zombie Minion"),
+             6 => totranslate("Kingpin Agent")
+		    ),
+        13 => array(
+			       0 => totranslate("Honest"),
+			       1 => totranslate("Crooked"),
+			       2 => totranslate("Zombie")
+		    ),
     )
 
 );
