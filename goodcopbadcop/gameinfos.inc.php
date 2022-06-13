@@ -90,7 +90,7 @@ $gameinfos = array(
 'complexity' => 1,
 
 // Luck of the game, from 0 (absolutely no luck in this game) to 5 (totally luck driven)
-'luck' => 3,
+'luck' => 4,
 
 // Strategy of the game, from 0 (no strategy can be setup) to 5 (totally based on strategy)
 'strategy' => 2,
@@ -99,7 +99,7 @@ $gameinfos = array(
 'diplomacy' => 3,
 
 // Colors attributed to players
-'player_colors' => array( "F60239", "008DF9", "00b408", "BB29BB", "FFFFFF", "999999", "101820", "FFDC3D"),
+'player_colors' => array( "F60239", "008DF9", "00b408", "BB29BB", "999999", "101820", "AD9100", "D55E00"),
 
 // Favorite colors support : if set to "true", support attribution of favorite colors based on player's preferences (see reattributeColorsBasedOnPreferences PHP method)
 // NB: this parameter is used only to flag games supporting this feature; you must use (or not use) reattributeColorsBasedOnPreferences PHP method to actually enable or disable the feature.
@@ -131,8 +131,8 @@ $gameinfos = array(
 // Each paragraph must be wrapped with totranslate() for translation and should not contain html (plain text without formatting).
 // A good length for this text is between 100 and 150 words (about 6 to 9 lines on a standard display)
 'presentation' => array(
-    totranslate("Take a look around the table to figure out if your fellow cops are honest or crooked -- and whether that aligns with YOU. Grab a gun so you can take down the opposing leader, but be quick, 'cause there aren't enough guns for everyone!"),
-    totranslate("Use your investigation and deduction skills to sniff out your enemies. Or if that's not your style, just grab a gun and start shooting and hopefully you'll hit your targets."),
+    totranslate("Take a look around the table to figure out if your fellow cops are honest or crooked -- and whether that aligns with YOU. Grab a gun so you can work with your team to take down the opposing leader!"),
+    totranslate("Use your investigation and deduction skills to sniff out your enemies. Or if that's not your style, just grab a gun and start shooting and hopefully you'll hit your opponents."),
 ),
 
 // Games categories
@@ -142,7 +142,7 @@ $gameinfos = array(
 //  http://en.doc.boardgamearena.com/Game_meta-information:_gameinfos.inc.php
 //  IMPORTANT: this list should be ORDERED, with the most important tag first.
 //  IMPORTANT: it is mandatory that the FIRST tag is 1, 2, 3 and 4 (= game category)
-'tags' => array( 2,11,200,205 ),
+'tags' => array( 2,11,25,200,205,217 ),
 
 
 //////// BGA SANDBOX ONLY PARAMETERS (DO NOT MODIFY)

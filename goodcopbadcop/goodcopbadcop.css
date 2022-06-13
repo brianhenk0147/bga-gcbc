@@ -1,7 +1,7 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * goodcopbadcop implementation : © <Your name here> <Your email address here>
+ * goodcopbadcop implementation : © Pull the Pin Games - support@pullthepingames.com
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -95,13 +95,13 @@
 
 /* BOARD LAYOUT */
 #board_area div {
-    /*outline: 1px solid red;*/
+    outline: 1px solid red;
 }
 
 .player_holder_vertical {
     display:inline-block;
     width: 180px;
-    height: 210px;
+    height: 160px;
 
     margin-left: 5px;
     margin-right: 5px;
@@ -112,14 +112,23 @@
 
 .player_holder_horizontal {
     display:inline-block;
-    width: 225px;
+    width: 215px;
     height: 150px;
-
 }
+
+#player_d_area {
+    margin-left: 20px;
+}
+
+#player_f_area {
+    margin-left: 20px;
+}
+
+
 
 .player_row_vertical {
     display:block;
-    height: 70px;
+    height: 77px;
     width: 180px;
 }
 
@@ -130,7 +139,9 @@
 }
 
 .first_equipment_active_holder_vertical {
-    display: inline;
+    display: inline-block;
+    width: 50px;
+    height: 70px;
 }
 
 .first_equipment_active_holder_horizontal {
@@ -141,7 +152,10 @@
 }
 
 .gun_holder_vertical {
-    display: inline;
+    display: inline-block;
+    width: 50px;
+    height: 70px;
+    margin-top: 8px;
 }
 
 .gun_holder_horizontal {
@@ -150,6 +164,27 @@
     width: 70px;
     height: 50px;
 }
+
+#player_b_gun_holder {
+  margin-left: 25px;
+  width: 10px; /* to make it not go to next line on mobile */
+}
+
+#player_g_gun_holder {
+  margin-left: 15px;
+  width: 10px; /* to make it not go to next line on mobile */
+}
+
+#player_d_gun_holder {
+    margin-left: -15px;
+    width: 85px;
+}
+
+#player_f_gun_holder {
+    margin-left: -15px;
+    width: 85px;
+}
+
 
 .eliminated_player_area {
     background-color: gray;
@@ -164,6 +199,40 @@
 
     width: 70px;
     height: 50px;
+}
+
+#player_b_first_equipment_active_holder {
+    margin-left: 25px;
+    margin-bottom: 15px;
+    width: 10px; /* to make it not move to next line on mobile */
+}
+
+#player_g_first_equipment_active_holder {
+    margin-left: 25px;
+    margin-bottom: 15px;
+    width: 10px; /* to make it not move to next line on mobile */
+}
+
+#player_d_first_equipment_active_holder {
+    margin-left: -15px;
+    margin-bottom: 15px;
+    width: 85px;
+}
+
+#player_f_first_equipment_active_holder {
+    margin-left: -15px;
+    margin-bottom: 15px;
+    width: 85px;
+}
+
+#player_h_first_equipment_active_holder {
+    margin-top: -5px;
+    height: 85px;
+}
+
+#player_a_first_equipment_active_holder {
+    margin-top: -5px;
+    height: 85px;
 }
 
 .integrity_card_holder_vertical {
@@ -210,7 +279,7 @@
 .corner_box {
     display: inline-block;
     width: 205px;
-    height: 205px;
+    height: 160px;
     vertical-align: top;
 }
 
@@ -235,15 +304,17 @@
 #center_area_top {
     display: inline-block;
     vertical-align: top;
-    width: 335px;
+    width: 345px;
     height: 150px;
+
+    margin-top: 15px;
     background-image: url('img/bga_center_mat.jpg');
 }
 
 #center_area_bottom {
     display: inline-block;
     vertical-align: top;
-    width: 335px;
+    width: 345px;
     height: 150px;
 }
 
@@ -263,20 +334,20 @@
     margin-right: auto;
     margin-top: 10px;
     margin-bottom: 10px;
-    width: 830px;
+    width: 810px;
 
 }
 
 .board_row_vertical {
-    width: 830px;
-    height: 215px;
+    width: 810px;
+    height: 160px;
 
     margin-top: 7px;
     margin-bottom: 7px;
 }
 
 .board_row_horizontal {
-    width: 830px;
+    width: 810px;
     height: 175px;
 
     margin-top: 7px;
@@ -301,8 +372,9 @@
 
 #player_d_name_holder {
     display: block;
-    float: right;
-    height: 180px;
+    margin-top: 10px; /* make 40 so it doesn't get covered up by integrity cards on mobile? */
+    height: 95px;
+    float:right;
 }
 
 #player_e_name_holder {
@@ -318,25 +390,30 @@
 
 #player_g_name_holder {
     display: block;
-    height: 125px;
+    margin-top: 10px; /* make 40 so it doesn't get covered up by integrity cards on mobile? */
+    height: 95px;
 }
 
 #player_h_name_holder {
-
+  vertical-align: baseline;
 }
 
 #player_g_a_win_condition_holder {
   display: inline;
 }
 
+#player_d_h_win_condition_holder {
+  display: inline;
+}
+
 #upper_left_name_divider {
     width: 205px;
-    height: 180px;
+    height: 130px;
 }
 
 #upper_right_name_divider {
     width: 205px;
-    height: 160px;
+    height: 110px;
 }
 
 /* GUNS */
@@ -355,6 +432,12 @@
     height: 50px;
 
     float: left;
+}
+
+#gun_deck {
+  background-position:-0px -0px;
+  background-image: url('img/gun_70w.jpg');
+  opacity: 0.5;
 }
 
 .gun {
@@ -389,7 +472,8 @@
     left: 0px !important;
 }
 
-.component_rounding {
+.component_rounding
+{
     border-radius: 5px;
     border: 1px black solid;
 
@@ -398,6 +482,18 @@
     -o-box-shadow: 3px 3px 3px 0px rgba(0,0,0,0.4);
     box-shadow: 3px 3px 3px 0px rgba(0,0,0,0.4);
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
+}
+
+.stockitem
+{
+  border-radius: 5px;
+  border: 1px black solid;
+
+  -moz-box-shadow: 3px 3px 3px 0px rgba(0,0,0,0.4);
+  -webkit-box-shadow: 3px 3px 3px 0px rgba(0,0,0,0.4);
+  -o-box-shadow: 3px 3px 3px 0px rgba(0,0,0,0.4);
+  box-shadow: 3px 3px 3px 0px rgba(0,0,0,0.4);
+  filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
 /* EQUIPMENT CARDS */
@@ -428,27 +524,47 @@
     cursor: pointer;
 }
 
+.player_board_hand_equipment
+{
+    display:inline-block;
+    margin-left: 5px;
+    margin-top: 5px;
+    width: 110px;
+}
+
+.player_board_active_equipment
+{
+  display:inline-block;
+  float:right;
+  margin-top: 5px;
+  width: 110px;
+}
+
 .active_equipment_card
 {
-    display: inline-block;
-    position: absolute; /* needed for a thing that slides */
+    display: inline;
+    position: relative; /* needed for a thing that slides */
+    float: left;
     width: 50px;
     height: 70px;
+    top: 0px !important;
+    left: 0px !important;
     background-image: url('img/equipment_card_sprite_50w.jpg');
     background-position:-0px -0px;
     cursor: pointer;
+    opacity: 0.5;
 }
 
 .active_center_equipment_card
 {
   display: inline-block;
-  position: relative;; /* needed for a thing that slides */
+  position: relative; /* needed for a thing that slides */
   width: 50px;
   height: 70px;
   background-image: url('img/equipment_card_sprite_50w.jpg');
   background-position:-0px -0px;
   cursor: pointer;
-
+  z-index: 10;
 }
 
 .hand_equipment_card
@@ -481,6 +597,7 @@
     font-size: 30px;
     line-height: 32px;
     font-weight: bolder;
+    background-color: #ffffff;
 }
 
 .large_equipment_effect
@@ -534,5 +651,5 @@
 .message_log_equipment
 {
     font-weight: bolder;
-    background-color: #d8ccb8;
+    /*background-color: #d8ccb8;*/
 }

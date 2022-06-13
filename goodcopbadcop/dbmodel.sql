@@ -1,7 +1,7 @@
 
 -- ------
 -- BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
--- goodcopbadcop implementation : © <Your name here> <Your email address here>
+-- goodcopbadcop implementation : © Pull the Pin Games - support@pullthepingames.com
 --
 -- This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
 -- See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -37,6 +37,7 @@ ALTER TABLE `player` ADD `last_card_position_investigated` INT UNSIGNED NOT NULL
 ALTER TABLE `player` ADD `last_card_position_revealed` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `is_eliminated` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `is_wounded` INT UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `is_zombie` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `aiming_at` varchar(30) NOT NULL DEFAULT '';
 
 
@@ -64,6 +65,10 @@ CREATE TABLE IF NOT EXISTS `equipmentCards` (
   `equipment_target_2` varchar(30) NOT NULL DEFAULT '',
   `equipment_target_3` varchar(30) NOT NULL DEFAULT '',
   `equipment_target_4` varchar(30) NOT NULL DEFAULT '',
+  `equipment_target_5` varchar(30) NOT NULL DEFAULT '',
+  `equipment_target_6` varchar(30) NOT NULL DEFAULT '',
+  `equipment_target_7` varchar(30) NOT NULL DEFAULT '',
+  `equipment_target_8` varchar(30) NOT NULL DEFAULT '',
   `player_target_1` varchar(30) NOT NULL DEFAULT '',
   `player_target_2` varchar(30) NOT NULL DEFAULT '',
   `gun_target_1` varchar(30) NOT NULL DEFAULT '',

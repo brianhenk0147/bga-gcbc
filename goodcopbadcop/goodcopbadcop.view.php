@@ -2,7 +2,7 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * goodcopbadcop implementation : © <Your name here> <Your email address here>
+ * goodcopbadcop implementation : © Pull the Pin Games - support@pullthepingames.com
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -79,6 +79,11 @@ class view_goodcopbadcop_goodcopbadcop extends game_view
 
         global $g_user;
         $current_player_id = $g_user->get_id(); // get the ID of the player making the request (the perspective we are using)
+
+        if($this->game->isSpectator())
+				{ // this is a spectator
+						$current_player_id = $this->game->getPlayerIdFromPlayerNo(1); // pretend they are player 1
+				}
 
         // default the names to nothing so players who are not playing do not show a name
         $this->tpl['PLAYER_a_NAME'] = "";

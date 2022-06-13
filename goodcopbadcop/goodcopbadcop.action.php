@@ -2,7 +2,7 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * goodcopbadcop implementation : © <Your name here> <Your email address here>
+ * goodcopbadcop implementation : © Pull the Pin Games - support@pullthepingames.com
  *
  * This code has been produced on the BGA studio platform for use on https://boardgamearena.com.
  * See http://en.doc.boardgamearena.com/Studio for more information.
@@ -84,11 +84,11 @@ class action_goodcopbadcop extends APP_GameAction
         self::ajaxResponse( );
     }
 
-    public function clickedCancelActionButton()
+    public function clickedCancelButton()
     {
         self::setAjaxMode();
 
-        $this->game->clickedCancelAction(); // tell the server that the current player wants to cancel their action
+        $this->game->clickedCancelButton(); // tell the server that the current player wants to cancel their action
 
         self::ajaxResponse( );
     }
@@ -159,9 +159,10 @@ class action_goodcopbadcop extends APP_GameAction
         self::setAjaxMode();
 
         // Retrieve arguments
-        $equipmentId = self::getArg( "equipmentId", AT_posint, true ); // a, b, c, etc.
+        $cardId = self::getArg( "cardId", AT_posint, true ); // either equipmentId if in hand or collectorId if active
+        $equipmentType = self::getArg( "equipmentType", AT_alphanum, true ); // hand, active
 
-        $this->game->clickedEquipmentCard($equipmentId); // tell the server that the current player has decided to click on their equipment card (usually to use it)
+        $this->game->clickedEquipmentCard($cardId, $equipmentType); // tell the server that the current player has decided to click on their equipment card (usually to use it)
 
         self::ajaxResponse( );
     }
@@ -184,11 +185,11 @@ class action_goodcopbadcop extends APP_GameAction
         self::ajaxResponse( );
     }
 
-    public function clickedPassButton()
+    public function clickedSkipButton()
     {
         self::setAjaxMode();
 
-        $this->game->clickedPassButton();
+        $this->game->clickedSkipButton();
 
         self::ajaxResponse( );
     }
