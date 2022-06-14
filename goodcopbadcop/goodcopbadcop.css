@@ -95,7 +95,7 @@
 
 /* BOARD LAYOUT */
 #board_area div {
-    outline: 1px solid red;
+    /*outline: 1px solid red;*/
 }
 
 .player_holder_vertical {
@@ -437,7 +437,7 @@
 #gun_deck {
   background-position:-0px -0px;
   background-image: url('img/gun_70w.jpg');
-  opacity: 0.5;
+  opacity: 0.7;
 }
 
 .gun {
@@ -454,6 +454,11 @@
     width: 50px;
     height: 50px;
     background-image: url('img/wounded_50w.png');
+}
+
+.center_wounded_token {
+    opacity: 0.7;
+    margin-left: 15px;
 }
 
 /* INTEGRITY CARDS */
@@ -484,6 +489,18 @@
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
+.large_component_rounding
+{
+    border-radius: 15px  !important;
+    border: 1px black solid !important;
+
+    -moz-box-shadow: 9px 9px 9px 0px rgba(0,0,0,0.4) !important;
+    -webkit-box-shadow: 9px 9px 9px 0px rgba(0,0,0,0.4) !important;
+    -o-box-shadow: 9px 9px 9px 0px rgba(0,0,0,0.4) !important;
+    box-shadow: 9px 9px 9px 0px rgba(0,0,0,0.4) !important;
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30) !important;
+}
+
 .stockitem
 {
   border-radius: 5px;
@@ -503,6 +520,7 @@
     height: 70px;
     background-image: url('img/equipment_card_sprite_50w.jpg');
     background-position:-0px -0px;
+    opacity: 0.7;
 }
 
 .equipment_card_back

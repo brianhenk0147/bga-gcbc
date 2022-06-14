@@ -36,7 +36,6 @@ ALTER TABLE `player` ADD `last_player_investigated` varchar(30) NOT NULL DEFAULT
 ALTER TABLE `player` ADD `last_card_position_investigated` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `last_card_position_revealed` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `is_eliminated` INT UNSIGNED NOT NULL DEFAULT '0';
-ALTER TABLE `player` ADD `is_wounded` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `is_zombie` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `aiming_at` varchar(30) NOT NULL DEFAULT '';
 
@@ -47,6 +46,8 @@ CREATE TABLE IF NOT EXISTS `integrityCards` (
   `card_type_arg` int(11) NOT NULL,
   `card_location` varchar(30) NOT NULL,
   `card_location_arg` int(11) NOT NULL,
+  `has_wound` INT UNSIGNED NOT NULL DEFAULT '0',
+  `has_bite` INT UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 

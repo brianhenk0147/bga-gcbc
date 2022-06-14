@@ -784,9 +784,14 @@ class goodcopbadcop extends Table
 				return self::getCollectionFromDb( $sql );
 		}
 
-		function getLeaderCardIdForPlayer($playerId)
+		function getLeaderCardTypeForPlayer($playerId)
 		{
 				return self::getUniqueValueFromDb("SELECT ic.card_type FROM `integrityCards` ic WHERE ic.card_location=$playerId AND (ic.card_type='agent' OR ic.card_type='kingpin') ");
+		}
+
+		function getLeaderCardIdForPlayer($playerId)
+		{
+				return self::getUniqueValueFromDb("SELECT ic.card_id FROM `integrityCards` ic WHERE ic.card_location=$playerId AND (ic.card_type='agent' OR ic.card_type='kingpin') LIMIT 1");
 		}
 
 		function getPlayerTeam($playerId)
@@ -1171,6 +1176,44 @@ class goodcopbadcop extends Table
 
 				$sql = "SELECT * FROM `equipmentCards` ";
 				$sql .= "WHERE equipment_is_active=1 AND card_type_arg=2 ";
+
+				$coffeeList = self::getObjectListFromDB( $sql );
+
+				if(count($coffeeList) > 0)
+				{
+						return true;
+				}
+				else
+				{
+					return false;
+				}
+		}
+
+		function isRestrainingOrderActive()
+		{
+				// coffee has card_type_arg=2
+
+				$sql = "SELECT * FROM `equipmentCards` ";
+				$sql .= "WHERE equipment_is_active=1 AND card_type_arg=11 ";
+
+				$coffeeList = self::getObjectListFromDB( $sql );
+
+				if(count($coffeeList) > 0)
+				{
+						return true;
+				}
+				else
+				{
+					return false;
+				}
+		}
+
+		function isRiotShieldActive()
+		{
+				// coffee has card_type_arg=2
+
+				$sql = "SELECT * FROM `equipmentCards` ";
+				$sql .= "WHERE equipment_is_active=1 AND card_type_arg=44 ";
 
 				$coffeeList = self::getObjectListFromDB( $sql );
 
@@ -1653,14 +1696,15 @@ class goodcopbadcop extends Table
 				{ // go through each player
 
 						$playerId = $player['player_id']; // the ID of this player
-						$isWounded = $player['is_wounded']; // 1 if player is wounded
 
-						if($isWounded == 1)
+						$isWounded = $this->isPlayerWounded($playerId); // 1 if player is wounded
+
+						if($isWounded)
 						{ // this player is wounded
 
 								$woundedPlayerLetterOrder = $this->getLetterOrderFromPlayerIds($askingPlayer, $playerId); // find the letter of the wounded player from the player asking's perspective
 								$leaderCardPosition = $this->getLeaderCardPositionFromPlayer($playerId); // the integrity card position of the leader card (1, 2, 3)
-								$cardType = $this->getCardIdFromPlayerAndPosition($playerId, $leaderCardPosition); // agent or kingpin
+								$cardType = $this->getCardTypeFromPlayerIdAndPosition($playerId, $leaderCardPosition); // agent or kingpin
 
 								$woundedTokens[$playerId] = array( 'player_id' => $playerId, 'woundedPlayerLetterOrder' => $woundedPlayerLetterOrder, 'leaderCardPosition' => $leaderCardPosition, 'cardType' => $cardType); // save the wounded token info to the 2D array we will be returning
 						}
@@ -1932,24 +1976,6 @@ class goodcopbadcop extends Table
 				}
 		}
 
-		// Returns true if the player is WOUNDED, false otherwise.
-		function isPlayerWounded($playerId)
-		{
-				$sql = "SELECT is_wounded FROM `player` ";
-				$sql .= "WHERE player_id=$playerId ";
-
-				$isWoundedInt = self::getUniqueValueFromDb($sql);
-
-				if($isWoundedInt == 1)
-				{ // player is wounded
-						return true;
-				}
-				else
-				{ // player is NOT wounded
-						return false;
-				}
-		}
-
 		function countUnwoundedLeaders()
 		{
 				$countUnwoundedLeaders = 0;
@@ -2097,24 +2123,22 @@ class goodcopbadcop extends Table
 				}
 		}
 
-		// called when a player uses an equipment in reaction to a Shoot action. true if this equipment asks the current player to
-		// re-choose an action. false if they have to continue with the shot.
-		function doesEquipmentAskYouToRechooseAction($collectorNumber)
+		// called when a player uses an equipment in reaction to a Shoot action. true if we can re-choose a new action
+		// after the equipment is played. false is someone played a card that forces you to still shoot like restraining
+		// order or riot shield.
+		function canWeRechooseAction()
 		{
-				switch($collectorNumber)
-				{
-						case 11: // restraining order
-							return false;
+				$restrainingOrderId = $this->getEquipmentIdFromCollectorNumber(11);
+				$riotShieldId = $this->getEquipmentIdFromCollectorNumber(44);
+				$mobileDetonatorId = $this->getEquipmentIdFromCollectorNumber(37);
+				if($this->isEquipmentActive($restrainingOrderId) ||
+					 $this->isEquipmentActive($riotShieldId) ||
+					 $this->isEquipmentActive($mobileDetonatorId) )
+				{ // restraining order, riot shield, mobile detonator
+						 	return false;
+			  }
 
-						case 37: // mobile detonator
-							return false;
-
-						case 44: // riot shield
-							return false;
-
-						default:
-							return true;
-				}
+				return true;
 		}
 
 		function isInstantEquipment($collectorNumber)
@@ -2129,9 +2153,12 @@ class goodcopbadcop extends Table
 		function isEquipmentActive($equipmentId)
 		{
 				$activeValue = self::getUniqueValueFromDb("SELECT equipment_is_active FROM equipmentCards WHERE card_id=$equipmentId");
+				$locationValue = self::getUniqueValueFromDb("SELECT card_location FROM equipmentCards WHERE card_id=$equipmentId");
 
-				if($activeValue == 1)
-				{
+				if($activeValue == 1 ||
+				$locationValue == 'playing' ||
+				$locationValue == 'active')
+				{ // this is active or being played
 						return true;
 				}
 				else
@@ -2204,11 +2231,6 @@ class goodcopbadcop extends Table
 		function getEquipmentCardIdInUse()
 		{
 				return self::getUniqueValueFromDb("SELECT card_id FROM equipmentCards WHERE card_location='playing' LIMIT 1 ");
-		}
-
-		function getCoffeeId()
-		{
-				return self::getUniqueValueFromDb("SELECT card_id FROM equipmentCards WHERE card_type_arg=2 LIMIT 1 ");
 		}
 
 		function isTurnOrderClockwise()
@@ -2309,6 +2331,7 @@ class goodcopbadcop extends Table
 				return self::getUniqueValueFromDb("SELECT card_type_arg FROM equipmentCards WHERE card_id=$cardId LIMIT 1 ");
 		}
 
+		// THIS DOES NOT WORK WITH CARDS WITH QUANTITY HIGHER THAN 1 LIKE DEFIBBRILATOR
 		function getEquipmentIdFromCollectorNumber($collectorNumber)
 		{
 				return self::getUniqueValueFromDb("SELECT card_id FROM equipmentCards WHERE card_type_arg=$collectorNumber LIMIT 1 ");
@@ -2539,6 +2562,8 @@ class goodcopbadcop extends Table
 				$card2PlayersSeen = $this->getListOfPlayersWhoHaveSeenCard($cardId1); // get the list of players who have seen this card or "all" if all have seen it or "none" if none have seen it
 				$seenListCard1 = $this->getArrayOfPlayersWhoHaveSeenCard($cardId2);
 				$seenListCard2 = $this->getArrayOfPlayersWhoHaveSeenCard($cardId1);
+				$card1Wounded = $this->isPlayerWounded($oldOwnerOfCardId1); // true if this has a wounded token on it
+				$card2Wounded = $this->isPlayerWounded($oldOwnerOfCardId2); // true if this has a wounded token on it
 
 				self::notifyAllPlayers( "integrityCardsExchanged", clienttranslate( '${player_name} and ${player_name_2} have exchanged Integrity Cards.' ), array(
 							'player_name' => $card1NewOwnerName,
@@ -2554,7 +2579,9 @@ class goodcopbadcop extends Table
 							'card1PlayersSeen' => $card1PlayersSeen,
 							'card2PlayersSeen' => $card2PlayersSeen,
 							'card1SeenList' => $seenListCard1,
-							'card2SeenList' => $seenListCard2
+							'card2SeenList' => $seenListCard2,
+							'card1Wounded' => $card1Wounded,
+							'card2Wounded' => $card2Wounded
 				) );
 
 
@@ -4289,9 +4316,27 @@ class goodcopbadcop extends Table
 
 		function getWoundedPlayers()
 		{
-				$sql = "SELECT * FROM player WHERE is_wounded <> 0";
+				$sql = "SELECT * FROM player p LEFT JOIN integrityCards ic on p.player_id=ic.card_location WHERE ic.has_wound=1";
 
 				return self::getObjectListFromDB( $sql );
+		}
+
+		// returns TRUE if the player is wounded and FALSE otherwise
+		function isPlayerWounded($playerId)
+		{
+				if($this->isPlayerALeader($playerId))
+				{ // this player is a leader
+						$leaderCardId = $this->getLeaderCardIdForPlayer($playerId); // get the card id of the leader card
+
+						$hasWound = self::getUniqueValueFromDb("SELECT has_wound FROM integrityCards WHERE card_id=$leaderCardId");
+
+						if($hasWound == 1)
+						{
+								return true;
+						}
+				}
+
+				return false;
 		}
 
 		// Get the PLAYER ID of the player HOLDING the GUN.
@@ -4499,12 +4544,13 @@ class goodcopbadcop extends Table
 
 		function removeWoundedToken($woundedPlayerId)
 		{
-				$woundedCardId = $this->getLeaderCardIdForPlayer($woundedPlayerId); // get the card ID so we can pass it to the notification so the client knows which one to remove
+				$woundedCardType = $this->getLeaderCardTypeForPlayer($woundedPlayerId); // get the card type (agent or kingpin) so we can pass it to the notification so the client knows which one to remove
+				$woundedCardId = $this->getLeaderCardIdForPlayer($woundedPlayerId); // get the card ID so we can update the database
 //throw new feException( "woundedCardId: $woundedCardId" );
 				// reset the wounded token in the database
-				$sqlUpdate = "UPDATE player SET ";
-				$sqlUpdate .= "is_wounded=0 WHERE ";
-				$sqlUpdate .= "player_id=$woundedPlayerId";
+				$sqlUpdate = "UPDATE integrityCards SET ";
+				$sqlUpdate .= "has_wound=0 WHERE ";
+				$sqlUpdate .= "card_id=$woundedCardId";
 
 				self::DbQuery( $sqlUpdate );
 
@@ -4513,7 +4559,7 @@ class goodcopbadcop extends Table
 				// notify all players that the wounded token has been removed
 				self::notifyAllPlayers( "removeWoundedToken", clienttranslate( 'The wounded token has been removed from ${player_name}.' ), array(
 						'player_name' => $playerName,
-						'woundedCardId' => $woundedCardId
+						'woundedCardType' => $woundedCardType
 				) );
 		}
 
@@ -4726,9 +4772,11 @@ class goodcopbadcop extends Table
 
 		function woundPlayer($playerId)
 		{
-				$sqlUpdate = "UPDATE player SET ";
-				$sqlUpdate .= "is_wounded=1 WHERE ";
-				$sqlUpdate .= "player_id=$playerId";
+				$woundedCardId = $this->getLeaderCardIdForPlayer($playerId); // get the card ID so we can pass it to the notification so the client knows which one to remove
+
+				$sqlUpdate = "UPDATE integrityCards SET ";
+				$sqlUpdate .= "has_wound=1 WHERE ";
+				$sqlUpdate .= "card_id=$woundedCardId";
 
 				self::DbQuery( $sqlUpdate );
 
@@ -5103,12 +5151,12 @@ class goodcopbadcop extends Table
 								$playerShooting = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 								$this->aimGun($playerShooting, $target2); // update the gun in the database for who it is now aimed at
 
-								$this->discardEquipmentCard($equipmentId, true); // discard the equipment card now that it is resolved
+								$this->makePlayerEquipmentActive($equipmentId, $target2); // activate this card
 
+								//$this->discardEquipmentCard($equipmentId, true); // discard the equipment card now that it is resolved
 
-
-								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								//$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+								//$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
 
 								$this->setEquipmentHoldersToActive(); // set anyone holding equipment to active
 								$this->gamestate->nextState( "askShootReaction" ); // go to the state allowing the active player to choose a card to investigate
@@ -5121,11 +5169,13 @@ class goodcopbadcop extends Table
 								//$playerShooting = $this->getEquipmentPlayedOnTurn($equipmentId); // get the turn in which this equipment was played since that is the player shooting
 								$this->aimGun($playerShooting, $target2); // update the gun in the database for who it is now aimed at
 
+								$this->makePlayerEquipmentActive($equipmentId, $target2); // activate this card
+
 								$this->setEquipmentHoldersToActive(); // set anyone holding equipment to active
 								$this->gamestate->nextState( "askShootReaction" ); // go to the state allowing the active player to choose a card to investigate
 
 		//throw new feException( "player $playerWhoseTurnItWas is now the active player." );
-								$this->discardEquipmentCard($equipmentId, true); // discard the equipment card now that it is resolved
+								//$this->discardEquipmentCard($equipmentId, true); // discard the equipment card now that it is resolved
 						break;
 
 						case 37: // mobile detonator
@@ -5154,6 +5204,8 @@ class goodcopbadcop extends Table
 						case 35: // med kit
 								$target1 = $this->getPlayerTarget1($equipmentId); // get player target 1
 								$this->removeWoundedToken($target1); // discard the wounded token this player has
+
+								$this->discardEquipmentCard($equipmentId, true); // discard the equipment card now that it is resolved
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
@@ -5961,12 +6013,11 @@ class goodcopbadcop extends Table
 
 				if($this->isCoffeeActive())
 				{ // coffee is active so we need to go to a specific player's turn
-						$coffeeId = $this->getCoffeeId();
+						$coffeeId = $this->getEquipmentIdFromCollectorNumber(2);
 						$coffeeOwnerId = $this->getEquipmentCardOwner($coffeeId);
 						//throw new feException( "coffeeOwnerId:$coffeeId coffeeOwnerId:$coffeeOwnerId" );
 						$this->gamestate->changeActivePlayer( $coffeeOwnerId ); // make coffee owner go next
 						//throw new feException( "player $coffeeOwnerId is now the active player." );
-						$this->discardActivePlayerEquipmentCard($coffeeId); // discard the player's equipment card
 				}
 				else
 				{ // coffee is NOT active so we can act normally
@@ -5980,6 +6031,8 @@ class goodcopbadcop extends Table
 								$this->activePrevPlayer(); // go to the next player counter-clockwise in turn order
 						}
 				}
+
+				$this->discardSingleActiveTurnCards(); // discard any cards that are active for a turn (coffee, restraining order, riot shield)
 
 				$newActivePlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 				$this->setGameStateValue("CURRENT_PLAYER", $newActivePlayer);
@@ -6004,6 +6057,28 @@ class goodcopbadcop extends Table
 
 						$this->gamestate->nextState( "startNewPlayerTurn" ); // begin a new player's turn
 				}
+		}
+
+		function discardSingleActiveTurnCards()
+		{
+
+			if($this->isCoffeeActive())
+			{ // coffee was played this turn
+					$coffeeId = $this->getEquipmentIdFromCollectorNumber(2);
+					$this->discardActivePlayerEquipmentCard($coffeeId); // discard it
+			}
+
+			if($this->isRestrainingOrderActive())
+			{ // restraining order was played this turn
+					$restrainingOrderId = $this->getEquipmentIdFromCollectorNumber(11);
+					$this->discardActivePlayerEquipmentCard($restrainingOrderId); // discard it
+			}
+
+			if($this->isRiotShieldActive())
+			{ // riot shield was played this turn
+					$riotShieldId = $this->getEquipmentIdFromCollectorNumber(44);
+					$this->discardActivePlayerEquipmentCard($riotShieldId); // discard it
+			}
 		}
 
 		function executeActionInvestigate()
@@ -6140,8 +6215,10 @@ class goodcopbadcop extends Table
 						}
 						elseif($stateName == "chooseEquipmentToPlayReactShoot")
 						{
-								if($this->doesEquipmentAskYouToRechooseAction($collectorNumber))
-								{ // when this equipment is used, we want to allow the player to choose a new action
+								if($this->canWeRechooseAction())
+								{ // the player will be allowed to choose a new action after the equipment is resolved
+
+									//throw new feException( "yes you can re-choose action" );
 
 										$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 										$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
@@ -6150,6 +6227,8 @@ class goodcopbadcop extends Table
 								}
 								else
 								{ // this equipment affect the shoot but it doesn't let you choose a new action (like Riot Shield, Restraining Order, Mobile Detonator)
+
+									//throw new feException( "no you cannot re-choose action" );
 										$this->setEquipmentHoldersToActive(); // set anyone holding equipment to active
 										$this->gamestate->nextState( "askShootReaction" ); // go back to allowing other players to play equipment (which state depends on the state we came from)
 								}

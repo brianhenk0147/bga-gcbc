@@ -144,7 +144,7 @@
                 <div id="gun_placeholder_1" class="gun_holder"></div>
                 <div id="gun_placeholder_2" class="gun_holder"></div>
                 <div id="gun_deck" class="gun_holder"></div>
-                <div id="gun_placeholder_3" class="gun_holder"></div>
+                <div id="wounded_tokens" class="gun_holder"></div>
             </div>
         </div>
         <div id="player_f_area" class="player_holder_horizontal">
@@ -340,7 +340,7 @@ var jstpl_gun = '<div class="gun component_rounding" id="gun_${gunId}" style="ba
 var jstpl_wounded = '<div class="wounded_token" id="wounded_token_${cardType}">\
                         </div>';
 
-var jstpl_largeEquipment = '<div class="large_equipment component_rounding" style="background-position:-${x}px -${y}px"><div class="large_equipment_name">${equipmentName}</div><div class="large_equipment_effect">${equipmentEffect}</div>\
+var jstpl_largeEquipment = '<div class="large_equipment large_component_rounding" style="background-position:-${x}px -${y}px"><div class="large_equipment_name">${equipmentName}</div><div class="large_equipment_effect">${equipmentEffect}</div>\
                         </div>';
 var jstpl_activeEquipment = '<div class="active_equipment_card component_rounding" id="player_${playerLetter}_active_equipment_${equipmentId}" style="background-position:-${x}px -${y}px">\
                         </div>';

@@ -24,7 +24,7 @@ define([
 function (dojo, declare) {
     return declare("bgagame.goodcopbadcop", ebg.core.gamegui, {
         constructor: function(){
-            console.log('goodcopbadcop constructor');
+
 
             // Here, you can init the global variables of your user interface
             // Example:
@@ -57,8 +57,6 @@ function (dojo, declare) {
 
         setup: function( gamedatas )
         {
-            console.log( "Starting game setup" );
-
             // add active equipment holders to player boards
             for( var i in this.gamedatas.playerLetters )
             {
@@ -84,13 +82,8 @@ function (dojo, declare) {
             {
                 var player = gamedatas.players[player_id];
 
-                // TODO: Setting up players boards if needed
-
-
                 numberOfPlayers++;
             }
-
-            console.log( "Number of players: " + numberOfPlayers );
 
             if(numberOfPlayers < 7)
             { // this game has 6 or less players
@@ -104,9 +97,7 @@ function (dojo, declare) {
             for( var i in this.gamedatas.revealedCards )
             {
                 var card = this.gamedatas.revealedCards[i];
-                console.log( "Revealed Card:" );
-                console.log( card );
-                console.log( "" );
+
                 var playerLetter = card['player_position']; // a, b, c, etc.
                 var rotation = this.getIntegrityCardRotation(playerLetter); // 0, 90, -90
 
@@ -121,9 +112,7 @@ function (dojo, declare) {
             for( var i in this.gamedatas.hiddenCardsIHaveSeen )
             {
                 var card = this.gamedatas.hiddenCardsIHaveSeen[i];
-                console.log( "Hidden Cards I Have Seen:" );
-                console.log( card );
-                console.log( "" );
+
 
                 var playerLetter = card['player_position']; // a, b, c, etc.
                 var rotation = this.getIntegrityCardRotation(playerLetter); // 0, 90, -90
@@ -139,9 +128,7 @@ function (dojo, declare) {
             for( var i in this.gamedatas.hiddenCardsIHaveNotSeen )
             {
                 var card = this.gamedatas.hiddenCardsIHaveNotSeen[i];
-                console.log( "Hidden Cards I Have NOT Seen:" );
-                console.log( card );
-                console.log( "" );
+
                 var playerLetter = card['player_position']; // a, b, c, etc.
                 var rotation = this.getIntegrityCardRotation(playerLetter); // 0, 90, -90
 
@@ -174,10 +161,6 @@ function (dojo, declare) {
                 var heldByNameHtml = '<span style="color:#' + heldByColor + '"><b>' + heldByName + '</b></span>';
                 var aimedAtNameHtml = '<span style="color:#' + aimedAtColor + '"><b>' + aimedAtName + '</b></span>';
 
-                console.log( "Gun:" );
-                console.log( gun );
-                console.log( "" );
-
                 this.placeGun(gunId, heldByLetterOrder, aimedAtLetterOrder, heldByNameHtml, aimedAtNameHtml);
 
             }
@@ -189,10 +172,6 @@ function (dojo, declare) {
                 var rotation = gun['rotation'];
                 var isPointingLeft = gun['is_pointing_left']; // 1 if pointing LEFT or 0 if pointing RIGHT
 
-                console.log( "Gun Rotation:" );
-                console.log( gun );
-                console.log( "" );
-
                 this.rotateGun(gunId, rotation, isPointingLeft);
             }
 
@@ -203,12 +182,10 @@ function (dojo, declare) {
                 var leaderCardPosition = wound['leaderCardPosition']; // 1, 2, 3
                 var cardType = wound['cardType']; // agent or kingpin
 
-                console.log( "Wounded Token:" );
-                console.log( wound );
-                console.log( "" );
-
                 this.placeWoundedToken(woundedPlayerLetterOrder, leaderCardPosition, cardType); // put the token on the integrity card
             }
+
+            this.placeCenterWoundedToken(); // put a token in the center mat
 
             // my equipment cards
             for( var i in gamedatas.myEquipmentCards )
@@ -218,10 +195,6 @@ function (dojo, declare) {
                 var equipmentCardId = myEquipmentCards['card_id'];
                 var equipName = myEquipmentCards['equip_name'];
                 var equipEffect = myEquipmentCards['equip_effect'];
-
-                console.log( "My Equipment Cards:" );
-                console.log( myEquipmentCards );
-                console.log( "" );
 
                 var cardHtmlId = this.placeMyEquipmentCard(equipmentCardId, collectorNumber, null, equipName, equipEffect);
             }
@@ -234,15 +207,10 @@ function (dojo, declare) {
                 var playerLetterOrder = playerEquipmentCards['playerLetterOrder']; // a, b, c
                 var equipmentCardId = playerEquipmentCards['equipmentCardIds']; // the number of cards this player has
 
-                console.log( "Player Equipment Cards:" );
-                console.log( playerEquipmentCards );
-                console.log( "" );
-
                 this.placeOpponentEquipmentCard(playerLetterOrder, equipmentCardId); // put this card out
             }
 
             // active SHARED equipment cards
-            console.log( "Center Active Equipment Cards" );
             for( var i in gamedatas.sharedActiveEquimentCards )
             {
                 var activeEquipmentCard = gamedatas.sharedActiveEquimentCards[i];
@@ -251,10 +219,6 @@ function (dojo, declare) {
                 var rotation = this.getIntegrityCardRotation(playerLetter); // 0, 90, -90
                 var equipName = activeEquipmentCard['equip_name'];
                 var equipEffect = activeEquipmentCard['equip_effect'];
-
-                console.log( "Active Equipment Card:" );
-                console.log( activeEquipmentCard );
-                console.log( "" );
 
                 this.placeActiveCentralEquipmentCard(equipmentId, collectorNumber, rotation, equipName, equipEffect); // place an equipment card in the center of the table
             }
@@ -276,17 +240,12 @@ function (dojo, declare) {
                     thisPlayersActiveEquipmentCardIndex++;
                 }
 
-                console.log( "Active Equipment Card:" );
-                console.log( activeEquipmentCard );
-                console.log( "" );
-
                 this.placeActivePlayerEquipmentCard(equipmentId, collectorNumber, playerLetter, rotation, equipName, equipEffect, thisPlayersActiveEquipmentCardIndex); // place an equipment card in the center of the table
             }
 console.log("eliminated players ");
             // eliminate players
             for( var i in gamedatas.eliminatedPlayers )
             {
-                console.log("eliminated player " + i);
                 var eliminatedPlayer = gamedatas.eliminatedPlayers[i];
                 var eliminatedPlayerId = eliminatedPlayer['playerId']; // eliminated player ID
                 var letterOfPlayerWhoWasEliminated = eliminatedPlayer['playerLetter']; // eliminated player letter for this player
@@ -305,13 +264,11 @@ console.log("eliminated players ");
             var qrCodeId = "center_logo_buffer";
             var html = '<div id="qr_code"></div><div id="qr_code_follow">'+followText+'</div>';
             var delay = 0; // any delay before it appears
-            this.addTooltipHtml( qrCodeId, html, delay ); // add the tooltip with the above configuration
+            //this.addTooltipHtml( qrCodeId, html, delay ); // add the tooltip with the above configuration
 
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
-
-            console.log( "Ending game setup" );
         },
 
 
@@ -323,23 +280,10 @@ console.log("eliminated players ");
         //
         onEnteringState: function( stateName, args )
         {
-            console.log( 'Entering state: '+stateName );
 
             switch( stateName )
             {
-
-            /* Example:
-
-            case 'myGameState':
-
-                // Show some HTML block at this game state
-                dojo.style( 'my_html_block_id', 'display', 'block' );
-
-                break;
-           */
-
-
-            case 'chooseEquipmentCardInAnyHand':
+                case 'chooseEquipmentCardInAnyHand':
                 dojo.query( '.cardHighlighted' ).removeClass( 'cardHighlighted' ); // remove all card highlights to reduce confusion
                 break;
             }
@@ -350,24 +294,11 @@ console.log("eliminated players ");
         //
         onLeavingState: function( stateName )
         {
-            console.log( 'Leaving state: '+stateName );
 
             switch( stateName )
             {
-
-            /* Example:
-
-            case 'myGameState':
-
-                // Hide the HTML block we are displaying only during this game state
-                dojo.style( 'my_html_block_id', 'display', 'none' );
-
-                break;
-           */
-
-
-            case 'dummmy':
-                break;
+              case 'dummmy':
+                  break;
             }
         },
 
@@ -376,49 +307,18 @@ console.log("eliminated players ");
         //
         onUpdateActionButtons: function( stateName, args )
         {
-            console.log( 'onUpdateActionButtons: '+stateName );
 
             if( this.isCurrentPlayerActive() )
             {
                 switch( stateName )
                 {
-/*
-                 Example:
 
-                 case 'myGameState':
-
-                    // Add 3 action buttons in the action status bar:
-
-                    this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' );
-                    this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' );
-                    this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' );
-                    break;
-*/
                     case 'playerTurn':
-                        //this.addActionButton( 'button_investigate', _('Investigate'), 'onClickInvestigateButton' ); // as long as there is at least one hidden card
-                        //this.addActionButton( 'button_equip', _('Equip'), 'onClickEquipButton' ); // always show
-                        //this.addActionButton( 'button_arm', _('Arm'), 'onClickArmButton' ); // always show but disable if no guns available
-                        //this.addActionButton( 'button_shoot', _('Shoot'), 'onClickShootButton' ); // only show if holding a gun
-                        //this.addActionButton( 'button_useEquipment', _('Use Equipment'), 'onClickUseEquipmentButton' ); // show one for each equipment held
-                        //this.addActionButton( 'button_passOnTurn', _('Pass'), 'onClickPassOnTurnButton' ); // always show
-                        //array=[buttonId,buttonText, isDisabled, hoverOverText, onClickMethod]
-                        //button_shoot, 'Shoot', true, 'Arm yourself with a Gun before you can Shoot.', onClickShoot
-                        //button_useEquipment_EQID, 'Use Metal Detector', false, '', onClick_useEquipment
                         var buttonList = args.buttonList;
-                        console.log("buttonList:");
-                        console.log(buttonList);
 
-                        /*
-                        console.log("keys:")
-                        const keys = Object.keys(buttonList);
-                        for (const key of keys) {
-                        console.log(key);
-                        }
-                        */
                         const buttonKeys = Object.keys(buttonList);
                         for (const buttonKey of buttonKeys)
                         { // go through each player
-                            //console.log("buttonKey:" + buttonKey);
 
                             var buttonLabel = buttonList[buttonKey]['buttonLabel'];
                             var isDisabled = buttonList[buttonKey]['isDisabled'];
@@ -426,17 +326,14 @@ console.log("eliminated players ");
                             var actionName = buttonList[buttonKey]['actionName']; // shoot, useEquipment
                             var equipmentId = buttonList[buttonKey]['equipmentId'];  // only used for equipment to specify which equipment in case of more than one in hand
                             var makeRed = buttonList[buttonKey]['makeRed'];
-                            //console.log("buttonLabel:" + buttonLabel);
 
                             var buttonId = 'button_' + actionName;
-                            //console.log("buttonId:" + buttonId);
                             if(equipmentId && equipmentId != '')
                             {
                                 buttonId += '_' + equipmentId; // add on the equipment ID if this is an equipment we are using
                             }
 
                             var clickMethod = 'onClick_' + actionName;
-                            //console.log("clickMethod:" + clickMethod);
                             if(makeRed == true)
                             { // make this button red
                                 this.addActionButton( buttonId, _(buttonLabel), clickMethod, null, false, 'red' );
@@ -474,30 +371,17 @@ console.log("eliminated players ");
                     case 'choosePlayer':
                     case 'askAimOutOfTurn':
                     case 'askAim':
-                        //this.addActionButton( 'button_endTurn', _('End Turn'), 'onClickEndTurnButton' );
-
                         // get a list of all players, their name, and their letter from my perpsective, if possible
                         var validPlayers = args.validPlayers;
-                    console.log("validPlayers:");
-                    console.log(validPlayers);
 
-/*
-                    console.log("keys:")
-                    const keys = Object.keys(allPlayers);
-                    for (const key of keys) {
-                      console.log(key);
-                    }
-*/
-                    const players = Object.keys(validPlayers);
-                    for (const playerKey of players)
-                    { // go through each player
-                        var owner = playerKey;
-                        console.log("owner:" + owner);
-
-                        var name = validPlayers[playerKey]['player_name'];
-                        var letterPosition = validPlayers[playerKey]['player_letter'];
-                        this.addActionButton( 'button_aimAt_' + letterPosition + '_' + owner, name, 'onClickPlayerButton' ); // the player name does not need to be translated
-                    }
+                        const players = Object.keys(validPlayers);
+                        for (const playerKey of players)
+                        { // go through each player
+                            var owner = playerKey;
+                            var name = validPlayers[playerKey]['player_name'];
+                            var letterPosition = validPlayers[playerKey]['player_letter'];
+                            this.addActionButton( 'button_aimAt_' + letterPosition + '_' + owner, name, 'onClickPlayerButton' ); // the player name does not need to be translated
+                        }
 
                         // button for each player
                     break;
@@ -525,16 +409,7 @@ console.log("eliminated players ");
 
                     case 'discardEquipment':
                       var buttonListDiscard = args.buttonList;
-                      console.log("buttonListDiscard:");
-                      console.log(buttonListDiscard);
 
-                      /*
-                      console.log("keys:")
-                      const keys = Object.keys(buttonListDiscard);
-                      for (const key of keys) {
-                      console.log(key);
-                      }
-                      */
                       const buttonKeysDiscard = Object.keys(buttonListDiscard);
                       for (const buttonKey of buttonKeysDiscard)
                       { // go through each player
@@ -546,17 +421,14 @@ console.log("eliminated players ");
                           var actionName = buttonListDiscard[buttonKey]['actionName']; // shoot, useEquipment
                           var equipmentId = buttonListDiscard[buttonKey]['equipmentId'];  // only used for equipment to specify which equipment in case of more than one in hand
                           var makeRed = buttonListDiscard[buttonKey]['makeRed'];
-                          //console.log("buttonLabel:" + buttonLabel);
 
                           var buttonId = 'button_' + actionName;
-                          //console.log("buttonId:" + buttonId);
                           if(equipmentId && equipmentId != '')
                           {
                               buttonId += '_' + equipmentId; // add on the equipment ID if this is an equipment we are using
                           }
 
                           var clickMethod = 'onClick_' + actionName;
-                          //console.log("clickMethod:" + clickMethod);
                           if(makeRed == true)
                           { // make this button red
                               this.addActionButton( buttonId, _(buttonLabel), clickMethod, null, false, 'red' );
@@ -620,12 +492,9 @@ console.log("eliminated players ");
 
         getTokenDiv : function(key, args)
         {
-            //console.log("key:"+key);
-            //console.log(args);
             var token_id = args[key];
             if(!token_id)
               return '';
-            //console.log("token_id:"+token_id);
             var logid = "log" + (this.globalid++) + "_" + token_id.substring(0,3);
 
             var playerColor = this.gamedatas.player_colors[token_id];
@@ -638,7 +507,7 @@ console.log("eliminated players ");
                 var delay = 0; // any delay before it appears
                 this.addTooltipHtml( logid, this.getEquipmentEffectByName(token_id), delay );
                 this.addTooltipHtml( "logNaN_" + token_id.substring(0,3), this.getEquipmentEffectByName(token_id), delay ); // workaround for bug where globalid++ returns NaN
-//console.log("logid:"+logid);
+
                 return "<span id="+logid+" class=\"message_log_equipment\">" + this.clienttranslate_string(token_id) + "</span>";
             }
 
@@ -662,6 +531,8 @@ console.log("eliminated players ");
                this.activePlayerEquipmentA.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
                this.activePlayerEquipmentA.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentA.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
+               this.activePlayerEquipmentA.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentA.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                break;
                case 'b':
                this.activePlayerEquipmentB = new ebg.stock();
@@ -671,6 +542,8 @@ console.log("eliminated players ");
                this.activePlayerEquipmentB.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
                this.activePlayerEquipmentB.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentB.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
+               this.activePlayerEquipmentB.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentB.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                break;
                case 'c':
                this.activePlayerEquipmentC = new ebg.stock();
@@ -680,6 +553,8 @@ console.log("eliminated players ");
                this.activePlayerEquipmentC.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
                this.activePlayerEquipmentC.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentC.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
+               this.activePlayerEquipmentC.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentC.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                break;
                case 'd':
                this.activePlayerEquipmentD = new ebg.stock();
@@ -689,6 +564,8 @@ console.log("eliminated players ");
                this.activePlayerEquipmentD.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
                this.activePlayerEquipmentD.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentD.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
+               this.activePlayerEquipmentD.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentD.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                break;
                case 'e':
                this.activePlayerEquipmentE = new ebg.stock();
@@ -698,6 +575,8 @@ console.log("eliminated players ");
                this.activePlayerEquipmentE.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
                this.activePlayerEquipmentE.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentE.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
+               this.activePlayerEquipmentE.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentE.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                break;
                case 'f':
                this.activePlayerEquipmentF = new ebg.stock();
@@ -707,6 +586,8 @@ console.log("eliminated players ");
                this.activePlayerEquipmentF.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
                this.activePlayerEquipmentF.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentF.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
+               this.activePlayerEquipmentF.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentF.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                break;
                case 'g':
                this.activePlayerEquipmentG = new ebg.stock();
@@ -716,6 +597,8 @@ console.log("eliminated players ");
                this.activePlayerEquipmentG.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
                this.activePlayerEquipmentG.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentG.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
+               this.activePlayerEquipmentG.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentG.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                break;
                case 'h':
                this.activePlayerEquipmentH = new ebg.stock();
@@ -725,14 +608,14 @@ console.log("eliminated players ");
                this.activePlayerEquipmentH.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
                this.activePlayerEquipmentH.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentH.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
+               this.activePlayerEquipmentH.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentH.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                break;
            }
        },
 
        initializeActiveEquipment : function(playerLetters)
        {
-             //console.log("letter list:");
-             //console.log(playerLetters);
              for( var i in playerLetters )
              { // go through the cards we want to draw
                  var letter = playerLetters[i];
@@ -968,8 +851,6 @@ console.log("eliminated players ");
 
         initializeHandEquipment : function(playerLetters)
         {
-            //console.log("letter list:");
-            //console.log(playerLetters);
             for( var i in playerLetters )
             { // go through the cards we want to draw
                 var letter = playerLetters[i];
@@ -1002,8 +883,6 @@ console.log("eliminated players ");
             var htmlIdCenterHolder = "active_equipment_center_holder"; // the HTML ID of the container for the card
             var equipmentHtmlId = "center_active_equipment_" + equipmentId; // the HTML ID of the card
 
-            //dojo.addClass( equipmentHtmlId, 'center_equipment_card' ); // add the class
-
             dojo.place(
                     this.format_block( 'jstpl_activeCenterEquipment', {
                         x: this.equipmentCardWidth*(this.getEquipmentSpriteX(collectorNumber)),
@@ -1012,7 +891,6 @@ console.log("eliminated players ");
                     } ), htmlIdCenterHolder );
 
             this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber, equipName, equipEffect); // add a hoverover tooltip with a bigger version of the card
-            //dojo.addClass( nodeId, 'my_equipment_card' ); // add the class
 
             dojo.connect( $(equipmentHtmlId), 'onclick', this, 'onClickEquipmentCard' ); // re-add the onclick connection
             return equipmentHtmlId;
@@ -1023,37 +901,7 @@ console.log("eliminated players ");
             var equipmentHtmlId = "player_" + playerLetterPlaying + "_hand_equipment_" + equipmentId; // the HTML ID of the card we want to move (it's the same for player A and other players)
             var targetActiveEquipmentHolderHtmlId = "player_" + playerLetterReceiving + "_first_equipment_active_holder"; // use the player position letter to move the card in the equipment player's hand to the target player's active equipment spot
 
-            // move the new equipment from hand to the active area in front of the target player
-            console.log("sliding from " + equipmentHtmlId + " to " + targetActiveEquipmentHolderHtmlId);
-            //this.slideToObjectAndDestroy( equipmentHtmlIdInHand, targetActiveEquipmentHolderHtmlId, 1000, 0 ); // slide it to its destination
-/*
-            this.attachToNewParent( equipmentHtmlId, targetActiveEquipmentHolderHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
-            //dojo.removeClass( equipmentHtmlId, 'hand_equipment_card');
-            //dojo.addClass( equipmentHtmlId, 'active_equipment_card');
-            var anim1 = this.slideToObject(equipmentHtmlId, targetActiveEquipmentHolderHtmlId, 1000, 750);
-            dojo.connect(anim1, 'onEnd', function(node)
-            { // do the following after the animation ends
-              dojo.removeClass( equipmentHtmlId, 'hand_equipment_card');
-              dojo.addClass( equipmentHtmlId, 'active_equipment_card');
-              dojo.addClass( equipmentHtmlId, 'cardHighlighted'); // highlight the card just investigated
-            });
-            anim1.play();
-
-            this.rotateTo( equipmentHtmlId, rotation ); // rotate it depending on who it's now in front of
-
-            // reveal the card to everyone... should be in format -${x}px -${y}px
-            var spriteX = this.equipmentCardWidth*(this.getEquipmentSpriteX(collectorNumber));
-            var spriteY = this.equipmentCardHeight*(this.getEquipmentSpriteY(collectorNumber));
-            dojo.style( equipmentHtmlId, 'backgroundPosition', '-' + spriteX + 'px -' + spriteY + 'px' );
-
-            this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber, equipName, equipEffect); // add a large version of the equipment whenever you hover over it
-            console.log("connecting " + equipmentHtmlId + " to onClickEquipmentCard");
-            dojo.connect( $(equipmentHtmlId), 'onclick', this, 'onClickEquipmentCard' ); // re-add the onclick connection (since the attachToNewParent broke it)
-
-            this.applyMultipleCardOffset(equipmentHtmlId, playerLetterReceiving, numberOfActiveEquipmentReceiverHas); // adjust the position so, if they have multiple active equipment cards, you can see them all
-*/
             var playerBoardId = 'player_board_active_equipment_'+playerLetterReceiving;
-            //this.slideToObjectAndDestroy( equipmentHtmlId, playerBoardId, 1000, 0 ); // slide it to its destination
             var placedId = this.placeActivePlayerEquipmentCard(equipmentId, collectorNumber, playerLetterReceiving, rotation, equipName, equipEffect, numberOfActiveEquipmentReceiverHas); // add to receiver player board
             dojo.addClass( placedId, 'cardHighlighted'); // highlight the card just investigated
             this.discardEquipmentFromHand(playerLetterPlaying, equipmentId, true); // remove from giver player board
@@ -1062,34 +910,7 @@ console.log("eliminated players ");
 
         placeActivePlayerEquipmentCard: function(equipmentId, collectorNumber, playerLetter, rotation, equipName, equipEffect, numberOfActiveEquipmentPlayerHas)
         {
-
-            /*
-            var targetActiveEquipmentHolderHtmlId = "player_" + playerLetter + "_first_equipment_active_holder"; // use the player position letter to move the card in the equipment player's hand to the target player's active equipment spot
-
-            // create a new equipment face-up in hand
-            console.log( "Placing this equipment card in div " + targetActiveEquipmentHolderHtmlId );
-            dojo.place(
-                    this.format_block( 'jstpl_activeEquipment', {
-                        x: this.equipmentCardWidth*(this.getEquipmentSpriteX(collectorNumber)),
-                        y: this.equipmentCardHeight*(this.getEquipmentSpriteY(collectorNumber)),
-                        playerLetter: playerLetter,
-                        equipmentId: equipmentId
-                    } ), targetActiveEquipmentHolderHtmlId );
-
-            var newCardHtmlId = 'player_'+playerLetter+'_active_equipment_'+equipmentId;
-            this.rotateTo( newCardHtmlId, rotation );
-
-            this.addLargeEquipmentTooltip(newCardHtmlId, collectorNumber, equipName, equipEffect); // add a hoverover tooltip with a bigger version of the card
-            dojo.connect( $(newCardHtmlId), 'onclick', this, 'onClickEquipmentCard' );
-
-            //dojo.addClass( nodeId, 'my_equipment_card' ); // add the class
-
-            this.applyMultipleCardOffset(newCardHtmlId, playerLetter, numberOfActiveEquipmentPlayerHas);
-            */
-
-
             this.addActivePlayerEquipmentToStock(playerLetter, collectorNumber, equipName, equipEffect);
-
 
             return 'player_board_active_equipment_'+playerLetter+'_item_'+collectorNumber;
         },
@@ -1106,6 +927,8 @@ console.log("eliminated players ");
 
             var htmlIdForCardInStock = 'player_a_equipment_hand_holder_item_'+equipmentId;
             dojo.connect( $(htmlIdForCardInStock), 'onclick', this, 'onClickEquipmentCard' );
+
+            dojo.addClass(htmlIdForCardInStock, "large_component_rounding"); // give more corner rounding and shadow to these larger equipment cards
 
             return htmlIdForCardInStock;
         },
@@ -1148,7 +971,6 @@ console.log("eliminated players ");
         // Add a hoverover tooltip with a bigger version of the card.
         addLargeEquipmentTooltip(htmlIdToAddItTo, collectorNumber, equipName, equipEffect)
         {
-            console.log("Showing large equipment tooltip for collector number:"+collectorNumber);
             var html = this.format_block( 'jstpl_largeEquipment', {
                 x: this.largeEquipmentCardWidth*(this.getEquipmentSpriteX(collectorNumber)),
                 y: this.largeEquipmentCardHeight*(this.getEquipmentSpriteY(collectorNumber)),
@@ -1159,124 +981,15 @@ console.log("eliminated players ");
             this.addTooltipHtml( htmlIdToAddItTo, html, delay ); // add the tooltip with the above configuration
         },
 
-        applyMultipleCardOffset(targetHtmlId, playerLetter, activeEquipmentIndex)
-        {
-          /*
-            console.log("applyMultipleCardOffset target " + targetHtmlId + " playerLetter " + playerLetter + " index " + activeEquipmentIndex);
-            if(activeEquipmentIndex == null || activeEquipmentIndex == 0 || activeEquipmentIndex == '')
-            { // for some reason we didn't get a valid value for the active equipment index
-                activeEquipmentIndex = 1; // default to 1
-            }
-
-            var pixelOffset = (activeEquipmentIndex - 1) * 20;
-            switch(playerLetter)
-            {
-                case 'h':
-                case 'c':
-                case 'a':
-                case 'e':
-                  dojo.style( targetHtmlId, 'marginLeft', pixelOffset+'px' ); // TOP AND BOTTOM
-                  break;
-                case 'b':
-                case 'g':
-                  //pixelOffset += 40; // for some reason there is a "left:-20" we need to account for because I can't figure out how to update "left:0px" with dojo
-                  dojo.style( targetHtmlId, 'marginBottom', pixelOffset+'px' ); // LEFT
-                  dojo.style( targetHtmlId, 'marginTop', '0px' ); // LEFT
-                  dojo.style( targetHtmlId, 'marginLeft', pixelOffset+'px' ); // LEFT
-                  break;
-                case 'f':
-                case 'd':
-                  dojo.style( targetHtmlId, 'marginBottom', pixelOffset+'px' ); // RIGHT
-                  dojo.style( targetHtmlId, 'marginLeft', '-'+pixelOffset+'px' ); // RIGHT
-                break;
-
-            }
-            */
-        },
-
         // cardHolderDiv = the div in which we should place this card (it might move right afterwards)
         placeMyEquipmentCard: function(equipmentCardId, collectorNumber, initialPlacementDiv, equipName, equipEffect)
         {
-/*
-            var playerLetter = 'a';
-            var finalCardHolderDiv = 'player_'+playerLetter+'_equipment_hand_holder';
-
-            if(!initialPlacementDiv)
-            { // we did not pass in an argument for where the card should be placed
-                initialPlacementDiv  = finalCardHolderDiv;
-            }
-
-            console.log( "Placing this equipment card with collector number " + collectorNumber + " in div " + initialPlacementDiv );
-            dojo.place(
-                    this.format_block( 'jstpl_equipmentInHand', {
-                        x: this.equipmentCardWidth*(this.getEquipmentSpriteX(collectorNumber)),
-                        y: this.equipmentCardHeight*(this.getEquipmentSpriteY(collectorNumber)),
-                        playerLetter: playerLetter,
-                        equipmentId: equipmentCardId
-                    } ), initialPlacementDiv );
-            var cardDiv = 'player_'+playerLetter+'_hand_equipment_'+equipmentCardId;
-            this.attachToNewParent( cardDiv, finalCardHolderDiv ); // move this in the DOM to the new player's active equipment holder (must be done BEFORE sliding because it breaks all connections to it)
-
-            var rotation = 0;
-            this.rotateTo( cardDiv, rotation );
-            console.log("Adding onclick event to div:" + cardDiv);
-            dojo.connect( $(cardDiv), 'onclick', this, 'onClickEquipmentCard' );
-            //this.addEventToClass( "hand_equipment_card", "onclick", "onClickEquipmentCard" );
-
-            this.addLargeEquipmentTooltip(cardDiv, collectorNumber, equipName, equipEffect); // add a hoverover tooltip with a bigger version of the card
-
-            dojo.style( cardDiv, 'marginTop', '10px' );
-
-            return cardDiv; // return the HTML ID of the card so we can slide it after placement
-*/
             return this.addMyHandPlayerEquipmentToStock(collectorNumber, equipmentCardId, equipName, equipEffect);
         },
 
         placeOpponentEquipmentCard: function(playerLetterOrder, equipmentId)
         {
-            /*
-            var rotation = this.getIntegrityCardRotation(playerLetterOrder);
-            console.log( "Entering placeOpponentEquipmentCard with playerLetterOrder " + playerLetterOrder + " and equipmentId " + equipmentId + " and rotation " + rotation + "." );
-
-            var opponentEquipmentHolderHtmlId = "player_" + playerLetterOrder + "_equipment_hand_holder"; // use the player position letter to move the card in the equipment player's hand to the target player's active equipment spot
-
-            dojo.place(
-                    this.format_block( 'jstpl_equipmentInHand', {
-                        x: this.equipmentCardWidth*(0),
-                        y: this.equipmentCardHeight*(0),
-                        playerLetter: playerLetterOrder,
-                        equipmentId: equipmentId
-                    } ), opponentEquipmentHolderHtmlId );
-
-            var cardHtmlId = 'player_'+playerLetterOrder+'_hand_equipment_'+equipmentId;
-
-            this.rotateTo( cardHtmlId, rotation );
-            dojo.addClass( cardHtmlId, 'opponent_equipment_card_horizontal' ); // add the class
-            dojo.connect( $(cardHtmlId), 'onclick', this, 'onClickEquipmentCard' );
-
-            if(playerLetterOrder == 'a' || playerLetterOrder == 'h')
-            {
-                dojo.style( cardHtmlId, 'marginTop', '10px' );
-            }
-            if(playerLetterOrder == 'c' || playerLetterOrder == 'e')
-            {
-                dojo.style( cardHtmlId, 'marginBottom', '10px' );
-            }
-            if(playerLetterOrder == 'b' || playerLetterOrder == 'g')
-            {
-                dojo.style( cardHtmlId, 'marginRight', '30px' );
-            }
-            if(playerLetterOrder == 'd' || playerLetterOrder == 'f')
-            {
-                dojo.style( cardHtmlId, 'marginLeft', '20px' );
-            }
-
-            return cardHtmlId;
-            */
-
-
             this.addHandPlayerEquipmentToStock(playerLetterOrder, 0, equipmentId);
-
 
             return 'player_board_hand_equipment_'+playerLetterOrder+'_item_'+equipmentId;
         },
@@ -1317,13 +1030,12 @@ console.log("eliminated players ");
 
         placeIntegrityCard: function(playerLetter, cardPosition, visibilityToYou, cardType, rotation, isHidden, playersSeen)
         {
-            console.log( "Entering placeIntegrityCard with playerLetter " + playerLetter + " cardPosition " + cardPosition + " visibilityToYou " + visibilityToYou + " cardType " + cardType + " rotation " + rotation + " isHidden " + isHidden + "." );
 
             var visibilityOffset = this.getVisibilityOffset(visibilityToYou); // get sprite X value for this card type
             var cardTypeOffset = this.getCardTypeOffset(cardType); // get sprite Y value for this card type
 
             var cardHolderDiv = 'player_'+playerLetter+'_integrity_card_'+cardPosition+'_holder';
-            console.log( "Placing this integrity card in div " + cardHolderDiv );
+
             dojo.place(
                     this.format_block( 'jstpl_integrityCard', {
                         x: this.integrityCardWidth*(visibilityOffset),
@@ -1342,7 +1054,6 @@ console.log("eliminated players ");
             // add tooltip
             this.addIntegrityCardTooltip(cardDiv, cardType, isHidden, playersSeen);
 
-            console.log( "Rotation div " + cardDiv + " " + rotation + " degrees." );
             this.rotateTo( cardDiv, rotation );
 
             return cardDiv;
@@ -1531,7 +1242,6 @@ console.log("eliminated players ");
 
         placeGun: function(gunId, heldByLetterOrder, aimedAtLetterOrder, heldByName, aimedAtName)
         {
-            console.log( "Entering placeGun with gunId " + gunId + " heldBy " + heldByLetterOrder + " aimedAt " + aimedAtLetterOrder + "." );
 
             var gunIdHtml = 'gun_'+gunId;
             var gunHolderDiv = 'gun_deck'; // assume the gun is in the middle of the table
@@ -1541,7 +1251,6 @@ console.log("eliminated players ");
                 gunHolderDiv = 'player_'+heldByLetterOrder+'_gun_holder'; // put the gun in front of the player holding it
             }
 
-            console.log( "Placing with gunId " + gunId + " gunHolderDiv " + gunHolderDiv + "." );
             dojo.place(
                     this.format_block( 'jstpl_gun', {
                         gunId: gunId,
@@ -1560,13 +1269,6 @@ console.log("eliminated players ");
 
         rotateGun: function(gunId, rotation, isPointingLeft)
         {
-            console.log( "" );
-            console.log( "rotateGun Info:" );
-            console.log( "gunId: " + gunId );
-            console.log( "rotation: " + rotation );
-            console.log( "isPointingLeft: " + isPointingLeft );
-            console.log( "" );
-
             if(rotation === null)
             {
                 rotation = 0;
@@ -1594,17 +1296,27 @@ console.log("eliminated players ");
                         cardType: cardType
                     } ), htmlIdOfLeaderCard );
 
-            return htmlIdOfLeaderCard;
+            return 'wounded_token_'+cardType;
         },
 
         removeWoundedToken: function(woundedCardId)
         {
             var woundedTokenHtml = 'wounded_token_' + woundedCardId;
-            var destination = 'gun_deck';
+            var destination = 'wounded_tokens';
 
-            console.log( "slide " + woundedTokenHtml + " to " + destination );
+            this.slideToObject( woundedTokenHtml, destination, 1000, 0 ).play(); // slide it to its destination
+        },
 
-            this.slideToObjectAndDestroy( woundedTokenHtml, destination, 1000, 750 ); // slide it to its destination
+        placeCenterWoundedToken: function()
+        {
+            var destination = 'wounded_tokens';
+
+            dojo.place(
+                  this.format_block( 'jstpl_wounded', {
+                      cardType: "center"
+                  } ), destination );
+
+            dojo.addClass(wounded_token_center, "center_wounded_token");
         },
 
         eliminatePlayer: function(eliminatedPlayerId, letterOfPlayerWhoWasEliminated)
@@ -1629,12 +1341,10 @@ console.log("eliminated players ");
 
         discardEquipmentFromHand: function( playerLetter, equipmentId, removeFromPlayerAHand, animateDiscard )
         {
-            console.log("removing " + equipmentId + " from player " + playerLetter);
             var playerAHandHtmlId = "player_a_equipment_hand_holder_item_" + equipmentId; // the html ID of the big card in the player A hand
             var revealedBoardEquipmentHtmlId = "player_" + playerLetter + "_hand_equipment_" + equipmentId;
 
             var revealedEquipmentExists = document.getElementById(revealedBoardEquipmentHtmlId); // see if we can find an ID for a revealed equipment on the player's board
-            console.log("value of revealedEquipmentExists:"+revealedEquipmentExists);
             if(revealedEquipmentExists)
             { // this card exists on the player's board
                 if(animateDiscard)
@@ -1657,7 +1367,6 @@ console.log("eliminated players ");
                     this.myHandEquipment.removeFromStockById(equipmentId);
 
                     var handEquipmentExists = document.getElementById(playerAHandHtmlId); // see if we can find an ID for a revealed equipment on the player's large hand
-                    console.log("value of handEquipmentExists:"+handEquipmentExists);
                     if(handEquipmentExists)
                     { // this card exists on the player's large hand (it won't exist for spectators)
                         this.slideToObjectAndDestroy( playerAHandHtmlId, 'equipment_deck', 1000, 0 ); // discard from current player's hand too
@@ -1690,7 +1399,6 @@ console.log("eliminated players ");
 
         discardEquipmentFromActive: function( playerLetter, collectorNumber )
         {
-            console.log("removing active equipment with collector " + collectorNumber + " from player " + playerLetter);
             switch(playerLetter)
             {
                 case 'a':
@@ -1722,27 +1430,13 @@ console.log("eliminated players ");
 
         drawEquipmentCard: function(equipmentCardId, collectorNumber, equipName, equipEffect)
         {
-            console.log( "Drawing equipment with equipment ID " + equipmentCardId + " and collector number " + collectorNumber + "." );
             var playerLetterOrder = 'a';
 
             var startHtmlId = 'equipment_deck';
             var destinationHtmlId = 'player_'+playerLetterOrder+'_equipment_hand_holder';
-/*
-            dojo.place(
-                    this.format_block( 'jstpl_movingEquipmentCard', {
-                        x: this.equipmentCardWidth*(0),
-                        y: this.equipmentCardHeight*(0)
-                    } ), startHtmlId );
 
-            var cardHtmlId = 'moving_equipment_card';
-*/
             var cardHtmlId = this.placeMyEquipmentCard(equipmentCardId, collectorNumber, startHtmlId, equipName, equipEffect);
-/*
-            console.log("slide cardHtmlId:" + cardHtmlId + " to destinationHtmlId:" + destinationHtmlId);
 
-            //this.slideToObjectAndDestroy( cardHtmlId, destinationHtmlId, 500, 0 ); // slide it to its destination
-            this.slideToObject( cardHtmlId, destinationHtmlId, 500, 0 ).play(); // slide it to its destination
-*/
             dojo.addClass( cardHtmlId, 'cardHighlighted'); // highlight the card just investigated
         },
 
@@ -1750,17 +1444,7 @@ console.log("eliminated players ");
         {
             var startHtmlId = 'equipment_deck';
             var destinationHtmlId = 'player_'+letterPositionOfPlayerDrawing+'_equipment_hand_holder';
-/*
-            dojo.place(
-                    this.format_block( 'jstpl_movingEquipmentCard', {
-                        x: this.equipmentCardWidth*(0),
-                        y: this.equipmentCardHeight*(0)
-                    } ), startHtmlId );
 
-            var cardHtmlId = 'moving_equipment_card';
-
-            this.slideToObjectAndDestroy( cardHtmlId, destinationHtmlId, 1000, 0 ); // slide it to its destination
-*/
             // put the back of an equipment card in this player's equipment card hand spot
             var cardDiv = this.placeOpponentEquipmentCard(letterPositionOfPlayerDrawing, equipmentCardId);
 
@@ -1771,11 +1455,9 @@ console.log("eliminated players ");
 
                 var equipId = card['id'];
                 var htmlId = "player_board_hand_equipment_" + letterPositionOfPlayerDrawing + "_item_"+equipId;
-                console.log("equiphtml:"+htmlId);
+
                 dojo.addClass( htmlId, 'cardHighlighted' ); // highlight the card just investigated
             }
-
-            //dojo.addClass( cardDiv, 'cardHighlighted'); // highlight the card just investigated
         },
 
         getAllOpponentEquipmentCards: function(playerLetter)
@@ -1811,13 +1493,11 @@ console.log("eliminated players ");
 
         convertIsHiddenToText: function(isHidden)
         {
-            console.log("converting isHidden:"+isHidden);
             var isHiddenText = _("Revealed");
             if(isHidden == 1)
             {
                 isHiddenText = _("Hidden");
             }
-console.log("returning text:"+isHiddenText);
             return isHiddenText;
         },
 
@@ -1859,43 +1539,8 @@ console.log("returning text:"+isHiddenText);
 
         */
 
-        /* Example:
-
-        onMyMethodToCall1: function( evt )
-        {
-            console.log( 'onMyMethodToCall1' );
-
-            // Preventing default browser reaction
-            dojo.stopEvent( evt );
-
-            // Check that this action is possible (see "possibleactions" in states.inc.php)
-            if( ! this.checkAction( 'myAction' ) )
-            {   return; }
-
-            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/myAction.html", {
-                                                                    lock: true,
-                                                                    myArgument1: arg1,
-                                                                    myArgument2: arg2,
-                                                                    ...
-                                                                 },
-                         this, function( result ) {
-
-                            // What to do after the server call if it succeeded
-                            // (most of the time: nothing)
-
-                         }, function( is_error) {
-
-                            // What to do after the server call in anyway (success or failure)
-                            // (most of the time: nothing)
-
-                         } );
-        },
-
-        */
-
         onClickCancelButton: function( evt )
         {
-            console.log( 'onClickCancelButton' );
 
             dojo.stopEvent( evt ); // Preventing default browser reaction
 
@@ -1921,7 +1566,6 @@ console.log("returning text:"+isHiddenText);
 
         onClick_Investigate: function( evt )
         {
-            console.log( 'onClick_Investigate' );
 
             dojo.stopEvent( evt ); // Preventing default browser reaction
 
@@ -1947,7 +1591,6 @@ console.log("returning text:"+isHiddenText);
 
         onClickIntegrityCard: function( evt )
         { // a player clicked on an opponent's integrity card
-            console.log('clicked integrity card iscurrentplayeractive() ' + this.isCurrentPlayerActive());
 
             dojo.stopEvent( evt ); // Preventing default browser reaction
 
@@ -1955,8 +1598,6 @@ console.log("returning text:"+isHiddenText);
             var playerPosition = node.split('_')[1]; // b, c, d, etc.
             var cardPosition = node.split('_')[4]; // 1, 2, 3
 
-
-            console.log("clicked player position " + playerPosition + " and card position " + cardPosition );
 
             if(playerPosition == "a")
             { // clicked MY integrity card
@@ -2013,10 +1654,8 @@ console.log("returning text:"+isHiddenText);
 
         onClick_DiscardEquipment: function( evt )
         {
-            console.log( 'onClick_DiscardEquipment' );
 
             var node = evt.currentTarget.id;
-            console.log( 'id is ' + node);
             var equipmentId = node.split('_')[2]; // a, b, c, d, etc.
 
             if(this.checkPossibleActions('clickEquipmentCard'))
@@ -2034,7 +1673,6 @@ console.log("returning text:"+isHiddenText);
 
         onClickEquipmentCard: function( evt )
         {
-            console.log( 'onClickEquipmentCard' );
 
             var node = evt.currentTarget.id;
             if(node)
@@ -2060,8 +1698,6 @@ console.log("returning text:"+isHiddenText);
         {
             var type = node.split('_')[2]; // hand or active
 
-            console.log( "eqcard clicked:"+cardId+" of type:"+type);
-
             this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedEquipmentCard.html", {
                                                                         cardId: cardId,
                                                                         equipmentType: type,
@@ -2085,7 +1721,7 @@ console.log("returning text:"+isHiddenText);
 
         onClick_PauseToUseEquipment: function( evt )
         {
-            console.log('entered onClick_PauseToUseEquipment');
+//console.log('entered onClick_PauseToUseEquipment');
             if(this.checkPossibleActions('clickUseEquipmentButton'))
             { // we are allowed to select cards based on our current state
                 dojo.stopEvent( evt ); // Preventing default browser reaction
@@ -2116,7 +1752,6 @@ console.log("returning text:"+isHiddenText);
         {
             var node = evt.currentTarget.id;
             var equipmentId = node.split('_')[2]; // the equipment ID the player wants to use
-            console.log( "eqcard clicked:"+equipmentId);
             if(this.isCurrentPlayerActive() && this.checkPossibleActions('clickEquipmentCard'))
             { // we are allowed to select cards based on our current state
                 dojo.stopEvent( evt ); // Preventing default browser reaction
@@ -2146,7 +1781,6 @@ console.log("returning text:"+isHiddenText);
         // The player does not want to take an action on their turn.
         onClick_SkipMyTurn: function( evt )
         {
-            console.log( 'onClick_SkipMyTurn' );
 
             dojo.stopEvent( evt ); // Preventing default browser reaction
 
@@ -2172,7 +1806,6 @@ console.log("returning text:"+isHiddenText);
 
         onClick_Equip: function( evt )
         {
-            console.log( 'onClick_Equip' );
 
             dojo.stopEvent( evt ); // Preventing default browser reaction
 
@@ -2198,7 +1831,6 @@ console.log("returning text:"+isHiddenText);
 
         onClick_Arm: function( evt )
         {
-            console.log( 'onClick_Arm' );
 
             dojo.stopEvent( evt ); // Preventing default browser reaction
 
@@ -2224,7 +1856,6 @@ console.log("returning text:"+isHiddenText);
 
         onClick_Shoot: function( evt )
         {
-            console.log( 'onClick_Shoot' );
 
             dojo.stopEvent( evt ); // Preventing default browser reaction
 
@@ -2250,7 +1881,6 @@ console.log("returning text:"+isHiddenText);
 
         onClickPlayerButton: function( evt )
         {
-            console.log( 'onClickPlayerButton' );
 
             dojo.stopEvent( evt ); // Preventing default browser reaction
 
@@ -2261,7 +1891,6 @@ console.log("returning text:"+isHiddenText);
             var node = evt.currentTarget.id;
             var letterAim = node.split('_')[2]; // a, b, c, d, etc.
             var player = node.split('_')[3]; // a, b, c, d, etc.
-            console.log("aiming at player " + letterAim);
 
             this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedPlayer.html", {
                                                                     lock: true,
@@ -2283,7 +1912,6 @@ console.log("returning text:"+isHiddenText);
 
         onClickUseEquipmentButton: function( evt )
         {
-            console.log( 'onClickUseEquipmentButton' );
 
             dojo.stopEvent( evt ); // Preventing default browser reaction
 
@@ -2309,7 +1937,6 @@ console.log("returning text:"+isHiddenText);
 
         onClick_PassOnEquipmentUse: function( evt )
         {
-            console.log( 'onClick_PassOnEquipmentUse' );
 
             dojo.stopEvent( evt ); // Preventing default browser reaction
 
@@ -2335,7 +1962,6 @@ console.log("returning text:"+isHiddenText);
 
         onClickEndTurnButton: function( evt )
         {
-            console.log( 'onClickEndTurnButton' );
 
             dojo.stopEvent( evt ); // Preventing default browser reaction
 
@@ -2373,20 +1999,6 @@ console.log("returning text:"+isHiddenText);
         */
         setupNotifications: function()
         {
-            console.log( 'notifications subscriptions setup' );
-
-            // TODO: here, associate your game notifications with local methods
-
-            // Example 1: standard notification handling
-            // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
-
-            // Example 2: standard notification handling + tell the user interface to wait
-            //            during 3 seconds after calling the method in order to let the players
-            //            see what is happening in the game.
-            // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
-            // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
-            //
-
             dojo.subscribe( 'newGameMessage', this, "notif_newGameMessage" ); // this won't actually be called since it happens in setup before notifications are setup
             dojo.subscribe( 'viewCard', this, "notif_viewCard" );
             dojo.subscribe( 'gunPickedUp', this, "notif_gunPickedUp" );
@@ -2417,32 +2029,12 @@ console.log("returning text:"+isHiddenText);
             dojo.subscribe( 'iDrawEquipmentCard', this, "notif_iDrawEquipmentCard" );
         },
 
-        // TODO: from this point and below, you can write your game notifications handling methods
-
-        /*
-        Example:
-
-        notif_cardPlayed: function( notif )
-        {
-            console.log( 'notif_cardPlayed' );
-            console.log( notif );
-
-            // Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
-
-            // TODO: play the card in the user interface.
-        },
-
-        */
-
         notif_newGameMessage: function( notif )
         {
-            console.log( 'notif_newGameMessage' );
-            console.log( notif );
         },
 
         notif_gunPickedUp: function( notif )
         {
-            console.log("Entered notif_gunPickedUp.");
 
             var gunId = notif.args.gun_id;
             var playerArming = notif.args.player_arming;
@@ -2451,11 +2043,6 @@ console.log("returning text:"+isHiddenText);
             var heldByNameHtml = "<span style=\"color:#" + this.gamedatas.player_colors[heldByName] + "\"><b>" + heldByName + "</b></span>"
             var aimedAtName = ''; // if we're just picking it up, it's not aimed yet
 
-            console.log( "Arm Info:" );
-            console.log( "Gun ID: " + gunId );
-            console.log( "Player ID: " + playerArming );
-            console.log( "" );
-
             // move gun to the player who armed
             var centerHolder = 'gun_deck';
             var gunToMoveHtmlId = 'gun_' + gunId; // get the HTML ID of the gun we want to move
@@ -2463,7 +2050,6 @@ console.log("returning text:"+isHiddenText);
 
             this.placeGun(centerHolder, null, null, '', ''); // place gun in center holder (but don't specify any player who is holding it yet)
 
-            console.log("sliding from " + gunToMoveHtmlId + " to " + destinationHtmlId);
             this.attachToNewParent( gunToMoveHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
             var anim1 = this.slideToObject(gunToMoveHtmlId, destinationHtmlId, 1000, 750);
             dojo.connect(anim1, 'onEnd', function(node)
@@ -2477,19 +2063,12 @@ console.log("returning text:"+isHiddenText);
 
         notif_revealIntegrityCard: function( notif )
         {
-            console.log("Entered notif_revealIntegrityCard.");
 
             var integrityCardPositionRevealed = notif.args.card_position;
             var cardTypeRevealed = notif.args.card_type;
             var revealerPlayerId = notif.args.revealer_player_id;
             var playerLetter = this.gamedatas.playerLetters[revealerPlayerId].player_letter;
             var playersSeen = _("All");
-
-            console.log( "Reveal Info:" );
-            console.log( "Player Letter: " + playerLetter );
-            console.log( "Card Type: " + cardTypeRevealed );
-            console.log( "Integrity Card Position: " + integrityCardPositionRevealed );
-            console.log( "" );
 
             // update the integrity card for this player to the seen version of it... should be in format -${x}px -${y}px
             var visibilityOffset = this.getVisibilityOffset('REVEALED'); // get sprite X value for this card type
@@ -2500,7 +2079,6 @@ console.log("returning text:"+isHiddenText);
             var integrityCardHtmlId = "player_" + playerLetter + "_integrity_card_" + integrityCardPositionRevealed;
             dojo.style( integrityCardHtmlId, 'backgroundPosition', '-' + integrityCardSpriteX + 'px -' + integrityCardSpriteY + 'px' ); // update the integrity card for this player to the seen version of it... should be in format -${x}px -${y}px
 
-            console.log("highlighting id "+integrityCardHtmlId);
             dojo.addClass( integrityCardHtmlId, 'cardHighlighted'); // highlight the card just investigated
 
             this.addIntegrityCardTooltip(integrityCardHtmlId, cardTypeRevealed, 0, playersSeen);
@@ -2508,7 +2086,6 @@ console.log("returning text:"+isHiddenText);
 
         notif_gunAimed: function( notif )
         {
-            console.log("Entered notif_gunAimed.");
 
             var gunId = notif.args.gunId; // 1, 2, 3, 4
             var degreesToRotate = notif.args.degreesToRotate; // 0, 85, -15, etc.
@@ -2527,8 +2104,6 @@ console.log("returning text:"+isHiddenText);
 
     				var degreesToRotate = this.gamedatas.gun_rotations[gunHolderLetter][aimedAtLetter]; // get how much the gun should be rotated based on player positions
     				var isPointingLeft = this.gamedatas.is_gun_pointing_left[gunHolderLetter][aimedAtLetter]; // check if the gun should be pointing left or right based on player positions and aim
-
-            console.log("aiming data has gunHolderLetter " + gunHolderLetter + " aimedAtLetter " + aimedAtLetter + " degreesToRotate " + degreesToRotate + " isPointingLeft " + isPointingLeft);
 
             this.rotateGun(gunId, degreesToRotate, isPointingLeft); // switch to the left or right pointing image and rotate the gun to aim at the correct player
             dojo.addClass( 'gun_'+gunId, 'cardHighlighted'); // highlight the card just investigated
@@ -2551,14 +2126,10 @@ console.log("returning text:"+isHiddenText);
 
         notif_dropGun: function( notif )
         {
-            console.log("Entered notif_dropGun.");
-
             var gunId = notif.args.gunId; // 1, 2, 3, 4
             var gunToMoveHtmlId = 'gun_' + gunId; // get the HTML ID of the gun we want to move
             var destinationHtmlId = 'gun_deck'; // the HTML ID of where we want to move the gun
 
-
-            console.log("sliding from " + gunToMoveHtmlId + " to " + destinationHtmlId);
             this.attachToNewParent( gunToMoveHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
             var anim1 = this.slideToObject(gunToMoveHtmlId, destinationHtmlId, 1000, 750);
             dojo.connect(anim1, 'onEnd', function(node)
@@ -2575,7 +2146,6 @@ console.log("returning text:"+isHiddenText);
 
         notif_eliminatePlayer: function( notif )
         {
-            console.log("Entered notif_eliminatePlayer.");
 
             var eliminatedPlayerId = notif.args.eliminated_player_id;
             var letterOfPlayerWhoWasEliminated = this.gamedatas.playerLetters[eliminatedPlayerId].player_letter;
@@ -2585,7 +2155,6 @@ console.log("returning text:"+isHiddenText);
 
         notif_revivePlayer: function( notif )
         {
-            console.log("Entered notif_revivePlayer.");
 
             var eliminatedPlayerId = notif.args.eliminated_player_id;
             var letterOfPlayerWhoWasEliminated = this.gamedatas.playerLetters[eliminatedPlayerId].player_letter;
@@ -2595,7 +2164,6 @@ console.log("returning text:"+isHiddenText);
 
         notif_woundPlayer: function( notif )
         {
-            console.log("Entered notif_woundPlayer.");
 
             var positionOfLeaderCard = notif.args.leader_card_position;
             var playerIdOfLeaderHolder = notif.args.player_id_of_leader_holder;
@@ -2605,22 +2173,19 @@ console.log("returning text:"+isHiddenText);
             this.placeWoundedToken(letterOfLeaderHolder, positionOfLeaderCard, cardType); // put the token on the board
 
             var woundedHtmlId = "wounded_token_"+cardType;
-            console.log("wounded token id "+woundedHtmlId);
             dojo.addClass( woundedHtmlId, 'cardHighlighted'); // highlight the wounded token
         },
 
         notif_removeWoundedToken: function( notif )
         {
-            console.log("Entered notif_removeWoundedToken.");
 
-            var woundedCardId = notif.args.woundedCardId; // who is wounded... kingpin or agent
+            var woundedCardType = notif.args.woundedCardType; // who is wounded... kingpin or agent
 
-            this.removeWoundedToken(woundedCardId); // put the token on the board
+            this.removeWoundedToken(woundedCardType); // put the token on the board
         },
 
         notif_playerDrawsEquipmentCard: function( notif )
         {
-            console.log("Entered notif_playerDrawsEquipmentCard.");
 
             var equipmentId = notif.args.equipment_id;
             var playerIdDrawing = notif.args.drawing_player_id;
@@ -2631,7 +2196,6 @@ console.log("returning text:"+isHiddenText);
 
         notif_iDrawEquipmentCard: function( notif )
         {
-            console.log("Entered notif_iDrawEquipmentCard.");
 
             var equipName = notif.args.equip_name;
             var equipEffect = notif.args.equip_effect;
@@ -2643,22 +2207,18 @@ console.log("returning text:"+isHiddenText);
 
         notif_discardEquipmentCard: function( notif )
         {
-            console.log("Entered notif_discardEquipmentCard");
 
             var equipmentId = notif.args.equipment_id;
             var collectorNumber = notif.args.collector_number;
             var playerIdDiscarding = notif.args.player_id_discarding;
             var playerLetter = this.gamedatas.playerLetters[playerIdDiscarding].player_letter;
 
-            console.log("considering discarding hand equipment "+equipmentId + " for playerLetter "+playerLetter);
             this.discardEquipmentFromHand(playerLetter, equipmentId, true); // remove from player A hand and all player side board stocks
 
             var activeEquipmentHtmlId = "player_board_active_equipment_" + playerLetter + "_item_" + collectorNumber; // the id of where it would be if it were active on a player's board
-            console.log("considering discarding active equipment "+activeEquipmentHtmlId);
             var activeElementExists = document.getElementById(activeEquipmentHtmlId); // see if this equipment was active on a player's board
             if(activeElementExists)
             { // this equipment is active on a player's board
-                console.log("actually discarding active equipment "+activeEquipmentHtmlId);
                 var destination = 'equipment_deck'; // the HTML ID of where we want to move it
                 this.slideToObjectAndDestroy( activeEquipmentHtmlId, destination, 1000, 0 ); // slide it to its destination
             }
@@ -2666,8 +2226,6 @@ console.log("returning text:"+isHiddenText);
 
         notif_discardActivePlayerEquipmentCard: function( notif )
         {
-            console.log("Entered notif_discardActivePlayerEquipmentCard");
-
             var equipmentId = notif.args.equipment_id;
             var equipmentOwnerPlayerId = notif.args.equipment_card_owner;
             var playerLetter = this.gamedatas.playerLetters[equipmentOwnerPlayerId].player_letter;
@@ -2680,8 +2238,6 @@ console.log("returning text:"+isHiddenText);
 
         notif_activateCentralEquipment: function( notif )
         {
-            console.log("Entered notif_activateCentralEquipment");
-
             var equipmentId = notif.args.equipment_id;
             var collectorNumber = notif.args.collector_number;
             var playerIdEquipmentOwner = notif.args.player_id_equipment_owner;
@@ -2694,8 +2250,6 @@ console.log("returning text:"+isHiddenText);
 
         notif_activatePlayerEquipment: function( notif )
         {
-            console.log("Entered notif_activatePlayerEquipment");
-
             var equipmentId = notif.args.equipment_id;
             var collectorNumber = notif.args.collector_number;
             var playerIdPlaying = notif.args.player_id_playing;
@@ -2713,7 +2267,6 @@ console.log("returning text:"+isHiddenText);
 
         notif_handEquipmentCardExchanged: function( notif )
         {
-            console.log("Entered notif_handEquipmentCardExchanged");
             var equipmentId = notif.args.equipment_id_moving;
             var collectorNumber = notif.args.collector_number;
             var playerIdGiving = notif.args.player_id_giving;
@@ -2725,7 +2278,6 @@ console.log("returning text:"+isHiddenText);
 
             var cardHtmlIdInGiverHand = 'player_'+playerLetterGiving+'_hand_equipment_'+equipmentId;
 
-            console.log("CardExchanged playerLetterGiving:"+playerLetterGiving+" playerLetterReceiving:" + playerLetterReceiving+" equipmentId:" + equipmentId);
             this.discardEquipmentFromHand(playerLetterGiving, equipmentId, true); // remove from giver player board
 
 
@@ -2739,7 +2291,6 @@ console.log("returning text:"+isHiddenText);
 
         notif_activeEquipmentCardExchanged: function( notif )
         {
-            console.log("Entered notif_activeEquipmentCardExchanged");
             var equipmentId = notif.args.equipment_id_moving;
             var collectorNumber = notif.args.collector_number;
             var playerIdGiving = notif.args.player_id_giving;
@@ -2756,31 +2307,22 @@ console.log("returning text:"+isHiddenText);
 
         notif_integrityCardsExchanged: function( notif )
         {
-            console.log("Entered notif_integrityCardsExchanged");
             var card1Position = notif.args.card1OriginalPosition;
             var card2Position = notif.args.card2OriginalPosition;
             var playerId1 = notif.args.playerId1;
             var playerId2 = notif.args.playerId2;
             var playerLetter1 = this.gamedatas.playerLetters[playerId1].player_letter;
             var playerLetter2 = this.gamedatas.playerLetters[playerId2].player_letter;
-            var card1Type = notif.args.card1Type;
-            var card2Type = notif.args.card2Type;
+            var card1Type = notif.args.card1Type; // agent, kingpin, honest, crooked
+            var card2Type = notif.args.card2Type; // agent, kingpin, honest, crooked
             var card1Rotation = this.getIntegrityCardRotation(playerLetter1); // 0, 90, -90
             var card2Rotation = this.getIntegrityCardRotation(playerLetter2); // 0, 90, -90
             var card1PlayersSeen = notif.args.card1PlayersSeen;
             var card2PlayersSeen = notif.args.card2PlayersSeen;
             var card1SeenList = notif.args.card1SeenList; // [player_id][0],[player_id][1]
             var card2SeenList = notif.args.card2SeenList; // [player_id][0],[player_id][1]
-
-            console.log("card1SeenList:");
-            console.log(card1SeenList);
-            console.log("card2SeenList:");
-            console.log(card2SeenList);
-            console.log("card1PlayersSeen:");
-            console.log(card1PlayersSeen);
-            console.log("card2PlayersSeen:");
-            console.log(card2PlayersSeen);
-
+            var card1Wounded = notif.args.card1Wounded;
+            var card2Wounded = notif.args.card2Wounded;
 
             var card1IsHidden = notif.args.card1IsHidden; // true or false
             var card1IsHiddenInt = 1;
@@ -2800,7 +2342,6 @@ console.log("returning text:"+isHiddenText);
                 card1Visibility = 'REVEALED';
                 card1IsHiddenInt = 0;
             }
-            console.log("card1IsHidden "+card1IsHidden+" card1HasPlayerSeen "+card1HasPlayerSeen+" card1Visibility "+card1Visibility);
 
             var card2IsHidden = notif.args.card2IsHidden; // true or false
             var card2IsHiddenInt = 1;
@@ -2819,7 +2360,6 @@ console.log("returning text:"+isHiddenText);
                 card2Visibility = 'REVEALED';
                 card2IsHiddenInt = 0;
             }
-            console.log("card2IsHidden "+card2IsHidden+" card2HasPlayerSeen "+card2HasPlayerSeen+" card2Visibility "+card2Visibility);
 
             var card1HtmlId = "player_"+playerLetter1+"_integrity_card_"+card1Position; // integrity card 1
             var card1HolderHtmlId = "player_"+playerLetter1+"_integrity_card_"+card1Position+"_holder"; // original location of integrity card 1 (future location of integrity card 2)
@@ -2835,7 +2375,6 @@ console.log("returning text:"+isHiddenText);
             var visibilityOffset = this.getVisibilityOffset('HIDDEN_NOT_SEEN'); // get sprite X value for this card type
             var cardTypeOffset = 0; // get sprite Y value for this card type
 
-            console.log( "Placing this fake integrity card in div " + card1HolderHtmlId );
             dojo.place(
                     this.format_block( 'jstpl_integrityCard', {
                         x: this.integrityCardWidth*(visibilityOffset),
@@ -2847,7 +2386,6 @@ console.log("returning text:"+isHiddenText);
             var card1Div = 'player_fake_integrity_card_1';
             this.rotateTo( card1Div, card1Rotation );
 
-            console.log( "Placing this fake integrity card in div " + card2HolderHtmlId );
             dojo.place(
                     this.format_block( 'jstpl_integrityCard', {
                         x: this.integrityCardWidth*(visibilityOffset),
@@ -2871,13 +2409,31 @@ console.log("returning text:"+isHiddenText);
             dojo.style(card1HtmlId, 'transform', 'rotate('+card1Rotation+'deg)');
             dojo.style(card2HtmlId, 'transform', 'rotate('+card2Rotation+'deg)');
 
+            if(card1Wounded)
+            {
+                // place a wounded token
+                var htmlOfWoundedToken1 = this.placeWoundedToken(playerLetter1, card1Position, card1Type); // put the token on the integrity card
+
+                dojo.style(htmlOfWoundedToken1, 'transform', 'rotate('+card1Rotation+'deg)'); // rotate wounded token
+            }
+
+            if(card2Wounded)
+            {
+                // place the wounded token
+                var htmlOfWoundedToken2 = this.placeWoundedToken(playerLetter2, card2Position, card2Type); // put the token on the integrity card
+
+                dojo.style(htmlOfWoundedToken2, 'transform', 'rotate('+card1Rotation+'deg)'); // rotate wounded token
+            }
+
             dojo.addClass( card2HtmlId, 'cardHighlighted'); // highlight the card just investigated
             dojo.addClass( card1HtmlId, 'cardHighlighted'); // highlight the card just investigated
+
+            dojo.connect( $(card2HtmlId), 'onclick', this, 'onClickIntegrityCard' ); // re-add the onclick connection
+            dojo.connect( $(card1HtmlId), 'onclick', this, 'onClickIntegrityCard' ); // re-add the onclick connection
         },
 
         notif_viewCard: function( notif )
         {
-            console.log("Entered notif_viewCard.");
 
             var playerIdInvestigated = notif.args.investigated_player_id;
             var playerLetter = this.gamedatas.playerLetters[playerIdInvestigated].player_letter;
@@ -2893,13 +2449,6 @@ console.log("returning text:"+isHiddenText);
                 isHiddenInt = 1;
                 visibilityText = 'HIDDEN_SEEN'; // the most hidden this can be is HIDDEN_SEEN since it's my card
             }
-
-            console.log( "Seen Card:" );
-            console.log( "Player Letter: " + playerLetter );
-            console.log( "Card Position: " + cardPosition );
-            console.log( "Card Type: " + cardType );
-            console.log( "Is Hidden: " + isHidden );
-            console.log( "" );
 
             var rotation = this.getIntegrityCardRotation(playerLetter); // 0, 90, -90
             var htmlId = "player_" + playerLetter + "_integrity_card_" + cardPosition;
@@ -2922,7 +2471,6 @@ console.log("returning text:"+isHiddenText);
 
         notif_investigationAttempt: function( notif )
         {
-            console.log("Entered notif_investigationAttempt");
             var playerIdInvestigated = notif.args.player_id_investigated;
             var playerLetterOfPlayerInvestigated = this.gamedatas.playerLetters[playerIdInvestigated].player_letter;
             var cardPositionInvestigated = notif.args.card_position_targeted;
@@ -2933,8 +2481,6 @@ console.log("returning text:"+isHiddenText);
 
         notif_investigationComplete: function( notif )
         {
-            //dojo.query( '.cardHighlighted' ).removeClass( 'cardHighlighted' ); // remove all card highlights
-
             var investigatedPlayerId = notif.args.investigated_player_id;
             var investigateePlayerLetter = this.gamedatas.playerLetters[investigatedPlayerId].player_letter;
             var cardPosition = notif.args.cardPosition;
@@ -2948,13 +2494,6 @@ console.log("returning text:"+isHiddenText);
                 isHiddenInt = 1;
             }
 
-            console.log( "Seen Card:" );
-            console.log( "Investigatee Player Letter: " + investigateePlayerLetter );
-            console.log( "Card Position: " + cardPosition );
-            console.log( "Card Type: " + cardType );
-            console.log( "Is Hidden: " + isHidden );
-            console.log( "" );
-
             var htmlId = "player_" + investigateePlayerLetter + "_integrity_card_" + cardPosition;
 
             dojo.addClass( htmlId, 'cardHighlighted'); // highlight the card just investigated
@@ -2964,13 +2503,11 @@ console.log("returning text:"+isHiddenText);
 
         notif_endTurn: function( notif )
         {
-            console.log("Entered notif_endTurn");
             dojo.query( '.cardHighlighted' ).removeClass( 'cardHighlighted' ); // remove all card highlights
         },
 
         notif_playEquipment: function( notif )
         {
-            console.log("Entered notif_playEquipment");
             // this is just here so the equipment name gets the hover over in the message log
             var playerIdPlaying = notif.args.player_id_playing_equipment;
             var playerLetter = this.gamedatas.playerLetters[playerIdPlaying].player_letter;
@@ -2982,11 +2519,7 @@ console.log("returning text:"+isHiddenText);
 
             this.discardEquipmentFromHand(playerLetter, equipmentId, false); // remove from all player side board stocks
 
-
-            //this.placeOnObject( htmlIdOfCard, "player_board_hand_equipment_"+playerLetter+"_item_"+equipmentId );
             var htmlIdPlayerEquipmentHolder = "player_board_hand_equipment_"+playerLetter; // the HTML ID of the container for the card
-
-            console.log("")
 
             // place equipment card on the stock id
             dojo.place(
