@@ -95,7 +95,7 @@
 
 /* BOARD LAYOUT */
 #board_area div {
-    /*outline: 1px solid red;*/
+    outline: 1px solid red;
 }
 
 .player_holder_vertical {
@@ -358,6 +358,7 @@
 #player_a_name_holder {
     float:right;
     vertical-align: baseline;
+    margin-top: 95px;
 }
 
 #player_b_name_holder {
@@ -373,13 +374,12 @@
 #player_d_name_holder {
     display: block;
     margin-top: 10px; /* make 40 so it doesn't get covered up by integrity cards on mobile? */
-    height: 95px;
     float:right;
 }
 
 #player_e_name_holder {
     display: inline-block;
-    width: 205px;
+    width: 150px;
     height: 20px;
     float:right;
 }
@@ -391,11 +391,12 @@
 #player_g_name_holder {
     display: block;
     margin-top: 10px; /* make 40 so it doesn't get covered up by integrity cards on mobile? */
-    height: 95px;
+    margin-bottom: 5px;
 }
 
 #player_h_name_holder {
   vertical-align: baseline;
+  margin-top: 101px;
 }
 
 #player_g_a_win_condition_holder {
