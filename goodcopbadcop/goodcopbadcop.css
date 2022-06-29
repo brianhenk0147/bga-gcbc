@@ -95,7 +95,7 @@
 
 /* BOARD LAYOUT */
 #board_area div {
-    outline: 1px solid red;
+    /*outline: 1px solid red;*/
 }
 
 .player_holder_vertical {
@@ -112,8 +112,10 @@
 
 .player_holder_horizontal {
     display:inline-block;
-    width: 215px;
+    width: 150px;
     height: 150px;
+
+    margin-left: 19px;
 }
 
 #player_d_area {
@@ -135,7 +137,7 @@
 .player_row_horizontal {
     display:inline-block;
     height: 55px;
-    width: 215px;
+    width: 160px;
 }
 
 .first_equipment_active_holder_vertical {
@@ -278,7 +280,7 @@
 
 .corner_box {
     display: inline-block;
-    width: 205px;
+    width: 150px;
     height: 160px;
     vertical-align: top;
 }
@@ -334,12 +336,12 @@
     margin-right: auto;
     margin-top: 10px;
     margin-bottom: 10px;
-    width: 810px;
+    width: 710px;
 
 }
 
 .board_row_vertical {
-    width: 810px;
+    width: 710px;
     height: 160px;
 
     margin-top: 7px;
@@ -347,7 +349,7 @@
 }
 
 .board_row_horizontal {
-    width: 810px;
+    width: 710px;
     height: 175px;
 
     margin-top: 7px;
@@ -367,7 +369,7 @@
 
 #player_c_name_holder {
     display: block;
-    width: 205px;
+    width: 150px;
     height: 20px;
 }
 
@@ -408,12 +410,12 @@
 }
 
 #upper_left_name_divider {
-    width: 205px;
+    width: 150px;
     height: 130px;
 }
 
 #upper_right_name_divider {
-    width: 205px;
+    width: 150px;
     height: 110px;
 }
 
@@ -600,9 +602,9 @@
 
 .large_equipment
 {
-    background-image: url('img/equipment_card_sprite_400w.jpg');
-    width: 400px;
-    height: 560px;
+    background-image: url('img/equipment_card_sprite_240w.jpg');
+    width: 240px;
+    height: 336px;
 
     border-radius: 10px;
     border: 1px black solid;
@@ -610,21 +612,22 @@
 
 .large_equipment_name
 {
-    margin-top: 38px;
-    margin-left: 40px;
-    margin-right: 45px;
-    font-size: 30px;
-    line-height: 32px;
+    margin-top: 25px;
+    margin-left: 20px;
+    margin-right: 25px;
+    font-size: 18px;
+    line-height: 18px;
     font-weight: bolder;
     background-color: #ffffff;
 }
 
 .large_equipment_effect
 {
-    margin-top: 325px;
-    margin-left: 45px;
-    margin-right: 45px;
-    font-size: 18px;
+    margin-top: 197px;
+    margin-left: 27px;
+    margin-right: 27px;
+    font-size: 12px;
+    line-height: 14px; /* needed to make it fit on mobile */
 }
 
 #center_logo_buffer

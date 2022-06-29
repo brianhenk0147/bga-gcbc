@@ -35,8 +35,8 @@ function (dojo, declare) {
 
             this.equipmentCardWidth = 50;
             this.equipmentCardHeight = 70;
-            this.largeEquipmentCardWidth = 400;
-            this.largeEquipmentCardHeight = 560;
+            this.largeEquipmentCardWidth = 240;
+            this.largeEquipmentCardHeight = 336;
 
             this.gunCardWidth = 70;
             this.gunCardHeight = 50;
@@ -307,6 +307,7 @@ console.log("eliminated players ");
         //
         onUpdateActionButtons: function( stateName, args )
         {
+            console.log("onUpdateActionButtons state " + stateName);
 
             if( this.isCurrentPlayerActive() )
             {
@@ -632,26 +633,26 @@ console.log("eliminated players ");
                 this.myHandEquipment = new ebg.stock();
                 this.myHandEquipment.create( this, $('player_a_equipment_hand_holder'), this.largeEquipmentCardWidth, this.largeEquipmentCardHeight );
                 this.myHandEquipment.image_items_per_row = 6;
-                this.myHandEquipment.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 15 ); // disguise
-                this.myHandEquipment.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 6 ); // coffee
-                this.myHandEquipment.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 8 ); // planted evidence
-                this.myHandEquipment.addItemType( 12, 12, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 2 ); // smoke grenade
-                this.myHandEquipment.addItemType( 15, 15, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 1 ); // truth serum
-                this.myHandEquipment.addItemType( 16, 16, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 7 ); // wiretap
-                this.myHandEquipment.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 19 ); // riot shield
-                this.myHandEquipment.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 18 ); // restraining order
-                this.myHandEquipment.addItemType( 37, 37, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 14 ); // mobile detonator
-                this.myHandEquipment.addItemType( 4, 4, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 12 ); // evidence bag
-                this.myHandEquipment.addItemType( 35, 35, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 13 ); // med kit
-                this.myHandEquipment.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 20 ); // taser
-                this.myHandEquipment.addItemType( 3, 3, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 17 ); // Defibrillator
-                this.myHandEquipment.addItemType( 1, 1, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 16 ); // Blackmail
-                this.myHandEquipment.addItemType( 45, 45, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 11 ); // Walkie Talkie
-                this.myHandEquipment.addItemType( 9, 9, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 10 ); // Polygraph
-                this.myHandEquipment.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 9 ); // Surveillance Camera
-                this.myHandEquipment.addItemType( 7, 7, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 5 ); // Metal Detector
-                this.myHandEquipment.addItemType( 17, 17, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 4 ); // Deliriant
-                this.myHandEquipment.addItemType( 6, 6, g_gamethemeurl+'img/equipment_card_sprite_400w.jpg', 3 ); // K-9 Unit
+                this.myHandEquipment.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 15 ); // disguise
+                this.myHandEquipment.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 6 ); // coffee
+                this.myHandEquipment.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 8 ); // planted evidence
+                this.myHandEquipment.addItemType( 12, 12, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 2 ); // smoke grenade
+                this.myHandEquipment.addItemType( 15, 15, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 1 ); // truth serum
+                this.myHandEquipment.addItemType( 16, 16, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 7 ); // wiretap
+                this.myHandEquipment.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 19 ); // riot shield
+                this.myHandEquipment.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 18 ); // restraining order
+                this.myHandEquipment.addItemType( 37, 37, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 14 ); // mobile detonator
+                this.myHandEquipment.addItemType( 4, 4, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 12 ); // evidence bag
+                this.myHandEquipment.addItemType( 35, 35, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 13 ); // med kit
+                this.myHandEquipment.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 20 ); // taser
+                this.myHandEquipment.addItemType( 3, 3, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 17 ); // Defibrillator
+                this.myHandEquipment.addItemType( 1, 1, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 16 ); // Blackmail
+                this.myHandEquipment.addItemType( 45, 45, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 11 ); // Walkie Talkie
+                this.myHandEquipment.addItemType( 9, 9, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 10 ); // Polygraph
+                this.myHandEquipment.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 9 ); // Surveillance Camera
+                this.myHandEquipment.addItemType( 7, 7, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 5 ); // Metal Detector
+                this.myHandEquipment.addItemType( 17, 17, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 4 ); // Deliriant
+                this.myHandEquipment.addItemType( 6, 6, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 3 ); // K-9 Unit
 
 
 
@@ -1677,7 +1678,13 @@ console.log("eliminated players ");
             var node = evt.currentTarget.id;
             if(node)
             { // if node is defind
-                var equipmentId = node.split('_')[6]; // a, b, c, d, etc. player_a_equipment_hand_holder_item_9
+                var equipmentId = node.split('_')[6]; // the id of the equipment clicked (active player equipment... player_board_active_equipment_f_item_8)
+
+                if(!equipmentId)
+                { // the equipment ID is not valid
+                    equipmentId = node.split('_')[3]; // the id of the equipment clicked (active central equipment... center_active_equipment_12)
+                }
+
 
                 if(this.checkPossibleActions('clickEquipmentCard'))
                 { // we are allowed to select cards based on our current state
@@ -1697,6 +1704,8 @@ console.log("eliminated players ");
         clickEquipmentCard: function( cardId, node )
         {
             var type = node.split('_')[2]; // hand or active
+
+            console.log("clickEquipmentCard type " + type);
 
             this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedEquipmentCard.html", {
                                                                         cardId: cardId,
