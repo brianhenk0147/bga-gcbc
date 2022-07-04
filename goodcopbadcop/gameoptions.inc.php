@@ -12,9 +12,9 @@
  * gameoptions.inc.php
  *
  * goodcopbadcop game options description
- * 
+ *
  * In this file, you can define your game options (= game variants).
- *   
+ *
  * Note: If your game has no variant, you don't have to modify this file.
  *
  * Note²: All options defined in this file should have a corresponding "game state labels"
@@ -27,7 +27,7 @@
 $game_options = array(
 
     /*
-    
+
     // note: game variant ID should start at 100 (ie: 100, 101, 102, ...). The maximum is 199.
     100 => array(
                 'name' => totranslate('my game option'),
@@ -51,7 +51,13 @@ $game_options = array(
             ),
 
     */
+    100 => array(
+                'name' => totranslate('Zombies Expansion'),
+                'values' => array(
+                                1 => array( 'name' => totranslate('Disabled') ),
+                                2 => array( 'name' => totranslate('Enabled') )
+                            ),
+                'default' => 1
+            ),
 
 );
-
-

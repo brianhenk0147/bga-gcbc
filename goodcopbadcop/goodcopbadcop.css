@@ -95,7 +95,7 @@
 
 /* BOARD LAYOUT */
 #board_area div {
-    /*outline: 1px solid red;*/
+    outline: 1px solid red;
 }
 
 .player_holder_vertical {
@@ -189,7 +189,35 @@
 
 
 .eliminated_player_area {
-    background-color: gray;
+  /*opacity: 0.7;*/
+    border-radius: 25px;
+    /*background-color: gray;*/
+    background-color: rgba(128, 128, 128, 0.5);
+    box-shadow:
+        inset 0 0 50px gray,
+        inset 5px 0 20px black,
+        inset -5px 0 20px gray,
+        inset 5px 0 50px black,
+        inset -5px 0 50px gray,
+          0 0 50px gray,
+          -5px 0 20px black,
+          5px 0 20px gray;
+}
+
+.zombie_player_area {
+      /*opacity: 0.7;*/
+    border-radius: 25px;
+    /*background-color: #009A44;*/
+    background-color: rgba(0, 154, 68, 0.5);
+    box-shadow:
+        inset 0 0 50px #009A44,
+        inset 5px 0 20px #046A38,
+        inset -5px 0 20px #009A44,
+        inset 5px 0 50px #046A38,
+        inset -5px 0 50px #009A44,
+          0 0 50px gray,
+          -5px 0 20px #046A38,
+          5px 0 20px #009A44;
 }
 
 .other_equipment_active_holder_vertical {
@@ -443,6 +471,12 @@
   opacity: 0.7;
 }
 
+#arm_deck {
+  background-position:-0px -50px;
+  background-image: url('img/gun_70w.jpg');
+  opacity: 0.7;
+}
+
 .gun {
     display: inline-block;
     position: absolute; /* needed for a thing that slides */
@@ -456,12 +490,24 @@
     position: absolute; /* needed for a thing that slides */
     width: 50px;
     height: 50px;
+    margin-right: -5px;
     background-image: url('img/wounded_50w.png');
 }
 
-.center_wounded_token {
+.infection_token {
+    display: inline-block;
+    position: absolute; /* needed for a thing that slides */
+    width: 50px;
+    height: 50px;
+    margin-top: -5px;
+    margin-left: -5px;
+    background-image: url('img/wounded_50w.png');
+}
+
+.center_integrity_token {
     opacity: 0.7;
     margin-left: 15px;
+    margin-top: 0px;
 }
 
 /* INTEGRITY CARDS */

@@ -40,6 +40,12 @@ function (dojo, declare) {
 
             this.gunCardWidth = 70;
             this.gunCardHeight = 50;
+
+            this.woundedTokenWidth = 50;
+            this.woundedTokenHeight = 50;
+
+            this.dieWidth = 63;
+            this.dieHeight = 63;
         },
 
         /*
@@ -75,6 +81,7 @@ function (dojo, declare) {
 
             this.initializeHandEquipment(this.gamedatas.playerLetters);
             this.initializeActiveEquipment(this.gamedatas.playerLetters);
+            this.initializeZombieDice();
 
             // Setting up player boards
             var numberOfPlayers = 0;
@@ -151,6 +158,7 @@ function (dojo, declare) {
                 var heldByColor = gun['heldByColor'];
                 var aimedAtName = gun['aimedAtName'];
                 var aimedAtColor = gun['aimedAtColor'];
+                var gunType = gun['gun_type']; // gun or arm
 
                 if(heldByName == null)
                   heldByName = ''; // we don't want to display "null"
@@ -161,7 +169,7 @@ function (dojo, declare) {
                 var heldByNameHtml = '<span style="color:#' + heldByColor + '"><b>' + heldByName + '</b></span>';
                 var aimedAtNameHtml = '<span style="color:#' + aimedAtColor + '"><b>' + aimedAtName + '</b></span>';
 
-                this.placeGun(gunId, heldByLetterOrder, aimedAtLetterOrder, heldByNameHtml, aimedAtNameHtml);
+                this.placeGun(gunId, gunType, heldByLetterOrder, aimedAtLetterOrder, heldByNameHtml, aimedAtNameHtml);
 
             }
 
@@ -169,10 +177,26 @@ function (dojo, declare) {
             {
                 var gun = gamedatas.gunRotations[gun_id];
                 var gunId = gun['gun_id'];
+                var gunType = gun['gun_type'];
                 var rotation = gun['rotation'];
                 var isPointingLeft = gun['is_pointing_left']; // 1 if pointing LEFT or 0 if pointing RIGHT
 
-                this.rotateGun(gunId, rotation, isPointingLeft);
+                this.rotateGun(gunId, gunType, rotation, isPointingLeft);
+            }
+
+            if(gamedatas.zombieExpansion == 2)
+            { // we are using the zombies expansion
+
+                for( var i in gamedatas.infectionTokens )
+                {
+                    var token = gamedatas.infectionTokens[i];
+                    var infectedPlayerLetterOrder = token['infectedPlayerLetterOrder'];
+                    var infectedCardPosition = token['cardPosition']; // 1, 2, 3
+
+                    this.placeInfectionToken(infectedPlayerLetterOrder, infectedCardPosition); // put the token on the integrity card
+                }
+
+                this.placeCenterInfectionToken(); // put a token in the center mat
             }
 
             for( var i in gamedatas.woundedTokens )
@@ -242,7 +266,7 @@ function (dojo, declare) {
 
                 this.placeActivePlayerEquipmentCard(equipmentId, collectorNumber, playerLetter, rotation, equipName, equipEffect, thisPlayersActiveEquipmentCardIndex); // place an equipment card in the center of the table
             }
-console.log("eliminated players ");
+
             // eliminate players
             for( var i in gamedatas.eliminatedPlayers )
             {
@@ -251,6 +275,24 @@ console.log("eliminated players ");
                 var letterOfPlayerWhoWasEliminated = eliminatedPlayer['playerLetter']; // eliminated player letter for this player
 
                 this.eliminatePlayer(eliminatedPlayerId, letterOfPlayerWhoWasEliminated); // gray out eliminated players
+            }
+
+            // zombie players
+            for( var i in gamedatas.zombiePlayers )
+            {
+                var zombiePlayer = gamedatas.zombiePlayers[i];
+                var zombiePlayerId = zombiePlayer['playerId']; // zombie player ID
+                var letterOfPlayerWhoWasZombie = zombiePlayer['playerLetter']; // zombie player letter for this player
+
+                this.zombifyPlayer(zombiePlayerId, letterOfPlayerWhoWasZombie); // add green to player area
+            }
+
+            // dice
+            for( var i in gamedatas.dice )
+            {
+                var die = gamedatas.dice[i];
+
+                // I don't know if we want to do anything with these yet
             }
 
             // First Param: css class to target
@@ -370,8 +412,10 @@ console.log("eliminated players ");
 
                     case 'chooseAnotherPlayer':
                     case 'choosePlayer':
+                        this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
                     case 'askAimOutOfTurn':
                     case 'askAim':
+                    case 'askAimMustReaim':
                         // get a list of all players, their name, and their letter from my perpsective, if possible
                         var validPlayers = args.validPlayers;
 
@@ -384,7 +428,6 @@ console.log("eliminated players ");
                             this.addActionButton( 'button_aimAt_' + letterPosition + '_' + owner, name, 'onClickPlayerButton' ); // the player name does not need to be translated
                         }
 
-                        // button for each player
                     break;
 
                     case 'askInvestigateReaction':
@@ -518,6 +561,30 @@ console.log("eliminated players ");
        getEquipmentEffectByName : function(key)
        {
             return this.gamedatas.equipment_effects[key].effect; // get name for the key, from static table for example
+       },
+
+       initializeZombieDice : function()
+       {
+            this.tableDice = new ebg.stock(); // create a new set of cards for the player's equipment
+            this.tableDice.create( this, $('dice'), this.dieWidth, this.dieHeight ); // specify where it goes and how wide/tall it should be
+            this.tableDice.image_items_per_row = 6; // specify that there are 13 images per row in the CSS sprite image
+
+            // define all the dice that could be in the dice area
+            this.tableDice.addItemType( 0, 1, g_gamethemeurl+'img/zombie_dice.jpg', 0 ); // infection die | infection token face
+            this.tableDice.addItemType( 1, 2, g_gamethemeurl+'img/zombie_dice.jpg', 1 ); // infection die | infection token face
+            this.tableDice.addItemType( 2, 3, g_gamethemeurl+'img/zombie_dice.jpg', 2 ); // infection die | blank face
+            this.tableDice.addItemType( 3, 4, g_gamethemeurl+'img/zombie_dice.jpg', 3 ); // infection die | blank face
+            this.tableDice.addItemType( 4, 5, g_gamethemeurl+'img/zombie_dice.jpg', 4 ); // infection die | blank face
+            this.tableDice.addItemType( 5, 6, g_gamethemeurl+'img/zombie_dice.jpg', 5 ); // infection die | blank face
+
+            this.tableDice.addItemType( 6, 7, g_gamethemeurl+'img/zombie_dice.jpg', 6 ); // zombie die | zombie face
+            this.tableDice.addItemType( 7, 8, g_gamethemeurl+'img/zombie_dice.jpg', 7 ); // zombie die | re-aim arms face
+            this.tableDice.addItemType( 8, 9, g_gamethemeurl+'img/zombie_dice.jpg', 8 ); // zombie die | re-aim arms face
+            this.tableDice.addItemType( 9, 10, g_gamethemeurl+'img/zombie_dice.jpg', 9 ); // zombie die | re-aim gun face
+            this.tableDice.addItemType( 10, 11, g_gamethemeurl+'img/zombie_dice.jpg', 10 ); // zombie die | infection token face
+            this.tableDice.addItemType( 11, 12, g_gamethemeurl+'img/zombie_dice.jpg', 11 ); // zombie die | infection token face
+
+
        },
 
        initializeOneActiveEquipment : function(playerLetter)
@@ -654,6 +721,16 @@ console.log("eliminated players ");
                 this.myHandEquipment.addItemType( 17, 17, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 4 ); // Deliriant
                 this.myHandEquipment.addItemType( 6, 6, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 3 ); // K-9 Unit
 
+                this.myHandEquipment.addItemType( 60, 60, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 24 ); // Crossbow
+                this.myHandEquipment.addItemType( 61, 61, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 27 ); // Transfusion Tube
+                this.myHandEquipment.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 29 ); // Zombie Serum
+                this.myHandEquipment.addItemType( 63, 63, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 25 ); // Flamethrower
+                this.myHandEquipment.addItemType( 64, 64, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 23 ); // Chainsaw
+                this.myHandEquipment.addItemType( 65, 65, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 28 ); // Zombie Mask
+                this.myHandEquipment.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 26 ); // Machete
+                this.myHandEquipment.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 21 ); // Weapon Crate
+                this.myHandEquipment.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 22 ); // Alarm Clock
+
 
 
                 this.handPlayerEquipmentA = new ebg.stock();
@@ -678,6 +755,17 @@ console.log("eliminated players ");
                 this.handPlayerEquipmentA.addItemType( 17, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentA.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentA.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentA.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentA.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentA.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentA.addItemType( 23, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentA.addItemType( 24, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentA.addItemType( 25, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentA.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentA.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentA.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
                 break;
                 case 'b':
                 this.handPlayerEquipmentB = new ebg.stock();
@@ -702,6 +790,16 @@ console.log("eliminated players ");
                 this.handPlayerEquipmentB.addItemType( 17, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentB.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentB.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentB.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentB.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentB.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentB.addItemType( 23, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentB.addItemType( 24, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentB.addItemType( 25, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentB.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentB.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentB.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 break;
                 case 'c':
                 this.handPlayerEquipmentC = new ebg.stock();
@@ -726,6 +824,16 @@ console.log("eliminated players ");
                 this.handPlayerEquipmentC.addItemType( 17, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentC.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentC.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentC.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentC.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentC.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentC.addItemType( 23, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentC.addItemType( 24, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentC.addItemType( 25, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentC.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentC.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentC.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 break;
                 case 'd':
                 this.handPlayerEquipmentD = new ebg.stock();
@@ -750,6 +858,16 @@ console.log("eliminated players ");
                 this.handPlayerEquipmentD.addItemType( 17, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentD.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentD.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentD.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentD.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentD.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentD.addItemType( 23, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentD.addItemType( 24, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentD.addItemType( 25, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentD.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentD.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentD.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 break;
                 case 'e':
                 this.handPlayerEquipmentE = new ebg.stock();
@@ -774,6 +892,16 @@ console.log("eliminated players ");
                 this.handPlayerEquipmentE.addItemType( 17, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentE.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentE.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentE.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentE.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentE.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentE.addItemType( 23, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentE.addItemType( 24, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentE.addItemType( 25, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentE.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentE.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentE.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 break;
                 case 'f':
                 this.handPlayerEquipmentF = new ebg.stock();
@@ -798,6 +926,16 @@ console.log("eliminated players ");
                 this.handPlayerEquipmentF.addItemType( 17, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentF.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentF.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentF.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentF.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentF.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentF.addItemType( 23, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentF.addItemType( 24, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentF.addItemType( 25, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentF.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentF.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentF.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 break;
                 case 'g':
                 this.handPlayerEquipmentG = new ebg.stock();
@@ -822,6 +960,16 @@ console.log("eliminated players ");
                 this.handPlayerEquipmentG.addItemType( 17, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentG.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentG.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentG.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentG.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentG.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentG.addItemType( 23, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentG.addItemType( 24, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentG.addItemType( 25, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentG.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentG.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentG.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 break;
                 case 'h':
                 this.handPlayerEquipmentH = new ebg.stock();
@@ -846,6 +994,16 @@ console.log("eliminated players ");
                 this.handPlayerEquipmentH.addItemType( 17, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentH.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentH.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentH.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentH.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentH.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentH.addItemType( 23, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentH.addItemType( 24, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentH.addItemType( 25, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentH.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentH.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentH.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 break;
             }
         },
@@ -1114,6 +1272,7 @@ console.log("eliminated players ");
 
         getCardTypeOffset: function( cardType )
         {
+            console.log("cardType:"+cardType);
             cardTypeOffset = 0;
             if(cardType == 'crooked')
             {
@@ -1126,6 +1285,10 @@ console.log("eliminated players ");
             else if(cardType == 'kingpin')
             {
                 cardTypeOffset = 3;
+            }
+            else if(cardType == 'infector')
+            {
+                cardTypeOffset = 4;
             }
 
             return cardTypeOffset;
@@ -1241,11 +1404,18 @@ console.log("eliminated players ");
             }
         },
 
-        placeGun: function(gunId, heldByLetterOrder, aimedAtLetterOrder, heldByName, aimedAtName)
+        placeGun: function(gunId, gunType, heldByLetterOrder, aimedAtLetterOrder, heldByName, aimedAtName)
         {
 
             var gunIdHtml = 'gun_'+gunId;
             var gunHolderDiv = 'gun_deck'; // assume the gun is in the middle of the table
+console.log("gunType:"+gunType);
+            var gunOffset = 0;
+            if(gunType == 'arm')
+            {  // these are zombie arms
+                gunOffset = this.gunCardHeight;
+                gunHolderDiv = 'arm_deck';
+            }
 
             if(heldByLetterOrder != null && heldByLetterOrder != '')
             { // the gun is being held by a player rather than in the middle of the table
@@ -1256,7 +1426,7 @@ console.log("eliminated players ");
                     this.format_block( 'jstpl_gun', {
                         gunId: gunId,
                         x: 0,
-                        y: 0
+                        y: gunOffset
                     } ), gunHolderDiv );
 
             if(document.getElementById(gunIdHtml))
@@ -1268,7 +1438,7 @@ console.log("eliminated players ");
             return 'gun_'+gunId;
         },
 
-        rotateGun: function(gunId, rotation, isPointingLeft)
+        rotateGun: function(gunId, gunType, rotation, isPointingLeft)
         {
             if(rotation === null)
             {
@@ -1280,6 +1450,10 @@ console.log("eliminated players ");
             { // this gun is out on the table somewhere
                 var gunSpriteX = this.gunCardWidth*(isPointingLeft); // set the X position in the sprite to point at the LEFT or RIGHT pointing gun
                 var gunSpriteY = 0;
+                if(gunType == 'arm')
+                { // this is a zombie arm
+                    gunSpriteY = this.gunCardHeight;
+                }
                 dojo.style( gunDiv, 'backgroundPosition', '-' + gunSpriteX + 'px -' + gunSpriteY + 'px' ); // switch the gun to use the correct LEFT or RIGHT pointing image
 
                 this.rotateTo( gunDiv, rotation ); // rotate the gun
@@ -1288,21 +1462,46 @@ console.log("eliminated players ");
             return gunDiv;
         },
 
+        placeInfectionToken: function(playerLetterOfInfected, positionOfInfectedCard)
+        {
+            var htmlIdOfTargetCard = 'player_' + playerLetterOfInfected + '_integrity_card_' + positionOfInfectedCard;
+            var cardType = positionOfInfectedCard+''+playerLetterOfInfected;
+
+            if(positionOfInfectedCard < 4)
+            { // they don't already have 3 infection tokens
+                dojo.place(
+                        this.format_block( 'jstpl_integrityCardToken', {
+                            cardType: cardType,
+                            x: 0,
+                            y: this.woundedTokenHeight
+                        } ), htmlIdOfTargetCard );
+
+                dojo.addClass("integrity_token_"+cardType, "infection_token"); // add the wounded token class
+            }
+
+            return 'integrity_token_'+cardType;
+        },
+
+
         placeWoundedToken: function(woundedPlayerLetterOrder, leaderCardPosition, cardType)
         {
             var htmlIdOfLeaderCard = 'player_' + woundedPlayerLetterOrder + '_integrity_card_' + leaderCardPosition;
 
             dojo.place(
-                    this.format_block( 'jstpl_wounded', {
-                        cardType: cardType
+                    this.format_block( 'jstpl_integrityCardToken', {
+                        cardType: cardType,
+                        x: 0,
+                        y: 0
                     } ), htmlIdOfLeaderCard );
+
+            dojo.addClass("integrity_token_"+cardType, "wounded_token"); // add the wounded token class
 
             return 'wounded_token_'+cardType;
         },
 
         removeWoundedToken: function(woundedCardId)
         {
-            var woundedTokenHtml = 'wounded_token_' + woundedCardId;
+            var woundedTokenHtml = 'integrity_token_' + woundedCardId;
             var destination = 'wounded_tokens';
 
             this.slideToObject( woundedTokenHtml, destination, 1000, 0 ).play(); // slide it to its destination
@@ -1313,11 +1512,39 @@ console.log("eliminated players ");
             var destination = 'wounded_tokens';
 
             dojo.place(
-                  this.format_block( 'jstpl_wounded', {
-                      cardType: "center"
+                  this.format_block( 'jstpl_integrityCardToken', {
+                      cardType: "wounded_center",
+                      x: 0,
+                      y: 0
                   } ), destination );
 
-            dojo.addClass(wounded_token_center, "center_wounded_token");
+            dojo.addClass("integrity_token_wounded_center", "center_integrity_token");
+            dojo.addClass("integrity_token_wounded_center", "wounded_token");
+        },
+
+        placeCenterInfectionToken: function()
+        {
+            var destination = 'infection_tokens';
+
+            dojo.place(
+                    this.format_block( 'jstpl_integrityCardToken', {
+                        cardType: "infection_center",
+                        x: 0,
+                        y: this.woundedTokenHeight
+                    } ), destination );
+
+            dojo.addClass("integrity_token_infection_center", "infection_token"); // add the infection token class
+            dojo.addClass("integrity_token_infection_center", "center_integrity_token");
+        },
+
+        zombifyPlayer: function(playerId, letterOfPlayerWhoIsNowAZombie)
+        {
+            var htmlIdOfPlayerZombieArea = 'player_' + letterOfPlayerWhoIsNowAZombie + '_area';
+            var htmlIdOfRightPlayerBoardId = 'overall_player_board_' + playerId;
+            var zombieClass = 'zombie_player_area';
+
+            dojo.addClass( htmlIdOfPlayerZombieArea, zombieClass ); // add style to show this player is zombie on the player's mat
+            dojo.addClass( htmlIdOfRightPlayerBoardId, zombieClass ); // add style to show this player is zombie on the right player board
         },
 
         eliminatePlayer: function(eliminatedPlayerId, letterOfPlayerWhoWasEliminated)
@@ -1520,6 +1747,10 @@ console.log("eliminated players ");
             else if(cardType == "kingpin")
             {
                 cardTypeText = _("Kingpin");
+            }
+            else if(cardType == "infector")
+            {
+                cardTypeText = _("Infector");
             }
 
             return cardTypeText;
@@ -2033,9 +2264,14 @@ console.log("eliminated players ");
             dojo.subscribe( 'endTurn', this, "notif_endTurn" );
             dojo.subscribe( 'investigationComplete', this, "notif_investigationComplete" );
             dojo.subscribe( 'playEquipment', this, "notif_playEquipment" );
-
             dojo.subscribe( 'playerDrawsEquipmentCard', this, "notif_playerDrawsEquipmentCard" );
             dojo.subscribe( 'iDrawEquipmentCard', this, "notif_iDrawEquipmentCard" );
+
+            // ZOMBIES
+            dojo.subscribe( 'addInfectionToken', this, "notif_addInfectionToken" );
+            dojo.subscribe( 'rolledInfectionDie', this, "notif_rolledInfectionDie" );
+            dojo.subscribe( 'zombifyPlayer', this, "notif_zombifyPlayer" );
+            dojo.subscribe( 'rolledZombieDie', this, "notif_rolledZombieDie" );
         },
 
         notif_newGameMessage: function( notif )
@@ -2046,6 +2282,7 @@ console.log("eliminated players ");
         {
 
             var gunId = notif.args.gun_id;
+            var gunType = notif.args.gun_type; // gun or arms
             var playerArming = notif.args.player_arming;
             var letterOfPlayerWhoArmed = this.gamedatas.playerLetters[playerArming].player_letter;
             var heldByName = notif.args.player_name;
@@ -2057,7 +2294,7 @@ console.log("eliminated players ");
             var gunToMoveHtmlId = 'gun_' + gunId; // get the HTML ID of the gun we want to move
             var destinationHtmlId = 'player_' + letterOfPlayerWhoArmed + '_gun_holder';
 
-            this.placeGun(centerHolder, null, null, '', ''); // place gun in center holder (but don't specify any player who is holding it yet)
+            this.placeGun(centerHolder, gunType, null, null, '', ''); // place gun in center holder (but don't specify any player who is holding it yet)
 
             this.attachToNewParent( gunToMoveHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
             var anim1 = this.slideToObject(gunToMoveHtmlId, destinationHtmlId, 1000, 750);
@@ -2107,6 +2344,7 @@ console.log("eliminated players ");
             var aimedAtNameColored = notif.args.aimedAtNameColored;
             var gunHolderId = notif.args.gun_holder_id;
             var aimedAtId = notif.args.aimed_at_id;
+            var gunType = notif.args.gun_type; // gun or arms
 
             var gunHolderLetter = this.gamedatas.playerLetters[gunHolderId].player_letter;
     				var aimedAtLetter = this.gamedatas.playerLetters[aimedAtId].player_letter; // get the player letter of who it is aimed at from this player's perspective
@@ -2114,16 +2352,19 @@ console.log("eliminated players ");
     				var degreesToRotate = this.gamedatas.gun_rotations[gunHolderLetter][aimedAtLetter]; // get how much the gun should be rotated based on player positions
     				var isPointingLeft = this.gamedatas.is_gun_pointing_left[gunHolderLetter][aimedAtLetter]; // check if the gun should be pointing left or right based on player positions and aim
 
-            this.rotateGun(gunId, degreesToRotate, isPointingLeft); // switch to the left or right pointing image and rotate the gun to aim at the correct player
-            dojo.addClass( 'gun_'+gunId, 'cardHighlighted'); // highlight the card just investigated
+            this.rotateGun(gunId, gunType, degreesToRotate, isPointingLeft); // switch to the left or right pointing image and rotate the gun to aim at the correct player
 
-            // add tooltip
-            this.addGunTooltip('gun_'+gunId, heldByNameColored, aimedAtNameColored);
+            var tokenExists = document.getElementById('gun_'+gunId); // see if this is a valid html id
+            if(tokenExists)
+            { // it exists
+                dojo.addClass( 'gun_'+gunId, 'cardHighlighted'); // highlight the card just investigated
+                this.addGunTooltip('gun_'+gunId, heldByNameColored, aimedAtNameColored);   // add tooltip
+            }
         },
 
         notif_shootAttempt: function ( notif )
         {
-            var gunId = notif.args.gunId; // 1, 2, 3, 4
+            var gunId = notif.args.gunId; // 1, 2, 3, 4, etc
 
             dojo.addClass( 'gun_'+gunId, 'cardHighlighted'); // highlight the card just investigated
         },
@@ -2162,6 +2403,14 @@ console.log("eliminated players ");
             this.eliminatePlayer(eliminatedPlayerId, letterOfPlayerWhoWasEliminated);
         },
 
+        notif_zombifyPlayer: function( notif )
+        {
+            var playerId = notif.args.zombie_player_id;
+            var letterOfPlayerWhoIsNowAZombie = this.gamedatas.playerLetters[playerId].player_letter;
+
+            this.zombifyPlayer(playerId, letterOfPlayerWhoIsNowAZombie);
+        },
+
         notif_revivePlayer: function( notif )
         {
 
@@ -2181,7 +2430,7 @@ console.log("eliminated players ");
 
             this.placeWoundedToken(letterOfLeaderHolder, positionOfLeaderCard, cardType); // put the token on the board
 
-            var woundedHtmlId = "wounded_token_"+cardType;
+            var woundedHtmlId = "integrity_token_"+cardType;
             dojo.addClass( woundedHtmlId, 'cardHighlighted'); // highlight the wounded token
         },
 
@@ -2193,9 +2442,42 @@ console.log("eliminated players ");
             this.removeWoundedToken(woundedCardType); // put the token on the board
         },
 
+        notif_rolledZombieDie: function( notif )
+        {
+            var rolledFace = notif.args.rolled_face;
+            this.tableDice.addToStock( rolledFace );
+
+            var dieRolled = notif.args.die_rolled;
+
+console.log("zombie die rolled:"+dieRolled+" with face "+rolledFace);
+
+            dojo.addClass( 'dice_item_'+dieRolled, 'cardHighlighted'); // highlight the die
+        },
+
+        notif_rolledInfectionDie: function( notif )
+        {
+            var rolledFace = notif.args.rolled_face;
+            this.tableDice.addToStock( rolledFace );
+
+            dojo.addClass( 'dice_item_1', 'cardHighlighted'); // highlight the die
+        },
+
+        notif_addInfectionToken: function( notif )
+        {
+            var positionOfInfectedCard = notif.args.card_position;
+            var playerIdOfInfected = notif.args.player_id_of_infected;
+            var playerLetterOfInfected = this.gamedatas.playerLetters[playerIdOfInfected].player_letter;
+
+            var tokenHtmlId = this.placeInfectionToken(playerLetterOfInfected, positionOfInfectedCard); // put the token on the integrity card
+            var tokenExists = document.getElementById(tokenHtmlId); // see if this is a valid html id
+            if(tokenExists)
+            { // it exists
+                dojo.addClass( tokenHtmlId, 'cardHighlighted'); // highlight the token
+            }
+        },
+
         notif_playerDrawsEquipmentCard: function( notif )
         {
-
             var equipmentId = notif.args.equipment_id;
             var playerIdDrawing = notif.args.drawing_player_id;
             var playerLetter = this.gamedatas.playerLetters[playerIdDrawing].player_letter;
@@ -2513,6 +2795,7 @@ console.log("eliminated players ");
         notif_endTurn: function( notif )
         {
             dojo.query( '.cardHighlighted' ).removeClass( 'cardHighlighted' ); // remove all card highlights
+            this.tableDice.removeAll(); // remove all dice
         },
 
         notif_playEquipment: function( notif )

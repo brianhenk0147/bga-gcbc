@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `integrityCards` (
   `card_location` varchar(30) NOT NULL,
   `card_location_arg` int(11) NOT NULL,
   `has_wound` INT UNSIGNED NOT NULL DEFAULT '0',
-  `has_bite` INT UNSIGNED NOT NULL DEFAULT '0',
+  `has_infection` INT UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS `equipmentCards` (
 
 CREATE TABLE IF NOT EXISTS `guns` (
   `gun_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `gun_type` varchar(20) NOT NULL DEFAULT '',
   `gun_held_by` varchar(30) NOT NULL DEFAULT '',
   `gun_aimed_at` varchar(30) NOT NULL DEFAULT '',
   `gun_state` varchar(30) NOT NULL DEFAULT 'center',
@@ -102,3 +103,10 @@ CREATE TABLE IF NOT EXISTS `playerPositioning` (
   `player_position` varchar(5) NOT NULL,
   PRIMARY KEY (`player_asking`,`player_id`)
 ) ENGINE=InnoDB ;
+
+CREATE TABLE IF NOT EXISTS `dice` (
+  `die_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `die_type` varchar(10) NOT NULL DEFAULT '',
+  `die_value` int(10) unsigned NOT NULL DEFAULT 0,
+  PRIMARY KEY (`die_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;

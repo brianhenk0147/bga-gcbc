@@ -61,14 +61,22 @@ $stats_type = array(
         "honest_at_start" => array("id"=> 14,
                     "name" => totranslate("Honest players at start"),
                     "type" => "int" ),
-        "crooked_at_start" => array("id"=> 15,
-                    "name" => totranslate("Crooked players at start"),
-                    "type" => "int" ),
-        "honest_at_end" => array("id"=> 16,
+        "honest_at_end" => array("id"=> 15,
                     "name" => totranslate("Honest players at end"),
                     "type" => "int" ),
+
+        "crooked_at_start" => array("id"=> 16,
+                    "name" => totranslate("Crooked players at start"),
+                    "type" => "int" ),
+
         "crooked_at_end" => array("id"=> 17,
                     "name" => totranslate("Crooked players at end"),
+                    "type" => "int" ),
+        "zombies_at_start" => array("id"=> 18,
+                    "name" => totranslate("Zombie players at start"),
+                    "type" => "int" ),
+        "zombies_at_end" => array("id"=> 19,
+                    "name" => totranslate("Zombie players at end"),
                     "type" => "int" ),
 
 /*
@@ -120,7 +128,13 @@ $stats_type = array(
                     "type" => "int" ),
         "bullets_taken" => array("id"=> 27,
                     "name" => totranslate("Bullets taken"),
-                    "type" => "int" )
+                    "type" => "int" ),
+        "players_bitten" => array("id"=> 28,
+                    "name" => totranslate("Players bitten"),
+                    "type" => "int" ),
+        "bites_taken" => array("id"=> 29,
+                    "name" => totranslate("Bites taken"),
+                    "type" => "int" ),
 
 /*
         Examples:
@@ -152,7 +166,9 @@ $stats_type = array(
  			       3 => totranslate("Crooked Cop"),
              4 => totranslate("Zombie Infector"),
              5 => totranslate("Zombie Minion"),
-             6 => totranslate("Kingpin Agent")
+             6 => totranslate("Kingpin Agent"),
+             7 => totranslate("Infector Agent"),
+             8 => totranslate("Infector Kingpin")
 		    ),
         13 => array(
 			       0 => totranslate("Honest"),

@@ -27,6 +27,9 @@
 
 
 <div id="board_area">
+    <div id="die_result_holder" class="whiteblock">
+          <div id="dice"></div>
+    </div>
     <div id="board_row_1" class="board_row_vertical">
         <div id="upper_left_corner_box" class="corner_box">
 
@@ -133,10 +136,10 @@
                 <div id="active_equipment_center_holder"></div>
             </div>
             <div id="gun_row">
-                <div id="gun_placeholder_1" class="gun_holder"></div>
-                <div id="gun_placeholder_2" class="gun_holder"></div>
-                <div id="gun_deck" class="gun_holder"></div>
+                <div id="infection_tokens" class="gun_holder"></div>
                 <div id="wounded_tokens" class="gun_holder"></div>
+                <div id="gun_deck" class="gun_holder"></div>
+                <div id="arm_deck" class="gun_holder"></div>
             </div>
         </div>
         <div id="player_f_area" class="player_holder_horizontal">
@@ -296,6 +299,7 @@
 
         </div>
     </div>
+
     <div id="player_a_equipment_hand_holder"></div>
 </div>
 
@@ -316,7 +320,7 @@ var jstpl_integrityCard = '<div class="integrity_card component_rounding" id="pl
                         </div>';
 var jstpl_gun = '<div class="gun component_rounding" id="gun_${gunId}" style="background-position:-${x}px -${y}px">\
                         </div>';
-var jstpl_wounded = '<div class="wounded_token" id="wounded_token_${cardType}">\
+var jstpl_integrityCardToken = '<div id="integrity_token_${cardType}" style="background-position:-${x}px -${y}px">\
                         </div>';
 
 var jstpl_largeEquipment = '<div class="large_equipment large_component_rounding" style="background-position:-${x}px -${y}px"><div class="large_equipment_name">${equipmentName}</div><div class="large_equipment_effect">${equipmentEffect}</div>\
