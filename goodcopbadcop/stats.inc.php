@@ -96,9 +96,6 @@ $stats_type = array(
     // Statistics existing for each player
     "player" => array(
 
-        "turns_number" => array("id"=> 10,
-                    "name" => totranslate("Number of turns"),
-                    "type" => "int" ),
         "starting_role" => array("id"=> 11,
                     "name" => totranslate("Starting role"),
                     "type" => "int" ),

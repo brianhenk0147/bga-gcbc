@@ -93,6 +93,15 @@ class action_goodcopbadcop extends APP_GameAction
         self::ajaxResponse( );
     }
 
+    public function clickedDoneSelectingButton()
+    {
+        self::setAjaxMode();
+
+        $this->game->clickedDoneSelectingButton(); // tell the server that the current player is done making their selections
+
+        self::ajaxResponse( );
+    }
+
     public function clickedArmButton()
     {
         self::setAjaxMode();

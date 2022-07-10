@@ -133,7 +133,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeActionShoot",
         "updateGameProgression" => false,
-        "transitions" => array( "endTurnReaction" => 29, "endGame" => 99, "rollInfectionDie" => 50, "askAim" => 27, "askAimMustReaim" => 26, "discardEquipment" => 12 )
+        "transitions" => array( "endTurnReaction" => 29, "endGame" => 99, "rollInfectionDie" => 50, "askAim" => 27, "askAimMustReaim" => 26, "discardEquipment" => 12, "askBiteReaction" => 51, "askDiscardOutOfTurn" => 35 )
     ),
 
     10 => array(
@@ -207,7 +207,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetGunTargetsMustReaim',
     		"possibleactions" => array( "clickPlayer" ),
-    		"transitions" => array( "aimAtPlayer" => 28, "endTurnReaction" => 29, "rollInfectionDie" => 50, "askAimMustReaim" => 26 )
+    		"transitions" => array( "aimAtPlayer" => 28, "endTurnReaction" => 29, "rollInfectionDie" => 50, "askAimMustReaim" => 26, "askAim" => 27 )
     ),
 
     27 => array(
@@ -217,7 +217,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetGunTargets',
     		"possibleactions" => array( "clickPlayer", "clickEndTurnButton" ),
-    		"transitions" => array( "aimAtPlayer" => 28, "endTurnReaction" => 29, "rollInfectionDie" => 50, "askAimMustReaim" => 26, "askAim" => 27 )
+    		"transitions" => array( "aimAtPlayer" => 28, "endTurnReaction" => 29, "rollInfectionDie" => 50, "askAimMustReaim" => 26, "askAim" => 27, "endGame" => 99 )
     ),
 
     28 => array(
@@ -253,7 +253,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeEquipmentPlay",
         "updateGameProgression" => true,
-        "transitions" => array( "playerTurn" => 2, "askInvestigateReaction" => 4, "askShootReaction" => 8, "endTurnReaction" => 29, "askAimOutOfTurn" => 33, "askDiscardOutOfTurn" => 35, "endGame" => 99, "allPassedOnReactions" => 30, "rollInfectionDie" => 50 )
+        "transitions" => array( "playerTurn" => 2, "askInvestigateReaction" => 4, "askShootReaction" => 8, "endTurnReaction" => 29, "askAimOutOfTurn" => 33, "askDiscardOutOfTurn" => 35, "endGame" => 99, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "executeActionBite" => 52, "askBiteReaction" => 51, "askDiscardOutOfTurn" => 35 )
     ),
 
     32 => array(
@@ -281,7 +281,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "afterAimedOutOfTurn",
         "updateGameProgression" => false,
-        "transitions" => array( "playerTurn" => 2, "askInvestigateReaction" => 4, "askShootReaction" => 8, "endTurnReaction" => 29 )
+        "transitions" => array( "playerTurn" => 2, "askInvestigateReaction" => 4, "askShootReaction" => 8, "endTurnReaction" => 29, "askAimOutOfTurn" => 33, "rollInfectionDie" => 50 )
     ),
 
     35 => array(
@@ -307,7 +307,7 @@ $machinestates = array(
     		"description" => clienttranslate('${actplayer} is choosing an Equipment target.'),
     		"descriptionmyturn" => clienttranslate('${you} must choose an Integrity Card to target with the Equipment.'),
     		"type" => "activeplayer",
-    		"possibleactions" => array( "clickConfirmButton", "clickCancelButton", "clickOpponentIntegrityCard" ),
+    		"possibleactions" => array( "clickConfirmButton", "clickCancelButton", "clickOpponentIntegrityCard", "clickMyIntegrityCard", "clickDoneSelectingButton" ),
     		"transitions" => array( "executeEquipment" => 31, "chooseIntegrityCards" => 40, "playerTurn" => 2, "chooseEquipmentToPlayReactEndOfTurn" => 16, "chooseEquipmentToPlayReactInvestigate" => 17, "chooseEquipmentToPlayReactShoot" => 18, "chooseEquipmentToPlayOnYourTurn" => 15 )
     ),
 
@@ -345,8 +345,26 @@ $machinestates = array(
         "description" => clienttranslate('${actplayer} is rolling the Infection Die.'),
         "type" => "game",
         "action" => "rollInfectionDie",
-        "updateGameProgression" => false,
+        "updateGameProgression" => true,
         "transitions" => array( "endTurnReaction" => 29 )
+    ),
+
+    51 => array(
+    		"name" => "askBiteReaction",
+    		"description" => clienttranslate('Other players are deciding if they will use an Equipment.'),
+    		"descriptionmyturn" => clienttranslate('${you} may use Equipment in reaction to the Bite roll.'),
+    		"type" => "multipleactiveplayer",
+    		"possibleactions" => array( "clickUseEquipmentButton", "clickPassOnUseEquipmentButton", "clickEquipmentCard" ),
+    		"transitions" => array( "useEquipment" => 18, "allPassedOnReactions" => 52 )
+    ),
+
+    52 => array(
+        "name" => "executeActionBite",
+        "description" => "",
+        "type" => "game",
+        "action" => "executeActionBite",
+        "updateGameProgression" => true,
+        "transitions" => array( "askAim" => 27, "discardEquipment" => 12, "endTurnReaction" => 29, "rollInfectionDie" => 50, "askAimMustReaim" => 26, "endGame" => 99 )
     ),
 
 

@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS `equipmentCards` (
   `equipment_played_in_state` varchar(60) NOT NULL DEFAULT '',
   `equipment_played_on_turn` varchar(30) NOT NULL DEFAULT '',
   `equipment_is_active` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `done_selecting` smallint(5) unsigned NOT NULL DEFAULT 0,
   `equipment_target_1` varchar(30) NOT NULL DEFAULT '',
   `equipment_target_2` varchar(30) NOT NULL DEFAULT '',
   `equipment_target_3` varchar(30) NOT NULL DEFAULT '',
@@ -108,5 +109,8 @@ CREATE TABLE IF NOT EXISTS `dice` (
   `die_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `die_type` varchar(10) NOT NULL DEFAULT '',
   `die_value` int(10) unsigned NOT NULL DEFAULT 0,
+  `roller_player_id` varchar(30) NOT NULL,
+  `target_player_id` varchar(30) NOT NULL,
+  `card_position_infected` int(10) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`die_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;

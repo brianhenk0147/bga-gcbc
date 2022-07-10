@@ -95,7 +95,7 @@
 
 /* BOARD LAYOUT */
 #board_area div {
-    outline: 1px solid red;
+    /*outline: 1px solid red;*/
 }
 
 .player_holder_vertical {
@@ -168,12 +168,12 @@
 }
 
 #player_b_gun_holder {
-  margin-left: 25px;
+  margin-left: 35px;
   width: 10px; /* to make it not go to next line on mobile */
 }
 
 #player_g_gun_holder {
-  margin-left: 15px;
+  margin-left: 35px;
   width: 10px; /* to make it not go to next line on mobile */
 }
 
