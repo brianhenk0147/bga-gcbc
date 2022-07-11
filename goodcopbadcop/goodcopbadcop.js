@@ -336,6 +336,7 @@ function (dojo, declare) {
                 dojo.query( '.cardHighlighted' ).removeClass( 'cardHighlighted' ); // remove all card highlights to reduce confusion
                 break;
                 case 'executeEquipmentPlay':
+                case 'askEndTurnReaction':
                 this.EXTRA_DESCRIPTION_TEXT = ''; // in case special instructions were given, clear them out
                 break;
             }
@@ -361,7 +362,7 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-//            console.log("onUpdateActionButtons state " + stateName);
+            console.log("onUpdateActionButtons state " + stateName);
 
             if( this.isCurrentPlayerActive() )
             {
@@ -468,6 +469,7 @@ function (dojo, declare) {
 
                     case 'chooseEquipmentToPlayReactInvestigate':
                     case 'chooseEquipmentToPlayReactShoot':
+                    case 'chooseEquipmentToPlayReactBite':
                     case 'chooseEquipmentToPlayReactEndOfTurn':
                         this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
                     break;
@@ -630,6 +632,7 @@ function (dojo, declare) {
                this.activePlayerEquipmentA.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                this.activePlayerEquipmentA.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
                this.activePlayerEquipmentA.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentA.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
                break;
                case 'b':
                this.activePlayerEquipmentB = new ebg.stock();
@@ -643,6 +646,7 @@ function (dojo, declare) {
                this.activePlayerEquipmentB.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                this.activePlayerEquipmentB.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
                this.activePlayerEquipmentB.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentB.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
                break;
                case 'c':
                this.activePlayerEquipmentC = new ebg.stock();
@@ -656,6 +660,7 @@ function (dojo, declare) {
                this.activePlayerEquipmentC.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                this.activePlayerEquipmentC.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
                this.activePlayerEquipmentC.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentC.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
                break;
                case 'd':
                this.activePlayerEquipmentD = new ebg.stock();
@@ -669,6 +674,7 @@ function (dojo, declare) {
                this.activePlayerEquipmentD.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                this.activePlayerEquipmentD.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
                this.activePlayerEquipmentD.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentD.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
                break;
                case 'e':
                this.activePlayerEquipmentE = new ebg.stock();
@@ -682,6 +688,7 @@ function (dojo, declare) {
                this.activePlayerEquipmentE.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                this.activePlayerEquipmentE.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
                this.activePlayerEquipmentE.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentE.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
                break;
                case 'f':
                this.activePlayerEquipmentF = new ebg.stock();
@@ -695,6 +702,7 @@ function (dojo, declare) {
                this.activePlayerEquipmentF.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                this.activePlayerEquipmentF.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
                this.activePlayerEquipmentF.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentF.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
                break;
                case 'g':
                this.activePlayerEquipmentG = new ebg.stock();
@@ -708,6 +716,7 @@ function (dojo, declare) {
                this.activePlayerEquipmentG.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                this.activePlayerEquipmentG.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
                this.activePlayerEquipmentG.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentG.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
                break;
                case 'h':
                this.activePlayerEquipmentH = new ebg.stock();
@@ -721,6 +730,7 @@ function (dojo, declare) {
                this.activePlayerEquipmentH.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
                this.activePlayerEquipmentH.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
                this.activePlayerEquipmentH.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentH.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
                break;
            }
        },
@@ -1594,7 +1604,7 @@ function (dojo, declare) {
             dojo.connect(anim1, 'onEnd', function(node)
             { // do the following after the animation ends
               dojo.addClass( movingTokenHtmlId, 'cardHighlighted'); // highlight the gun that just moved
-
+              dojo.style( movingTokenHtmlId, 'marginTop', '-10px' ); // switch to the gun pointing right image
             });
             anim1.play();
 
@@ -1607,6 +1617,8 @@ function (dojo, declare) {
             var destination = 'wounded_tokens';
 
             this.slideToObject( woundedTokenHtml, destination, 1000, 0 ).play(); // slide it to its destination
+
+            //dojo.addClass( woundedTokenHtml, 'cardHighlighted'); // highlight the token that just moved (DON'T HIGHLIGHT WOUNDED TOKENS BECAUSE THE TRANSPARENCY ON ROUND TOKENS MAKES IT LOOK WEIRD)
         },
 
         removeInfectionToken: function(positionPlayerId)
@@ -1615,6 +1627,8 @@ function (dojo, declare) {
             var destination = 'infection_tokens';
 
             this.slideToObject( tokenHtml, destination, 1000, 0 ).play(); // slide it to its destination
+
+            //dojo.addClass( tokenHtml, 'cardHighlighted'); // highlight the token that just moved (DON'T HIGHLIGHT INFECTION TOKENS BECAUSE THE TRANSPARENCY ON ROUND TOKENS MAKES IT LOOK WEIRD)
         },
 
         placeCenterWoundedToken: function()
