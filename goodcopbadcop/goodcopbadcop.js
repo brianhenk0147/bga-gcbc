@@ -471,6 +471,7 @@ function (dojo, declare) {
                     case 'chooseEquipmentToPlayReactShoot':
                     case 'chooseEquipmentToPlayReactBite':
                     case 'chooseEquipmentToPlayReactEndOfTurn':
+                    case 'chooseEquipmentToPlayOnYourTurn':
                         this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
                     break;
 

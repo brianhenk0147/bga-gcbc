@@ -61,3 +61,26 @@ $game_options = array(
             ),
 
 );
+
+/*
+$game_preferences = array(
+        100 => array(
+                'name' => totranslate('Skip Unplayable Reactions'),
+                'needReload' => false, // after user changes this preference game interface would auto-reload
+                'values' => array(
+                        1 => array( 'name' => totranslate( 'On' ), 'cssPref' => 'skipUnplayableReactions_On' ),
+                        2 => array( 'name' => totranslate( 'Off' ), 'cssPref' => 'skipUnplayableReactions_Off' )
+                ),
+                'default' => 1
+        ),
+        101 => array(
+                'name' => totranslate('Skip Investigate Reactions'),
+                'needReload' => false, // after user changes this preference game interface would auto-reload
+                'values' => array(
+                        1 => array( 'name' => totranslate( 'On' ), 'cssPref' => 'skipInvestigateReactions_On' ),
+                        2 => array( 'name' => totranslate( 'Off' ), 'cssPref' => 'skipInvestigateReactions_Off' )
+                ),
+                'default' => 1
+        ),
+);
+*/

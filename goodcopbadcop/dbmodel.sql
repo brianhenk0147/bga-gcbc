@@ -114,3 +114,10 @@ CREATE TABLE IF NOT EXISTS `dice` (
   `card_position_infected` int(10) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`die_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+CREATE TABLE IF NOT EXISTS `user_preferences` (
+  `player_id` int(10) NOT NULL,
+  `pref_id` int(10) NOT NULL,
+  `pref_value` int(10) NOT NULL,
+  PRIMARY KEY (`player_id`, `pref_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
