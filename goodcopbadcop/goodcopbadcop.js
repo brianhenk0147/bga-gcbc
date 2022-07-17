@@ -103,6 +103,9 @@ function (dojo, declare) {
             { // we are NOT using the zombies expansion
                 var diceHolder = 'die_result_holder'; // the place where infection and zombie dice are rolled
                 dojo.destroy(diceHolder); // we don't need this taking up space if we're not using this expansion
+
+                var armDeck = 'arm_deck'; // the place where arms are kept
+                dojo.destroy(armDeck); // we don't need this taking up space if we're not using this expansion
             }
 
             // TODO: Set up your game interface here, according to "gamedatas"
