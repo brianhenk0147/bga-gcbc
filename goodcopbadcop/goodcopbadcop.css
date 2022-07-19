@@ -562,6 +562,17 @@
   filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
+#current_player_token
+{
+    position: absolute; /* needed for a thing that slides */
+    background-image: url('img/30_30_tokens.png');
+    background-position:-0px -0px;
+    width: 30px;
+    height: 30px;
+    /*left: 160px;
+    top: 20px;*/
+}
+
 /* EQUIPMENT CARDS */
 #equipment_deck
 {

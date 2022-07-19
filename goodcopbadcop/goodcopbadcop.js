@@ -110,6 +110,8 @@ function (dojo, declare) {
 
             // TODO: Set up your game interface here, according to "gamedatas"
 
+            this.placeCurrentTurnToken(gamedatas.currentPlayerTurn);
+
             // put all revealed cards out
             for( var i in this.gamedatas.revealedCards )
             {
@@ -365,7 +367,7 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-            console.log("onUpdateActionButtons state " + stateName);
+//            console.log("onUpdateActionButtons state " + stateName);
 
             if( this.isCurrentPlayerActive() )
             {
@@ -1665,6 +1667,27 @@ function (dojo, declare) {
             dojo.addClass("integrity_token_infection_center", "center_integrity_token");
         },
 
+        placeCurrentTurnToken: function(currentPlayerId)
+        {
+            var destination = 'player_board_' + currentPlayerId;
+            var tokenId = 'current_player_token';
+
+            var tokenAlreadyExists = document.getElementById(tokenId); // see if this already exists
+            if(tokenAlreadyExists)
+            {
+                dojo.destroy(tokenId); // destroy it before placing a new one
+            }
+
+            dojo.place(
+                    this.format_block( 'jstpl_currentPlayerToken', {
+                        x: 150,
+                        y: 0
+                    } ), destination );
+
+            dojo.style( tokenId, 'left', '160px' ); // switch to the arm pointing right image
+            dojo.style( tokenId, 'top', '20px' ); // switch to the arm pointing right image
+        },
+
         zombifyPlayer: function(playerId, letterOfPlayerWhoIsNowAZombie)
         {
             var htmlIdOfPlayerZombieArea = 'player_' + letterOfPlayerWhoIsNowAZombie + '_area';
@@ -2414,6 +2437,7 @@ function (dojo, declare) {
             dojo.subscribe( 'integrityCardsExchanged', this, "notif_integrityCardsExchanged" );
             dojo.subscribe( 'investigationAttempt', this, "notif_investigationAttempt" );
             dojo.subscribe( 'endTurn', this, "notif_endTurn" );
+            dojo.subscribe( 'startTurn', this, "notif_startTurn" );
             dojo.subscribe( 'investigationComplete', this, "notif_investigationComplete" );
             dojo.subscribe( 'playEquipment', this, "notif_playEquipment" );
             dojo.subscribe( 'playerDrawsEquipmentCard', this, "notif_playerDrawsEquipmentCard" );
@@ -3070,6 +3094,33 @@ function (dojo, declare) {
             { // we are using the zombies expansion
                 this.tableDice.removeAll(); // remove all dice
             }
+        },
+
+        notif_startTurn: function( notif )
+        {
+            var playerId = notif.args.new_player_id;
+            this.placeCurrentTurnToken(playerId);
+
+/*
+            var tokenId = 'current_player_token';
+
+
+            var destination = 'player_board_' + playerId;
+            //var destination = 'player_elo_' + playerId;
+
+            this.attachToNewParent( tokenId, destination ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
+            var anim1 = this.slideToObject(tokenId, destination, 1000, 750);
+            dojo.connect(anim1, 'onEnd', function(node)
+            { // do the following after the animation ends
+
+              //$(gunToMoveHtmlId).style.removeProperty('transform'); // rotate the gun to 0
+
+                  dojo.style( tokenId, 'left', '160px' ); // switch to the arm pointing right image
+                  dojo.style( tokenId, 'top', '20px' ); // switch to the arm pointing right image
+
+            });
+            anim1.play();
+*/
         },
 
         notif_playEquipment: function( notif )

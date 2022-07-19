@@ -79,7 +79,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must choose which Integrity Card you will investigate.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickOpponentIntegrityCard", "clickCancelButton" ),
-    		"transitions" => array( "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "cancelAction" => 2 )
+    		"transitions" => array( "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "cancelAction" => 2, "playerAction" => 2 )
     ),
 
     4 => array(

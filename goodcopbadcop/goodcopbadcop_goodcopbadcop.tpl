@@ -336,6 +336,9 @@ var jstpl_movingEquipmentCard = '<div class="moving_equipment_card_back componen
 var jstpl_activeCenterEquipment = '<div class="active_center_equipment_card component_rounding" id="center_active_equipment_${equipmentId}" style="background-position:-${x}px -${y}px">\
                         </div>';
 
+var jstpl_currentPlayerToken = '<div id="current_player_token" style="background-position:-${x}px -${y}px">\
+                        </div>';
+
 </script>
 
 {OVERALL_GAME_FOOTER}

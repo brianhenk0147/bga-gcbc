@@ -153,6 +153,7 @@ class goodcopbadcop extends Table
 				$result['playerLetters'] = $this->getPlayerLetterList($currentPlayerId, $result['players']);
 
 				$result['zombieExpansion'] = $this->getGameStateValue('ZOMBIES_EXPANSION'); // send whether we have the zombies expansion activated
+				$result['currentPlayerTurn'] = $this->getGameStateValue('CURRENT_PLAYER'); // let the client know whose turn it is
 
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
@@ -3778,9 +3779,12 @@ class goodcopbadcop extends Table
 						break;
 
 						case 44: // riot shield
-							if(($checkStateToo && ($stateName == "chooseEquipmentToPlayReactShoot" || $stateName == "chooseEquipmentToPlayReactBite" )) ||
-							!$checkStateToo)
-							{ // we're checking the state and we're in the right state OR we're not checking the state
+							$gunsShooting = $this->getGunsShooting();
+							//if(($checkStateToo && ($stateName == "chooseEquipmentToPlayReactShoot" || $stateName == "chooseEquipmentToPlayReactBite" )) ||
+							//!$checkStateToo)
+							//{ // we're checking the state and we're in the right state OR we're not checking the state
+							if(count($gunsShooting) > 0)
+							{
 									return true;
 							}
 							else
@@ -3790,9 +3794,12 @@ class goodcopbadcop extends Table
 						break;
 
 						case 11: // restraining order
-							if(($checkStateToo && ($stateName == "chooseEquipmentToPlayReactShoot" || $stateName == "chooseEquipmentToPlayReactBite" )) ||
-							!$checkStateToo)
-							{ // we're checking the state and we're in the right state OR we're not checking the state
+							$gunsShooting = $this->getGunsShooting();
+							//if(($checkStateToo && ($stateName == "chooseEquipmentToPlayReactShoot" || $stateName == "chooseEquipmentToPlayReactBite" )) ||
+							//!$checkStateToo)
+							//{ // we're checking the state and we're in the right state OR we're not checking the state
+							if(count($gunsShooting) > 0)
+							{
 									$getLivingPlayers = $this->getLivingPlayers();
 									if(count($getLivingPlayers) < 3)
 									{ // there are only 2 players left
@@ -3808,9 +3815,12 @@ class goodcopbadcop extends Table
 						break;
 
 						case 37: // mobile detonator
-							if(($checkStateToo && ($stateName == "chooseEquipmentToPlayReactShoot" || $stateName == "chooseEquipmentToPlayReactBite" )) ||
-							!$checkStateToo)
-							{ // we're checking the state and we're in the right state OR we're not checking the state
+							$gunsShooting = $this->getGunsShooting();
+							//if(($checkStateToo && ($stateName == "chooseEquipmentToPlayReactShoot" || $stateName == "chooseEquipmentToPlayReactBite" )) ||
+							//!$checkStateToo)
+							//{ // we're checking the state and we're in the right state OR we're not checking the state
+							if(count($gunsShooting) > 0)
+							{
 									return true;
 							}
 							else
@@ -5224,6 +5234,10 @@ class goodcopbadcop extends Table
 								}
 						break;
 						case 7: // Metal Detector
+								if($this->doneSelecting($equipmentCardId))
+								{
+										return true; // they say they're done selecting
+								}
 
 								$numberOfGunsHeldWithHiddenCards = $this->getNumberOfGunsHeldByPlayersWithHiddenOpponentIntegrityCards($playerUsingEquipment); // get guns held by players with at least one hidden integrity card
 								$numberOfEquipmentTargets = $this->getNumberOfEquipmentTargets(); // get number of integrity cards targeted
@@ -7055,6 +7069,18 @@ class goodcopbadcop extends Table
 		{
 				$collectorNumber = $this->getCollectorNumberFromId($equipmentId); // get the type of equipment card we're using
 				$equipmentCardOwner = $this->getEquipmentCardOwner($equipmentId); // get the player ID who is playing the equipment card
+
+				$equipmentCardName = $this->getEquipmentName($equipmentId); // get the name of the equipment card
+				$equipName = $this->getTranslatedEquipmentName($collectorNumber);
+				$equipEffect = $this->getTranslatedEquipmentEffect($collectorNumber);
+				self::notifyAllPlayers( "resolveEquipment", clienttranslate( '${player_name} is playing ${equipment_name}.' ), array(
+								'i18n' => array( 'equipment_name' ),
+								'equipment_name' => $equipmentCardName,
+								'equip_name' => $equipName,
+								'equip_effect' => $equipEffect,
+								'player_name' => self::getActivePlayerName()
+				) );
+
 //throw new feException( "Resolve $collectorNumber" );
 				// switch statement
 				switch($collectorNumber)
@@ -7786,15 +7812,19 @@ class goodcopbadcop extends Table
 								throw new BgaUserException( self::_("You can only investigate hidden cards.") );
 						}
 
-						$this->attemptInvestigation($playerAsking, $integrityCardOwner, $integrityCardId); // notify players that there is an investigation attempt in progress
+
 						if($this->skipInvestigateReactions())
 						{
+							$this->attemptInvestigation($playerAsking, $integrityCardOwner, $integrityCardId, false); // begin an investigation
 								$this->gamestate->nextState( "executeActionInvestigate" ); // go straight to executing the investigation
+
 						}
 						else
 						{ // allow reactions to the investigation
+							$this->attemptInvestigation($playerAsking, $integrityCardOwner, $integrityCardId, true); // notify players that there is an investigation attempt in progress
 								$this->setEquipmentHoldersToActive("askInvestigateReaction"); // set anyone holding equipment to active
 								//$this->gamestate->nextState( "askInvestigateReaction" ); // go to the state allowing the active player to choose a card to investigate
+
 						}
 				}
 				elseif($stateName == "chooseIntegrityCards")
@@ -7865,18 +7895,21 @@ class goodcopbadcop extends Table
 				}
 		}
 
-		function attemptInvestigation($playerAsking, $integrityCardOwner, $integrityCardId)
+		function attemptInvestigation($playerAsking, $integrityCardOwner, $integrityCardId, $notifyPlayers)
 		{
 				$playerNameInvestigating = $this->getPlayerNameFromPlayerId($playerAsking);
 				$playerNameTarget = $this->getPlayerNameFromPlayerId($integrityCardOwner);
 				$cardPositionTargeted = $this->getIntegrityCardPosition($integrityCardId);
 
-				self::notifyAllPlayers( "investigationAttempt", clienttranslate( '${player_name} is attempting to investigate ${player_name_2}.' ), array(
-						'player_name' => $playerNameInvestigating,
-						'player_name_2' => $playerNameTarget,
-						'player_id_investigated' => $integrityCardOwner,
-						'card_position_targeted' => $cardPositionTargeted
-				) );
+				if($notifyPlayers)
+				{
+						self::notifyAllPlayers( "investigationAttempt", clienttranslate( '${player_name} is attempting to investigate ${player_name_2}.' ), array(
+								'player_name' => $playerNameInvestigating,
+								'player_name_2' => $playerNameTarget,
+								'player_id_investigated' => $integrityCardOwner,
+								'card_position_targeted' => $cardPositionTargeted
+						) );
+				}
 
 				$this->setLastPlayerInvestigated($playerAsking, $integrityCardOwner); // set player.last_player_investigated so we can resolve the investigation after players react with equipment
 				$this->setLastCardPositionInvestigated($playerAsking, $cardPositionTargeted); // set player.last_card_position_investigated so we can resolve the investigation after players react with equipment
@@ -8116,7 +8149,7 @@ class goodcopbadcop extends Table
 						$extraDescriptionText = $this->getExtraDescriptionTextForEquipment($collectorNumberClicked);
 //throw new feException( "description: ".$extraDescriptionText );
 
-						self::notifyAllPlayers( "playEquipment", clienttranslate( '${player_name} is playing ${equipment_name}.' ), array(
+						self::notifyAllPlayers( "playEquipment", '', array(
 										'i18n' => array( 'equipment_name' ),
 										'equipment_name' => $equipmentCardName,
 										'equip_name' => $equipName,
@@ -8416,6 +8449,11 @@ class goodcopbadcop extends Table
 		{
 				//$this->setAllPlayersInactive();
 
+				// notify all players the turn has ended to they can remove highlights
+				self::notifyAllPlayers( "endTurn", clienttranslate( '${player_name} has ended their turn.' ), array(
+						'player_name' => self::getActivePlayerName()
+				) );
+
 				$this->setGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN", 0); // reset whether we rolled the infection die this turn
 
 				// set the current active player to the one whose turn it should be right now
@@ -8473,14 +8511,13 @@ class goodcopbadcop extends Table
 
 						self::giveExtraTime( $newActivePlayer ); // give the player some extra time to make their decision
 
-						// notify all players the turn has ended to they can remove highlights
-						self::notifyAllPlayers( "endTurn", clienttranslate( '${player_name} has ended their turn.' ), array(
-								'player_name' => self::getActivePlayerName()
-						) );
-
 						$this->gamestate->changeActivePlayer( $newActivePlayer );
 						$this->gamestate->nextState( "startNewPlayerTurn" ); // begin a new player's turn
 
+						self::notifyAllPlayers( "startTurn", clienttranslate( '${player_name} has started their turn.' ), array(
+								'player_name' => self::getActivePlayerName(),
+								'new_player_id' => $newActivePlayer
+						) );
 				}
 		}
 
@@ -8544,7 +8581,7 @@ class goodcopbadcop extends Table
 				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 				$playerInvestigated = $this->getLastPlayerInvestigated($playerWhoseTurnItIs);
 				$positionOfCardInvestigated = $this->getLastCardPositionInvestigated($playerWhoseTurnItIs);
-
+//throw new feException( "playerInvestigated:$playerInvestigated positionOfCardInvestigated:$positionOfCardInvestigated" );
 				$cardId = $this->getCardIdFromPlayerAndPosition($playerInvestigated, $positionOfCardInvestigated);
 
 				$this->investigateCard($cardId, $playerWhoseTurnItIs, false); // investigate this card and notify players
