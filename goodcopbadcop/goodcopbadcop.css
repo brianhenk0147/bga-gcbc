@@ -573,6 +573,14 @@
     top: 20px;*/
 }
 
+.action-button
+{
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+}
+
 /* EQUIPMENT CARDS */
 #equipment_deck
 {

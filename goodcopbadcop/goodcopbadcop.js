@@ -1680,7 +1680,7 @@ function (dojo, declare) {
 
             dojo.place(
                     this.format_block( 'jstpl_currentPlayerToken', {
-                        x: 150,
+                        x: 210,
                         y: 0
                     } ), destination );
 

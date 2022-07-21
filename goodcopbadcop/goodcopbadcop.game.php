@@ -2831,6 +2831,8 @@ class goodcopbadcop extends Table
 		// order or riot shield.
 		function canWeRechooseAction()
 		{
+				return false; // this is failing when Restraining Order is used when no player has equipment that can be used so let's just not allow this for now... it might be better this way anyway
+
 				$activeEquipment = $this->getActiveEquipmentCards();
 
 				foreach($activeEquipment as $equipment)
@@ -3578,9 +3580,40 @@ class goodcopbadcop extends Table
 				self::DbQuery( $sqlUpdate );
 		}
 
+		function countPlayersWhoCanUseEquipment()
+		{
+				$activePlayers = 0;
+				$checkedPlayers = 0;
+				$players = $this->getPlayersDeets(); // get players
+				foreach( $players as $player )
+				{ // go through each player
+						$playerId = $player['player_id'];
+						$isEliminated = $this->isPlayerEliminated($playerId); // true if this player is eliminated (might not be needed)
+						$isHoldingEquipment = $this->isPlayerHoldingEquipment($playerId); // true if the player is holding equipment
+						if($this->skipUnplayableReactions())
+						{ // only make them active if they have an equipment that is usable now
+								$isHoldingEquipment = $this->isPlayerHoldingPlayableEquipment($playerId); // true if the player is holding playable equipment
+						}
+
+						if(!$isHoldingEquipment || $isEliminated)
+						{ // this player is not holding equipment or they are eliminated
+
+						}
+						else
+						{ // this player is alive and holding equipment
+								$activePlayers++; // just add to the count so we know how many players are active
+						}
+
+						$checkedPlayers++;
+				}
+
+				return $activePlayers;
+		}
+
 		// Set all players who are holding equipment cards to active.
 		function setEquipmentHoldersToActive($nextGameState)
 		{
+
 				$this->gamestate->setAllPlayersMultiactive(); // set all players to active
 
 				$activePlayers = 0;
@@ -3618,24 +3651,38 @@ class goodcopbadcop extends Table
 
 				$this->gamestate->nextState( $nextGameState ); // set to the next game state
 
+
+
 				if($activePlayers == 0)
 				{ // no players can play equipment
 						//$this->gamestate->setAllPlayersMultiactive(); // set all players to active otherwise it puts them in a bad state where no one can do anything
 
 						$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 						$this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make player whose turn it is the only active player
+//throw new feException("setEquipmentHoldersToActive sending to $nextGameState");
 						switch($nextGameState)
 						{
 							case "askInvestigateReaction":
 								$this->gamestate->nextState("executeActionInvestigate");
 							break;
 							case "endTurnReaction":
+							//throw new feException("setEquipmentHoldersToActive sending to $nextGameState");
+									$this->gamestate->nextState("allPassedOnReactions"); // this will take you to end of turn
+
+							break;
 							case "askBiteReaction":
+									$this->gamestate->nextState("allPassedOnReactions"); // goes to executeActionBite
+							break;
 							case "askShootReaction":
-							case "askShootReaction":
+//throw new feException("setEquipmentHoldersToActive sending to $nextGameState");
+									$this->gamestate->nextState("allPassedOnReactions"); // goes to executeActionShoot
+
+							break;
 							case "askInvestigateReaction":
+									$this->gamestate->nextState("allPassedOnReactions"); // goes to executeActionInvestigate
+							break;
 							default:
-								$this->gamestate->nextState("allPassedOnReactions");
+								$this->gamestate->nextState("allPassedOnReactions"); // where this goes depends on which state you're in
 							break;
 						}
 				}
@@ -5431,6 +5478,7 @@ class goodcopbadcop extends Table
 
 				$collectorNumber = $this->getCollectorNumberFromId($equipmentId);
 				$equipmentOwner = $this->getEquipmentCardOwner($equipmentId);
+//throw new feException( "setStateForEquipment collectorNumber:$collectorNumber");
 				switch($collectorNumber)
 				{
 						case 2: // coffee
@@ -5510,13 +5558,16 @@ class goodcopbadcop extends Table
 								{ // restraining order was NOT JUST played
 										if($this->isAllInputAcquiredForEquipment($equipmentId))
 										{ // the player has been targeted
+
 												$this->gamestate->nextState( "executeEquipment" ); // use the equipment
+												//throw new feException( "allinputacquired after");
 										}
 										else
 										{ // the player has not yet been targeted
 												$this->gamestate->nextState( "choosePlayer" ); // ask them to target a player
 										}
 								}
+
 						break;
 
 						case 37: // mobile detonator
@@ -7175,8 +7226,10 @@ class goodcopbadcop extends Table
 
 								//$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 								//$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
-
-								$this->setEquipmentHoldersToActive("askShootReaction"); // set anyone holding equipment to active
+								if($this->countPlayersWhoCanUseEquipment() > 0)
+								{ // if there are any players who can use equipment (it will double-shoot in cases where no one has active equipment)
+										$this->setEquipmentHoldersToActive("askShootReaction"); // set anyone holding equipment to active so they can react after this equipment was used
+								}
 								//$this->gamestate->nextState( "askShootReaction" ); // go to the state allowing the active player to react to the shoot
 						break;
 
@@ -7189,9 +7242,12 @@ class goodcopbadcop extends Table
 
 								$this->makePlayerEquipmentActive($equipmentId, $target2); // activate this card
 
-								$this->setEquipmentHoldersToActive("askShootReaction"); // set anyone holding equipment to active
+								if($this->countPlayersWhoCanUseEquipment() > 0)
+								{ // if there are any players who can use equipment (it will double-shoot in cases where no one has active equipment)
+										$this->setEquipmentHoldersToActive("askShootReaction"); // set anyone holding equipment to active so they can react after this equipment was used
+								}
 								//$this->gamestate->nextState( "askShootReaction" ); // go to the state allowing the active player to choose a card to investigate
-
+//throw new feException("resolve");
 		//throw new feException( "player $playerWhoseTurnItWas is now the active player." );
 								//$this->discardEquipmentCard($equipmentId, true); // discard the equipment card now that it is resolved
 						break;
@@ -7977,6 +8033,7 @@ class goodcopbadcop extends Table
 				}
 				elseif($stateName == "choosePlayer" || $stateName == "chooseAnotherPlayer")
 				{ // we chose a player to target with equipment
+
 						$equipmentCardId = $this->getEquipmentCardIdInUse();
 
 						$isValid = $this->validateEquipmentPlayerSelection($playerId, $equipmentCardId, true); // see if this selection is valid for this equipment card
@@ -7985,9 +8042,12 @@ class goodcopbadcop extends Table
 						{
 							  $this->setEquipmentPlayerTarget($equipmentCardId, $playerId); // set this as a target for the equipment card
 						}
+
 						// validate to see if we are ready to execute the equipment
 						$this->setStateForEquipment($equipmentCardId);
 				}
+
+//				throw new feException("after clicked player");
 		}
 
 		function clickedShootButton()
@@ -8519,6 +8579,8 @@ class goodcopbadcop extends Table
 								'new_player_id' => $newActivePlayer
 						) );
 				}
+
+//				throw new feException("end endturncleanup");
 		}
 
 		function setAllPlayersInactive()
@@ -8709,6 +8771,7 @@ class goodcopbadcop extends Table
 		// resolve the SHOOT action.
 		function executeActionShoot()
 		{
+			//throw new feException("executeActionShoot");
 				$guns = $this->getGunsShooting();
 				if(is_null($guns) || count($guns) < 1)
 				{ // something happened where the player who was shooting no longer has a gun
@@ -8755,8 +8818,6 @@ class goodcopbadcop extends Table
 								//$this->gamestate->nextState( "askBiteReaction" );
 						}
 				}
-
-
 		}
 
 		function removeInfectionToken($playerIdRemoving, $cardPositionRemoving, $shouldWeNotify)
@@ -8910,6 +8971,7 @@ class goodcopbadcop extends Table
 		// been set in the database and we can simply resolve the equipment.
 		function executeEquipmentPlay()
 		{
+
 				$equipmentId = $this->getEquipmentCardIdInUse(); // get the ID of the equipment card that is being played
 				if(!$equipmentId)
 				{ // there is no equipment in use (could be possible if a player drops from the game while they're using equipment)
@@ -8934,7 +8996,11 @@ class goodcopbadcop extends Table
 				$stateAfterEquipmentResolution = $this->getStateName();
 //throw new feException( "stateAfterEquipmentResolution:$stateAfterEquipmentResolution" );
 				$unaimedGuns = $this->getHeldUnaimedGuns(); // see if we have an unaimed guns held by a player
+
 				$playersOverEquipmentCardLimit = $this->getPlayersOverEquipmentHandLimit(); // get any players over the equipment card hand limit
+
+				//$countPlayerOver = count($playersOverEquipmentCardLimit);
+				//throw new feException( "playersOverEquipmentCardLimit:$countPlayerOver" );
 				if(count($playersOverEquipmentCardLimit) > 0)
 				{ // someone is over the equipment card hand limit
 					//throw new feException( "over hand limit" );
@@ -8966,6 +9032,7 @@ class goodcopbadcop extends Table
 				}
 				else
 				{ // there are no special situations we need to handle
+//throw new feException( "stateName:$stateName" );
 						if($stateName == "chooseEquipmentToPlayOnYourTurn" || $stateName == "playerTurn")
 						{ // this was NOT played in reaction to something
 
@@ -8997,42 +9064,40 @@ class goodcopbadcop extends Table
 								}
 						}
 						elseif($stateName == "chooseEquipmentToPlayReactShoot" || $stateName == "chooseEquipmentToPlayReactBite")
-						{
+						{ // this equipment was played in reaction to a shoot or bite
 							//throw new feException( "chooseEquipmentToPlayReactShoot" );
 								if($this->canWeRechooseAction())
 								{ // the player will be allowed to choose a new action after the equipment is resolved
 
-									//throw new feException( "yes you can re-choose action" );
-
 										$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-										$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
 
+										$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+//throw new feException( "yes you can re-choose action $playerWhoseTurnItIs" );
 										$this->gamestate->nextState( "playerTurn" ); // go back to player action state
 								}
 								else
 								{ // this equipment affect the shoot but it doesn't let you choose a new action (like Riot Shield, Restraining Order, Mobile Detonator)
-									//throw new feException( "no you cannot re-choose action" );
+										//throw new feException( "no you cannot re-choose action" );
 
-									if($this->isZombieSerumActive())
-									{ // zombie serum was played
-										//throw new feException( "serum active" );
-												$this->setEquipmentHoldersToActive("askBiteReaction"); // set anyone holding equipment to active
-												//$this->gamestate->nextState( "askBiteReaction" );
-									}
-									else
-									{
-
-											if($stateName == "chooseEquipmentToPlayReactBite")
-											{
+										if($this->isZombieSerumActive())
+										{ // zombie serum was played
+											//throw new feException( "serum active" );
 													$this->setEquipmentHoldersToActive("askBiteReaction"); // set anyone holding equipment to active
-													//$this->gamestate->nextState( "askBiteReaction" ); // go back to allowing other players to play equipment (which state depends on the state we came from)
-											}
-											else
-											{
-													$this->setEquipmentHoldersToActive("askShootReaction"); // set anyone holding equipment to active
-													//$this->gamestate->nextState( "askShootReaction" ); // go back to allowing other players to play equipment (which state depends on the state we came from)
-											}
-									}
+													//$this->gamestate->nextState( "askBiteReaction" );
+										}
+										else
+										{
+												if($stateName == "chooseEquipmentToPlayReactBite")
+												{
+														$this->setEquipmentHoldersToActive("askBiteReaction"); // set anyone holding equipment to active
+														//$this->gamestate->nextState( "askBiteReaction" ); // go back to allowing other players to play equipment (which state depends on the state we came from)
+												}
+												else
+												{
+														$this->setEquipmentHoldersToActive("askShootReaction"); // set anyone holding equipment to active
+														//$this->gamestate->nextState( "askShootReaction" ); // go back to allowing other players to play equipment (which state depends on the state we came from)
+												}
+										}
 								}
 						}
 						elseif($stateName == "chooseActiveOrHandEquipmentCard")
