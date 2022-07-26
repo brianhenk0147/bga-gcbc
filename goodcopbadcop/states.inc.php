@@ -66,7 +66,7 @@ $machinestates = array(
     2 => array(
     		"name" => "playerTurn",
     		"description" => clienttranslate('${actplayer} is choosing their turn action.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose which action you will take.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select which action you will take.'),
     		"type" => "activeplayer",
         'args' => 'argGetPlayerTurnButtonList',
     		"possibleactions" => array( "clickInvestigateButton", "clickArmButton", "clickShootButton", "clickEquipButton", "clickEquipmentCard", "clickSkipButton", "clickUseEquipmentButton" ),
@@ -76,7 +76,7 @@ $machinestates = array(
     3 => array(
     		"name" => "chooseCardToInvestigate",
     		"description" => clienttranslate('${actplayer} is investigating.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose which Integrity Card you will investigate.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select which Integrity Card you will investigate.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickOpponentIntegrityCard", "clickCancelButton" ),
     		"transitions" => array( "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "cancelAction" => 2, "playerAction" => 2 )
@@ -103,7 +103,7 @@ $machinestates = array(
     6 => array(
     		"name" => "chooseCardToRevealForArm",
     		"description" => clienttranslate('${actplayer} is choosing a card to reveal.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose which Integrity Card you will reveal.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select which Integrity Card you will reveal.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickMyIntegrityCard", "clickCancelButton" ),
     		"transitions" => array( "executeArm" => 7, "playerAction" => 2 )
@@ -120,8 +120,8 @@ $machinestates = array(
 
     8 => array(
     		"name" => "askShootReaction",
-    		"description" => clienttranslate('Other players are deciding if they will use Equipment as a reaction.'),
-    		"descriptionmyturn" => clienttranslate('${you} may use Equipment as a reaction.'),
+    		"description" => clienttranslate('Other players are deciding if they will use Equipment as a reaction to the Shoot action.'),
+    		"descriptionmyturn" => clienttranslate('${you} may use Equipment as a reaction to the Shoot action.'),
     		"type" => "multipleactiveplayer",
     		"possibleactions" => array( "clickUseEquipmentButton", "clickPassOnUseEquipmentButton", "clickEquipmentCard" ),
     		"transitions" => array( "useEquipment" => 18, "allPassedOnReactions" => 9, "askShootReaction" => 8 )
@@ -139,7 +139,7 @@ $machinestates = array(
     10 => array(
     		"name" => "chooseCardToRevealForEquip",
     		"description" => clienttranslate('${actplayer} is choosing a card to reveal.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose which Integrity Card you will reveal.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select which Integrity Card you will reveal.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickMyIntegrityCard", "clickCancelButton" ),
     		"transitions" => array( "executeEquip" => 11, "cancelAction" => 2 )
@@ -157,7 +157,7 @@ $machinestates = array(
     12 => array(
     		"name" => "discardEquipment",
     		"description" => clienttranslate('${actplayer} is discarding Equipment.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose an Equipment to discard.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select an Equipment in your hand to discard.'),
     		"type" => "activeplayer",
         'args' => 'argGetPlayerTurnDiscardToDiscardButtonList',
     		"possibleactions" => array( "clickEquipmentCard" ),
@@ -167,7 +167,7 @@ $machinestates = array(
     15 => array(
     		"name" => "chooseEquipmentToPlayOnYourTurn",
     		"description" => clienttranslate('${actplayer} is using Equipment.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose which Equipment you will play.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select which Equipment in your hand you will play.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickEquipmentCard", "clickCancelButton" ),
     		"transitions" => array( "cancelEquipmentUse" => 2, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "chooseActiveOrHandEquipmentCard" => 42, "executeEquipment" => 31, "playerAction" => 2 )
@@ -176,7 +176,7 @@ $machinestates = array(
     16 => array(
         "name" => "chooseEquipmentToPlayReactEndOfTurn",
         "description" => clienttranslate('${actplayer} is using Equipment.'),
-        "descriptionmyturn" => clienttranslate('${you} must choose which Equipment you will play.'),
+        "descriptionmyturn" => clienttranslate('${you} must select which Equipment in your hand you will play.'),
         "type" => "activeplayer",
         "possibleactions" => array( "clickEquipmentCard", "clickCancelButton" ),
         "transitions" => array( "cancelEquipmentUse" => 29, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "chooseActiveOrHandEquipmentCard" => 42, "executeEquipment" => 31 )
@@ -185,7 +185,7 @@ $machinestates = array(
     17 => array(
     		"name" => "chooseEquipmentToPlayReactInvestigate",
     		"description" => clienttranslate('${actplayer} is using Equipment.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose which Equipment you will play.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select which Equipment in your hand you will play.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickEquipmentCard", "clickCancelButton" ),
     		"transitions" => array( "cancelEquipmentUse" => 4, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "chooseActiveOrHandEquipmentCard" => 42, "executeEquipment" => 31 )
@@ -194,7 +194,7 @@ $machinestates = array(
     18 => array(
     		"name" => "chooseEquipmentToPlayReactShoot",
     		"description" => clienttranslate('${actplayer} is using Equipment.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose which Equipment you will play.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select which Equipment in your hand you will play.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickEquipmentCard", "clickCancelButton" ),
     		"transitions" => array( "cancelEquipmentUse" => 8, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "chooseEquipmentTargetOutOfTurn" => 32, "chooseActiveOrHandEquipmentCard" => 42, "executeEquipment" => 31 )
@@ -203,7 +203,7 @@ $machinestates = array(
     19 => array(
     		"name" => "chooseEquipmentToPlayReactBite",
     		"description" => clienttranslate('${actplayer} is using Equipment.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose which Equipment you will play.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select which Equipment in your hand you will play.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickEquipmentCard", "clickCancelButton" ),
     		"transitions" => array( "cancelEquipmentUse" => 51, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "chooseEquipmentTargetOutOfTurn" => 32, "chooseActiveOrHandEquipmentCard" => 42, "executeEquipment" => 31 )
@@ -271,7 +271,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "chooseEquipmentTargetOutOfTurn",
         "updateGameProgression" => false,
-        "transitions" => array( "choosePlayer" => 41 )
+        "transitions" => array( "choosePlayer" => 41, "choosePlayerNoCancel" => 44 )
     ),
 
     33 => array(
@@ -296,7 +296,7 @@ $machinestates = array(
     35 => array(
     		"name" => "discardOutOfTurn",
     		"description" => clienttranslate('${actplayer} is discarding an Equipment.'),
-    		"descriptionmyturn" => clienttranslate('${you} must discard an Equipment.'),
+    		"descriptionmyturn" => clienttranslate('${you} must discard an Equipment in your hand.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickEquipmentCard"),
     		"transitions" => array( "afterDiscardedOutOfTurn" => 36 )
@@ -308,13 +308,13 @@ $machinestates = array(
         "type" => "game",
         "action" => "afterDiscardedOutOfTurn",
         "updateGameProgression" => false,
-        "transitions" => array( "playerTurn" => 2, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "endTurnReaction" => 29, "allPassedOnReactions" => 30 )
+        "transitions" => array( "playerTurn" => 2, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50 )
     ),
 
     40 => array(
     		"name" => "chooseIntegrityCards",
     		"description" => clienttranslate('${actplayer} is choosing an Equipment target.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose an Integrity Card to target with the Equipment.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select an Integrity Card to target with the Equipment.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickConfirmButton", "clickCancelButton", "clickOpponentIntegrityCard", "clickMyIntegrityCard", "clickDoneSelectingButton" ),
     		"transitions" => array( "executeEquipment" => 31, "chooseIntegrityCards" => 40, "playerTurn" => 2, "chooseEquipmentToPlayReactEndOfTurn" => 16, "chooseEquipmentToPlayReactInvestigate" => 17, "chooseEquipmentToPlayReactShoot" => 18, "chooseEquipmentToPlayOnYourTurn" => 15, "chooseEquipmentToPlayReactBite" => 19 )
@@ -333,20 +333,30 @@ $machinestates = array(
     42 => array(
     		"name" => "chooseActiveOrHandEquipmentCard",
     		"description" => clienttranslate('${actplayer} is choosing an Equipment target.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose an Equipment to give to another player.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select an Equipment to give to another player.'),
     		"type" => "activeplayer",
-    		"possibleactions" => array( "clickEquipmentCard" ),
-    		"transitions" => array( "executeEquipment" => 31, "chooseAnotherPlayer" => 43 )
+    		"possibleactions" => array( "clickEquipmentCard", "clickCancelButton" ),
+    		"transitions" => array( "executeEquipment" => 31, "chooseAnotherPlayer" => 43, "playerAction" => 2, "chooseEquipmentToPlayReactEndOfTurn" => 16, "chooseEquipmentToPlayReactInvestigate" => 17, "chooseEquipmentToPlayReactShoot" => 18 )
     ),
 
     43 => array(
     		"name" => "chooseAnotherPlayer",
     		"description" => clienttranslate('${actplayer} is choosing an Equipment target.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose another player to target with the Equipment.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select another player to target with the Equipment.'),
     		"type" => "activeplayer",
         'args' => 'argGetPlayerButtonTargets',
     		"possibleactions" => array( "clickPlayer", "clickCancelButton" ),
     		"transitions" => array( "executeEquipment" => 31, "chooseActiveOrHandEquipmentCard" => 42, "chooseEquipmentToPlayReactEndOfTurn" => 16 )
+    ),
+
+    44 => array(
+    		"name" => "choosePlayerNoCancel",
+    		"description" => clienttranslate('${actplayer} is choosing an Equipment target.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select a player to target with the Equipment.'),
+    		"type" => "activeplayer",
+        'args' => 'argGetPlayerButtonTargets',
+    		"possibleactions" => array( "clickPlayer" ),
+    		"transitions" => array( "executeEquipment" => 31, "choosePlayer" => 41, "chooseActiveOrHandEquipmentCard" => 42, "playerTurn" => 2, "chooseEquipmentToPlayReactEndOfTurn" => 16, "chooseEquipmentToPlayReactInvestigate" => 17, "chooseEquipmentToPlayReactShoot" => 18, "chooseEquipmentToPlayOnYourTurn" => 15, "chooseEquipmentToPlayReactBite" => 19 )
     ),
 
     50 => array(
@@ -360,8 +370,8 @@ $machinestates = array(
 
     51 => array(
     		"name" => "askBiteReaction",
-    		"description" => clienttranslate('Other players are deciding if they will use an Equipment.'),
-    		"descriptionmyturn" => clienttranslate('${you} may use Equipment in reaction to the Bite roll.'),
+    		"description" => clienttranslate('Other players are deciding if they will use an Equipment in reaction to the Bite.'),
+    		"descriptionmyturn" => clienttranslate('${you} may use Equipment in reaction to the Bite.'),
     		"type" => "multipleactiveplayer",
     		"possibleactions" => array( "clickUseEquipmentButton", "clickPassOnUseEquipmentButton", "clickEquipmentCard" ),
     		"transitions" => array( "useEquipment" => 19, "allPassedOnReactions" => 52 )

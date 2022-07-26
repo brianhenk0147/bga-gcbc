@@ -154,7 +154,10 @@ class goodcopbadcop extends Table
 
 				$result['zombieExpansion'] = $this->getGameStateValue('ZOMBIES_EXPANSION'); // send whether we have the zombies expansion activated
 				$result['currentPlayerTurn'] = $this->getGameStateValue('CURRENT_PLAYER'); // let the client know whose turn it is
+				$result['isClockwise'] = $this->isTurnOrderClockwise(); // true if we are currently going clockwise
 
+				$result['currentPlayerName'] = $this->getCurrPlayerName();
+				$result['nextPlayerName'] = $this->getNextPlayerName();
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 				//$result['hand'] = $this->integrityCards->getCardsInLocation( $player_id ); // get this player's integrity cards
@@ -2411,6 +2414,17 @@ class goodcopbadcop extends Table
 				return $name;
 		}
 
+		function getCurrPlayerName()
+		{
+				return $this->getPlayerNameFromPlayerId($this->getGameStateValue("CURRENT_PLAYER"));
+		}
+
+		function getNextPlayerName()
+		{
+				$next_player_id = $this->getPlayerAfter($this->getGameStateValue("CURRENT_PLAYER"));
+				return $this->getPlayerNameFromPlayerId($next_player_id);
+		}
+
 		function getPlayerColorFromId($playerId)
 		{
 				$sql = "SELECT player_color FROM `player` ";
@@ -2960,20 +2974,63 @@ class goodcopbadcop extends Table
 				return 4; // if there are none, return 4, otherwise return the card position
 		}
 
-		function convertCardPositionToFriendlyName($cardPosition)
+		function getCardListAsText($playerId)
+		{
+				$cardsAsText = "";
+
+				$cards = $this->getIntegrityCardsForPlayer($playerId);
+				$index = 0;
+				foreach($cards as $card)
+				{
+						$cardId = $card['card_id'];
+						$cardType = strtoupper($card['card_type']);
+
+						$cardsAsText += $cardType;
+
+						if($index < 2)
+						{ // don't add to the last card
+								$cardsAsText += " ";
+						}
+
+						$index++;
+				}
+
+				return $cardsAsText;
+		}
+
+		function convertCardPositionToText($cardPosition)
 		{
 				if($cardPosition == 1 || $cardPosition == '1')
 				{
-					return "LEFT";
+					return clienttranslate("LEFT");
 				}
 				elseif($cardPosition == 2 || $cardPosition == '2')
 				{
-					return "MIDDLE";
+					return clienttranslate("MIDDLE");
 				}
 				else
 				{
-					return "RIGHT";
+					return clienttranslate("RIGHT");
 				}
+		}
+
+		function convertCardTypeToText($cardType)
+		{
+				switch(strtolower($cardType))
+				{
+						case 'honest':
+							return clienttranslate("HONEST");
+						case 'crooked':
+							return clienttranslate("CROOKED");
+						case 'agent':
+							return clienttranslate("AGENT");
+						case 'kingpin':
+							return clienttranslate("KINGPIN");
+						case 'infector':
+							return clienttranslate("INFECTOR");
+				}
+
+				return clienttranslate("UNKNOWN");
 		}
 
 		function getEquipmentCardIdInUse()
@@ -3339,6 +3396,27 @@ class goodcopbadcop extends Table
 		{
 				$oldOwnerOfCardId1 = $this->getIntegrityCardOwner($cardId1);
 				$oldOwnerOfCardId2 = $this->getIntegrityCardOwner($cardId2);
+
+				$player1BeforeCardType1 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId1,1));
+				$player1BeforeCardType2 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId1,2));
+				$player1BeforeCardType3 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId1,3));
+				self::notifyPlayer( $oldOwnerOfCardId1, 'swappedCardList', clienttranslate( 'You had ${card_1} ${card_2} ${card_3}.' ), array(
+														 'i18n' => array('card_1', 'card_2', 'card_3'),
+														 'card_1' => $player1BeforeCardType1,
+														 'card_2' => $player1BeforeCardType2,
+														 'card_3' => $player1BeforeCardType3
+				) );
+
+				$player2BeforeCardType1 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId2,1));
+				$player2BeforeCardType2 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId2,2));
+				$player2BeforeCardType3 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId2,3));
+				self::notifyPlayer( $oldOwnerOfCardId2, 'swappedCardList', clienttranslate( 'You had ${card_1} ${card_2} ${card_3}.' ), array(
+															'i18n' => array('card_1', 'card_2', 'card_3'),
+															'card_1' => $player2BeforeCardType1,
+															'card_2' => $player2BeforeCardType2,
+															'card_3' => $player2BeforeCardType3
+				) );
+
 				$oldPositionCardId1 = $this->getIntegrityCardPosition($cardId1); // 1, 2, 3
 				$oldPositionCardId2 = $this->getIntegrityCardPosition($cardId2); // 1, 2, 3
 				$oldHiddenStateCardId1 = $this->getIntegrityCardFlippedState($cardId1); // 1 if revealed
@@ -3390,7 +3468,8 @@ class goodcopbadcop extends Table
 				$card1Infected = $this->isCardInfected($cardId2); // true if this has a wounded token on it
 				$card2Infected = $this->isCardInfected($cardId1); // true if this has a wounded token on it
 
-				self::notifyAllPlayers( "integrityCardsExchanged", clienttranslate( '${player_name} and ${player_name_2} have exchanged Integrity Cards.' ), array(
+				self::notifyAllPlayers( "integrityCardsExchanged", clienttranslate( '${player_name} ${card1PositionText} card has been exchanged with ${player_name_2} ${card2PositionText} card.' ), array(
+							'i18n' => array( 'card1PositionText', 'card2PositionText' ),
 							'player_name' => $card1NewOwnerName,
 						  'player_name_2' => $card2NewOwnerName,
 						  'card1OriginalPosition' => $card1OriginalPosition,
@@ -3408,7 +3487,29 @@ class goodcopbadcop extends Table
 							'card1Wounded' => $card1Wounded,
 							'card2Wounded' => $card2Wounded,
 							'card1Infected' => $card1Infected,
-							'card2Infected' => $card2Infected
+							'card2Infected' => $card2Infected,
+							'card1PositionText' => $this->convertCardPositionToText($card2OriginalPosition),
+							'card2PositionText' => $this->convertCardPositionToText($card1OriginalPosition)
+				) );
+
+				$player1AfterCardType1 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId1,1));
+				$player1AfterCardType2 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId1,2));
+				$player1AfterCardType3 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId1,3));
+				self::notifyPlayer( $oldOwnerOfCardId1, 'swappedCardList', clienttranslate( 'You now have ${card_1} ${card_2} ${card_3}.' ), array(
+														 'i18n' => array('card_1', 'card_2', 'card_3'),
+														 'card_1' => $player1AfterCardType1,
+														 'card_2' => $player1AfterCardType2,
+														 'card_3' => $player1AfterCardType3
+				) );
+
+				$player2AfterCardType1 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId2,1));
+				$player2AfterCardType2 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId2,2));
+				$player2AfterCardType3 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId2,3));
+				self::notifyPlayer( $oldOwnerOfCardId2, 'swappedCardList', clienttranslate( 'You now have ${card_1} ${card_2} ${card_3}.' ), array(
+															'i18n' => array('card_1', 'card_2', 'card_3'),
+															'card_1' => $player2AfterCardType1,
+															'card_2' => $player2AfterCardType2,
+															'card_3' => $player2AfterCardType3
 				) );
 
 
@@ -3448,6 +3549,7 @@ class goodcopbadcop extends Table
 				$soloWinner = $this->getSoloWinner();
 				if($soloWinner)
 				{ // someone got both leaders
+						$this->revealLeaderCards($soloWinner); // reveal the leader cards this player has
 						$this->endGameCleanup('solo_win', $soloWinner);
 
 						$this->gamestate->nextState( "endGame" );
@@ -3564,11 +3666,21 @@ class goodcopbadcop extends Table
 
 		function resetEquipmentCardAfterCancel($equipmentId)
 		{
-				$sqlUpdate = "UPDATE equipmentCards SET ";
-				$sqlUpdate .= "card_location='hand', equipment_played_on_turn='', equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='' WHERE ";
-				$sqlUpdate .= "card_id=$equipmentId";
+				if($equipmentId != '')
+				{
+						$sqlUpdate = "UPDATE equipmentCards SET ";
+						$sqlUpdate .= "card_location='hand', equipment_played_on_turn='', equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',done_selecting=0 WHERE ";
+						$sqlUpdate .= "card_id=$equipmentId";
 
-				self::DbQuery( $sqlUpdate );
+						self::DbQuery( $sqlUpdate );
+
+						$ownerOfEquipment = $this->getEquipmentCardOwner($equipmentId);
+
+						self::notifyAllPlayers( "cancelEquipmentUse", '', array(
+								 						 'equipment_id' => $equipmentId,
+														 'player_id' => $ownerOfEquipment
+						) );
+				}
 		}
 
 		function setEquipmentCardOwner($cardId, $playerId)
@@ -4425,6 +4537,20 @@ class goodcopbadcop extends Table
 												return false;
 										}
 								}
+
+								if($playerId == $equipmentCardOwner)
+								{ // they are trying to target themselves
+
+										if($throwErrors)
+										{
+												throw new BgaUserException( self::_("You must choose a player other than yourself.") );
+										}
+										else
+										{
+												return false;
+										}
+								}
+
 								return true; // there are no other restrictions on the player chosen (you can even choose yourself if you want)
 						break;
 						case 13: // Surveillance Camera
@@ -4926,11 +5052,11 @@ class goodcopbadcop extends Table
 										}
 
 										// notify player: "Please select the next Infection Token you want to move." Also highlight the selection.
-										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now you may choose another Honest or Crooked card of a Zombie.' ), array(
+										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now you may choose another HONEST or CROOKED card of a Zombie.' ), array(
 																				 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
 																				 'cardPositionTargeted' => $cardPositionTargeted,
 																				 'cardIdTargeted' => $integrityCardId,
-																				 'descriptionText' => clienttranslate( 'Now you may choose another Honest or Crooked card of a Zombie.' )
+																				 'descriptionText' => clienttranslate( 'Now you may choose another HONEST or CROOKED card of a Zombie.' )
 										) );
 
 										return true;
@@ -4952,11 +5078,11 @@ class goodcopbadcop extends Table
 										}
 
 										// notify player: "Now choose where the Infection Token will move." Also highlight the selection.
-										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now choose an Honest or Crooked card of a non-Zombie.' ), array(
+										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now choose an HONEST or CROOKED card of a non-Zombie.' ), array(
 																				 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
 																				 'cardPositionTargeted' => $cardPositionTargeted,
 																				 'cardIdTargeted' => $integrityCardId,
-																				 'descriptionText' => clienttranslate( 'Now choose an Honest or Crooked card of a non-Zombie.' )
+																				 'descriptionText' => clienttranslate( 'Now choose an HONEST or CROOKED card of a non-Zombie.' )
 										) );
 
 										return true;
@@ -4980,15 +5106,15 @@ class goodcopbadcop extends Table
 									if($this->getCardTypeFromCardId($integrityCardId) != 'honest' &&
 									$this->getCardTypeFromCardId($integrityCardId) != 'crooked')
 									{ // they are trying to target a Leader or Infector card
-											throw new BgaUserException( self::_("Please target an Honest or Crooked card.") );
+											throw new BgaUserException( self::_("Please target an HONEST or CROOKED card.") );
 									}
 
 									// notify player: "Please select the next Infection Token you want to move." Also highlight the selection.
-									self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now you may choose another Honest or Crooked card of a Zombie.' ), array(
+									self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now you may choose another HONEST or CROOKED card of a Zombie.' ), array(
 																			 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
 																			 'cardPositionTargeted' => $cardPositionTargeted,
 																			 'cardIdTargeted' => $integrityCardId,
-																			 'descriptionText' => clienttranslate( 'Now you may choose another Honest or Crooked card of a Zombie.' )
+																			 'descriptionText' => clienttranslate( 'Now you may choose another HONEST or CROOKED card of a Zombie.' )
 									) );
 
 									return true;
@@ -5012,11 +5138,11 @@ class goodcopbadcop extends Table
 										}
 
 										// notify player: "Now choose where the Infection Token will move." Also highlight the selection.
-										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now choose an Honest or Crooked card of a non-Zombie.' ), array(
+										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now choose an HONEST or CROOKED card of a non-Zombie.' ), array(
 																				 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
 																				 'cardPositionTargeted' => $cardPositionTargeted,
 																				 'cardIdTargeted' => $integrityCardId,
-																				 'descriptionText' => clienttranslate( 'Now choose an Honest or Crooked card of a non-Zombie.' )
+																				 'descriptionText' => clienttranslate( 'Now choose an HONEST or CROOKED card of a non-Zombie.' )
 										) );
 
 										return true;
@@ -5042,15 +5168,15 @@ class goodcopbadcop extends Table
 									if($this->getCardTypeFromCardId($integrityCardId) != 'honest' &&
 									$this->getCardTypeFromCardId($integrityCardId) != 'crooked')
 									{ // they are trying to target a Leader or Infector card
-											throw new BgaUserException( self::_("Please target an Honest or Crooked card.") );
+											throw new BgaUserException( self::_("Please target an HONEST or CROOKED card.") );
 									}
 
 									// notify player: "Please select the next Infection Token you want to move." Also highlight the selection.
-									self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now you may choose another Honest or Crooked card of a Zombie.' ), array(
+									self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now you may choose another HONEST or CROOKED card of a Zombie.' ), array(
 																			 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
 																			 'cardPositionTargeted' => $cardPositionTargeted,
 																			 'cardIdTargeted' => $integrityCardId,
-																			 'descriptionText' => clienttranslate( 'Now you may choose another Honest or Crooked card of a Zombie.' )
+																			 'descriptionText' => clienttranslate( 'Now you may choose another HONEST or CROOKED card of a Zombie.' )
 									) );
 
 									return true;
@@ -5090,6 +5216,11 @@ class goodcopbadcop extends Table
 							return true; // we don't need any input
 						break;
 						case 15: // truth serum
+							if($this->doneSelecting($equipmentCardId))
+							{
+									return true; // they say they're done selecting
+							}
+
 							$target1 = $this->getEquipmentTarget1($equipmentCardId);
 							if(is_null($target1) || $target1 == '')
 							{ // we do NOT have all we need for this equipment card
@@ -5814,6 +5945,117 @@ class goodcopbadcop extends Table
 
 		}
 
+		function isEquipmentTargetsChosenByOtherPlayer($collectorNumber)
+		{
+				switch($collectorNumber)
+				{
+						case 2: // coffee
+								return false; // no equipment targets
+						break;
+						case 8: // planted evidence
+								return false; // chosen by equipment player
+						break;
+						case 12: // smoke grenade
+								return false; // no equipment targets
+						break;
+						case 15: // truth serum
+								return false; // chosen by equipment player
+						break;
+						case 16: // wiretap
+								return false; // chosen by equipment player
+						break;
+
+						case 44: // riot shield
+								return true; // chosen by player being shot
+						break;
+
+						case 11: // restraining order
+								return true; // chosen by shooter
+						break;
+
+						case 37: // mobile detonator
+								return true; // not sure but this is no longer used
+						break;
+
+						case 4: // evidence bag
+								return false; // chosen by equipment player
+						break;
+
+						case 35: // med kit
+								return false; // chosen by equipment player
+						break;
+
+						case 14: // taser
+								return false; // chosen by equipment player
+						break;
+
+						case 3: // Defibrillator
+								return false; // chosen by equipment player
+						break;
+						case 1: // Blackmail
+								return false; // chosen by equipment player
+						break;
+						case 30: // Disguise
+								return false; // chosen by equipment player
+						break;
+						case 45: // Walkie Talkie
+								return false; // chosen by equipment player
+						break;
+						case 9: // Polygraph
+								return false; // chosen by equipment player
+						break;
+						case 13: // Surveillance Camera
+							return false; // chosen by equipment player
+						break;
+						case 7: // Metal Detector
+								return false; // chosen by equipment player
+						break;
+						case 17: // Deliriant
+								return false; // chosen by equipment player
+						break;
+						case 6: // K-9 Unit
+								return false; // chosen by equipment player
+						break;
+
+						case 60: // Crossbow
+								return false; // chosen by equipment player
+						break;
+
+						case 61: // Transfusion Tube
+								return false; // chosen by equipment player
+						break;
+
+						case 62: // Zombie Serum
+								return false; // nothing to choose
+						break;
+
+						case 63: // Flamethrower
+								return false; // nothign to choose
+						break;
+
+						case 64: // Chainsaw
+								return false; // chosen by equipment player
+						break;
+						case 65: // Zombie Mask
+								return false; // chosen by equipment player
+						break;
+						case 66: // Machete
+								return false; // chosen by equipment player
+						break;
+						case 67: // Weapon Crate
+								return true; // players should know why they just got a gun and are being asked to aim
+						break;
+
+						case 68: // Alarm Clock
+								return false; // chosen by equipment player
+						break;
+
+						default:
+								return false;
+						break;
+				}
+		}
+
 		// This sets the next unset equipment card target.
 		function setEquipmentCardTarget($equipmentCardId, $target)
 		{
@@ -6278,31 +6520,45 @@ class goodcopbadcop extends Table
 						else
 						{ // target is NOT disguised
 
+								$cardPositionText = $this->convertCardPositionToText($cardPosition);
+
 								if($viewOnly == false)
 								{ // this is a real investigation
 
 										self::incStat( 1, 'investigations_completed', $playerInvestigating ); // increase end game player stat
 
 										// send notification with public information that this card has been investigated
-										self::notifyAllPlayers( 'investigationComplete', clienttranslate( '${player_name} has completed their investigation of ${player_name_2}.' ), array(
+										self::notifyAllPlayers( 'investigationComplete', clienttranslate( '${player_name} investigated the ${position_text} card of ${player_name_2}.' ), array(
+											'i18n' => array('position_text'),
 											'player_name' => $investigatingPlayerName,
 											'player_name_2' => $investigateePlayerName,
 											'investigated_player_id' => $investigatedPlayerId,
 											'cardPosition' => $cardPosition,
 											'cardType' => $cardTypePublic,
 											'playersSeen' => $listOfPlayersSeen,
-											'isHidden' => $isHidden
+											'isHidden' => $isHidden,
+											'position_text' => $cardPositionText
 										) );
 								}
 
 								// send notification with private information to the player who investigated
-								self::notifyPlayer( $playerInvestigating, 'viewCard', clienttranslate( 'You saw a ${cardType} card.' ), array(
+								self::notifyPlayer( $playerInvestigating, 'viewCard', clienttranslate( 'You saw their ${position_text} ${cardType} card.' ), array(
+																		 'i18n' => array('position_text', 'cardType'),
 																		 'investigated_player_id' => $investigatedPlayerId,
 																		 'cardPosition' => $cardPosition,
-																		 'cardType' => $cardType,
+																		 'cardType' => strtoupper($cardType),
 																		 'player_name' => $investigateePlayerName,
 																		 'isHidden' => $isHidden,
-																		 'playersSeen' => $listOfPlayersSeen
+																		 'playersSeen' => $listOfPlayersSeen,
+																		 'position_text' => $cardPositionText
+								) );
+
+								// notify the player being investigated exactly what they saw
+								self::notifyPlayer( $investigatedPlayerId, 'iWasInvestigated', clienttranslate( '${player_name} saw your ${position_text} ${cardType} card.' ), array(
+																		 'i18n' => array('position_text', 'cardType'),
+																		 'cardType' => strtoupper($cardType),
+																		 'player_name' => $investigatingPlayerName,
+																		 'position_text' => $cardPositionText
 								) );
 
 								// if the investigated player has Surveillance camera active, reveal the card
@@ -6386,6 +6642,23 @@ class goodcopbadcop extends Table
 				self::incStat( 1, 'equipment_acquired', $playerDrawingId ); // increase end game player stat
 		}
 
+		// Reveal leader cards held by a player.
+		function revealLeaderCards($playerId)
+		{
+			$hiddenCards = $this->getHiddenCardsFromPlayer($playerId);
+
+			foreach( $hiddenCards as $integrityCard )
+			{
+					$card_id = $integrityCard['card_id'];
+					$cardPosition = $integrityCard['card_location_arg']; // 1, 2, 3
+					$cardType = $integrityCard['card_type']; // honest, crooked, agent, kingpin
+					if($cardType == 'kingpin' || $cardType == 'agent' || $cardType == 'infector')
+					{
+							$this->revealCard($playerId, $cardPosition);
+					}
+			}
+		}
+
 		// Reveal a card for all players.
 		function revealCard($playerRevealingId, $cardPosition)
 		{
@@ -6409,7 +6682,7 @@ class goodcopbadcop extends Table
 					// notify this player
 					self::notifyAllPlayers( 'revealIntegrityCard', clienttranslate( 'A ${card_type} card of ${player_name} has been revealed.' ), array(
 									 'player_name' => $playerName,
-									 'card_type' => $cardType,
+									 'card_type' => strtoupper($cardType),
 									 'card_position' => $cardPosition,
 									 'revealer_player_id' => $playerRevealingId
 					) );
@@ -7032,8 +7305,10 @@ class goodcopbadcop extends Table
 				$allPlayers = self::getObjectListFromDB( "SELECT *
 																					 FROM player" );
 
-				//$activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
-				$activePlayerId = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+				$activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
+
+				// 2022/07/24: switched to getActivePlayerId because otherwise using Weapon Crate to get a gun doesn't allow you to target the player whose turn it is
+				//$activePlayerId = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 
 //throw new feException( "activePlayerId:$activePlayerId" );
 				$gunId = $this->getGunIdHeldByPlayer($activePlayerId);
@@ -7076,11 +7351,14 @@ class goodcopbadcop extends Table
 				$allPlayers = self::getObjectListFromDB( "SELECT *
 																					 FROM player" );
 
-			  $activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
+				// 2022/07/24: switched to getGameStateValue("CURRENT_PLAYER") because otherwise using Taser on your turn doesn't let you target the last active player
+				$activePlayerId = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+			  //$activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 				if(!$activePlayerId)
 				{ // we didn't get a valid activePlayerId
 						$activePlayerId = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 				}
+				//throw new feException( "activePlayerId:$activePlayerId" );
 
 				$equipmentId = $this->getEquipmentCardIdInUse();
 				if($equipmentId == null || $equipmentId == '')
@@ -7124,13 +7402,17 @@ class goodcopbadcop extends Table
 				$equipmentCardName = $this->getEquipmentName($equipmentId); // get the name of the equipment card
 				$equipName = $this->getTranslatedEquipmentName($collectorNumber);
 				$equipEffect = $this->getTranslatedEquipmentEffect($collectorNumber);
-				self::notifyAllPlayers( "resolveEquipment", clienttranslate( '${player_name} is playing ${equipment_name}.' ), array(
-								'i18n' => array( 'equipment_name' ),
-								'equipment_name' => $equipmentCardName,
-								'equip_name' => $equipName,
-								'equip_effect' => $equipEffect,
-								'player_name' => self::getActivePlayerName()
-				) );
+
+				if(!$this->isEquipmentTargetsChosenByOtherPlayer($collectorNumber))
+				{ // the target(s) are NOT chosen by another player because we already told them this card was being played and we don't want to tell them twice
+						self::notifyAllPlayers( "resolveEquipment", clienttranslate( '${player_name} is playing ${equipment_name}: ${equip_effect}' ), array(
+										'i18n' => array( 'equipment_name', 'equip_effect' ),
+										'equipment_name' => $equipmentCardName,
+										'equip_name' => $equipName,
+										'equip_effect' => $equipEffect,
+										'player_name' => self::getActivePlayerName()
+						) );
+				}
 
 //throw new feException( "Resolve $collectorNumber" );
 				// switch statement
@@ -7168,19 +7450,38 @@ class goodcopbadcop extends Table
 							// make it active
 							$this->makeCentralEquipmentActive($equipmentId); // activate this in the middle of the table
 
+							// update the turn marker arrow to go in the correct direction
+							self::notifyAllPlayers( "updateTurnMarker", '', array(
+									'current_player_id' => $this->getGameStateValue("CURRENT_PLAYER"),
+									'is_clockwise' => $this->isTurnOrderClockwise(),
+									'current_player_name' => $this->getCurrPlayerName(),
+									'next_player_name' => $this->getNextPlayerName()
+							) );
+
 							$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 							$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
 
 						break;
 						case 15: // truth serum
 								$target1 = $this->getEquipmentTarget1($equipmentId); // get the selected integrity card
-								$integrityCardOwner = $this->getIntegrityCardOwner($target1); // get the player who owns the integrity card targeted
-								$cardPosition = $this->getIntegrityCardPosition($target1); // get the position of the integrity card targeted
+								if($target1 != '')
+								{ // a card was selected
+										$integrityCardOwner = $this->getIntegrityCardOwner($target1); // get the player who owns the integrity card targeted
+										$cardPosition = $this->getIntegrityCardPosition($target1); // get the position of the integrity card targeted
 
-								$this->revealCard($integrityCardOwner, $cardPosition); // set the selected integrity card to revealed
+										$infectorCardId = $this->getInfectorCardId();
+										if($infectorCardId == $target1)
+										{ // they found the infector
+												$this->infectorFound($integrityCardOwner, $cardPosition, $equipmentCardOwner);
+										}
+
+										$this->revealCard($integrityCardOwner, $cardPosition); // set the selected integrity card to revealed
+
+										//$activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
+										//$this->setStateAfterTurnAction($activePlayerId); // see which state we go into after completing this turn action
+								}
+
 								$this->discardEquipmentCard($equipmentId, true); // discard the equipment card now that it is resolved
-								//$activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
-								//$this->setStateAfterTurnAction($activePlayerId); // see which state we go into after completing this turn action
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
@@ -7597,6 +7898,13 @@ class goodcopbadcop extends Table
 								$integrityCardOwner = $this->getIntegrityCardOwner($target1); // get the player who owns the integrity card targeted
 								$cardPosition = $this->getIntegrityCardPosition($target1); // get the position of the integrity card targeted
 
+								$infectorCardId = $this->getInfectorCardId();
+								if($infectorCardId == $target1)
+								{ // they found the infector
+										$infectorIntegrityCardPosition = $this->getIntegrityCardPosition($infectorCardId);
+										$this->infectorFound($integrityCardOwner, $infectorIntegrityCardPosition, $equipmentCardOwner);
+								}
+
 								$this->revealCard($integrityCardOwner, $cardPosition); // set the selected integrity card to revealed
 								$cardType = $this->getCardTypeFromPlayerIdAndPosition($integrityCardOwner, $cardPosition); // agent, kingpin, honest, crooked
 
@@ -7814,10 +8122,11 @@ class goodcopbadcop extends Table
 				$stateName = $this->getStateName(); // get the name of the current state
 				if($stateName == "chooseIntegrityCards" ||
 					 $stateName == "choosePlayer" ||
-					 $stateName == "chooseAnotherPlayer" )
+					 $stateName == "chooseAnotherPlayer" ||
+					 $stateName == "chooseActiveOrHandEquipmentCard" )
 				{ // we're using an equipment card that requires choosing integrity cards
 						$previousState = $this->getEquipmentPlayedInState($equipmentId);	// go to the saved state for this equipment card
-						$this->resetEquipmentCardAfterCancel($equipmentId); // since we had set this equipment up in a playing state, we need to reset it now that it's back in hand and not being played (this MUST come before nextState)
+
 
 						$this->gamestate->nextState( $previousState ); // TODO: THE TRANSITION PROBABLY DOESN'T MATCH THE STATE NAME SO CHANGE $previousState TO GO TO THE CORRECT TRANSITION BASED ON THE NAME or update states.inc.php with a transition matching the name
 				}
@@ -7833,6 +8142,7 @@ class goodcopbadcop extends Table
 						$this->gamestate->nextState( "playerAction" ); // go back to start of turn
 				}
 
+				$this->resetEquipmentCardAfterCancel($equipmentId); // since we had set this equipment up in a playing state, we need to reset it now that it's back in hand and not being played (this MUST come before nextState)
 
 		}
 
@@ -8031,7 +8341,7 @@ class goodcopbadcop extends Table
 								}
 						}
 				}
-				elseif($stateName == "choosePlayer" || $stateName == "chooseAnotherPlayer")
+				elseif($stateName == "choosePlayer" || $stateName == "chooseAnotherPlayer" || $stateName == "choosePlayerNoCancel")
 				{ // we chose a player to target with equipment
 
 						$equipmentCardId = $this->getEquipmentCardIdInUse();
@@ -8209,18 +8519,36 @@ class goodcopbadcop extends Table
 						$extraDescriptionText = $this->getExtraDescriptionTextForEquipment($collectorNumberClicked);
 //throw new feException( "description: ".$extraDescriptionText );
 
-						self::notifyAllPlayers( "playEquipment", '', array(
-										'i18n' => array( 'equipment_name' ),
-										'equipment_name' => $equipmentCardName,
-										'equip_name' => $equipName,
-										'equip_effect' => $equipEffect,
-										'player_id_playing_equipment' => $activePlayerId,
-										'collector_number' => $collectorNumberClicked,
-										'equipment_id' => $equipmentIdClicked,
-										'player_name' => self::getActivePlayerName(),
-										'descriptionText' => $extraDescriptionText
-						) );
-
+						if($this->isEquipmentTargetsChosenByOtherPlayer($collectorNumberClicked))
+						{ // the target(s) are chosen by another player so we need to tell them exactly which card was played
+								self::notifyAllPlayers( "playEquipment", clienttranslate( '${player_name} is playing ${equipment_name}: ${equip_effect}' ), array(
+												'i18n' => array( 'equipment_name','equip_effect' ),
+												'equipment_name' => $equipmentCardName,
+												'equip_name' => $equipName,
+												'equip_effect' => $equipEffect,
+												'player_id_playing_equipment' => $activePlayerId,
+												'collector_number' => $collectorNumberClicked,
+												'equipment_id' => $equipmentIdClicked,
+												'player_name' => self::getActivePlayerName(),
+												'descriptionText' => $extraDescriptionText,
+												'reveal_card' => true
+								) );
+						}
+						else
+						{ // the targets were chosen by the player playing the equipment so we don't need to tell everyone which card they are planning to play until they select targets (in case they cancel)
+								self::notifyAllPlayers( "playEquipment", '', array(
+												'i18n' => array( 'equipment_name' ),
+												'equipment_name' => $equipmentCardName,
+												'equip_name' => $equipName,
+												'equip_effect' => $equipEffect,
+												'player_id_playing_equipment' => $activePlayerId,
+												'collector_number' => $collectorNumberClicked,
+												'equipment_id' => $equipmentIdClicked,
+												'player_name' => self::getActivePlayerName(),
+												'descriptionText' => $extraDescriptionText,
+												'reveal_card' => false
+								) );
+						}
 
 						// save the state name for this equipment so we know where to go back afterwards
 						$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
@@ -8576,7 +8904,10 @@ class goodcopbadcop extends Table
 
 						self::notifyAllPlayers( "startTurn", clienttranslate( '${player_name} has started their turn.' ), array(
 								'player_name' => self::getActivePlayerName(),
-								'new_player_id' => $newActivePlayer
+								'new_player_id' => $newActivePlayer,
+								'is_clockwise' => $this->isTurnOrderClockwise(),
+								'current_player_name' => $this->getCurrPlayerName(),
+								'next_player_name' => $this->getNextPlayerName()
 						) );
 				}
 
@@ -9129,7 +9460,7 @@ class goodcopbadcop extends Table
 								$this->setEquipmentPlayerTarget($equipmentId, $playerIdGettingShot); // set the player getting shot to the target 1
 								$this->gamestate->changeActivePlayer($playerIdGettingShot); // make the player getting shot the active player so they can choose who gets shot
 								//throw new feException( "player $playerIdGettingShot is now the active player." );
-								$this->gamestate->nextState( "choosePlayer" );
+								$this->gamestate->nextState( "choosePlayerNoCancel" ); // choose player but do not give them a cancel button, otherwise the target gets to cancel the equipment
 						break;
 						case 11: // restraining order
 								$playerIdShooting = $this->getPlayerShooting();
@@ -9142,7 +9473,7 @@ class goodcopbadcop extends Table
 								$this->setEquipmentPlayerTarget($equipmentId, $playerIdShooting); // set the player getting shot to the target 1
 								$this->gamestate->changeActivePlayer($playerIdShooting); // make the player getting shot the active player so they can choose who gets shot
 								//throw new feException( "player $playerIdGettingShot is now the active player." );
-								$this->gamestate->nextState( "choosePlayer" );
+								$this->gamestate->nextState( "choosePlayerNoCancel" ); // choose player but do not give them a cancel button, otherwise the target gets to cancel the equipment
 						break;
 				}
 
@@ -9227,6 +9558,10 @@ class goodcopbadcop extends Table
 								break;
 
 								case "choosePlayer":
+										$this->gamestate->nextState( "executeEquipment" );
+								break;
+
+								case "choosePlayerNoCancel":
 										$this->gamestate->nextState( "executeEquipment" );
 								break;
 

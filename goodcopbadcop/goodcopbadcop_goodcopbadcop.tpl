@@ -147,7 +147,7 @@
 
                 <div id="player_f_other_equipment_active_holder" class="other_equipment_active_holder_horizontal"></div>
 
-                <div id="player_f_integrity_card_1_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot"></div>
+                <div id="player_f_integrity_card_3_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot"></div>
 
             </div>
             <div id="player_f_row_2" class="player_row_horizontal">
@@ -161,7 +161,7 @@
 
                 <div id="player_f_first_equipment_active_holder" class="first_equipment_active_holder_horizontal"></div>
 
-                <div id="player_f_integrity_card_3_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot"></div>
+                <div id="player_f_integrity_card_1_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot"></div>
 
             </div>
         </div>
@@ -205,7 +205,7 @@
 
                 <div id="player_d_other_equipment_active_holder" class="other_equipment_active_holder_horizontal"></div>
 
-                <div id="player_d_integrity_card_1_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot"></div>
+                <div id="player_d_integrity_card_3_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot"></div>
 
             </div>
             <div id="player_d_row_2" class="player_row_horizontal">
@@ -220,7 +220,7 @@
 
                 <div id="player_d_first_equipment_active_holder" class="first_equipment_active_holder_horizontal"></div>
 
-                <div id="player_d_integrity_card_3_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot"></div>
+                <div id="player_d_integrity_card_1_holder" class="integrity_card_holder_horizontal opponent_integrity_card_slot"></div>
 
             </div>
         </div>
@@ -250,12 +250,11 @@
 
             </div>
             <div id="player_a_row_2" class="player_row_vertical">
-                <div id="player_a_integrity_card_3_holder" class="integrity_card_holder_vertical my_integrity_card_slot">
-                </div>
-                <div id="player_a_integrity_card_2_holder" class="integrity_card_holder_vertical my_integrity_card_slot">
-                </div>
-                <div id="player_a_integrity_card_1_holder" class="integrity_card_holder_vertical my_integrity_card_slot">
-                </div>
+                <div id="player_a_integrity_card_1_holder" class="integrity_card_holder_vertical my_integrity_card_slot"></div>
+
+                <div id="player_a_integrity_card_2_holder" class="integrity_card_holder_vertical my_integrity_card_slot"></div>
+
+                <div id="player_a_integrity_card_3_holder" class="integrity_card_holder_vertical my_integrity_card_slot"></div>
             </div>
             <div id="player_a_row_3" class="player_row_1_vertical">
 
@@ -274,11 +273,11 @@
             </div>
             <div id="player_h_row_2" class="player_row_vertical">
 
-                <div id="player_h_integrity_card_3_holder" class="integrity_card_holder_vertical my_integrity_card_slot"></div>
+                <div id="player_h_integrity_card_1_holder" class="integrity_card_holder_vertical my_integrity_card_slot"></div>
 
                 <div id="player_h_integrity_card_2_holder" class="integrity_card_holder_vertical my_integrity_card_slot"></div>
 
-                <div id="player_h_integrity_card_1_holder" class="integrity_card_holder_vertical my_integrity_card_slot"></div>
+                <div id="player_h_integrity_card_3_holder" class="integrity_card_holder_vertical my_integrity_card_slot"></div>
 
             </div>
             <div id="player_h_row_3" class="player_row_1_vertical">
