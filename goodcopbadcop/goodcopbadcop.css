@@ -590,6 +590,16 @@
     top: 20px;*/
 }
 
+#equipment_reference_header
+{
+    margin-top: 50px;
+}
+
+.used_equipment
+{
+    filter: brightness(50%);
+}
+
 /*
 .action-button
 {
@@ -665,6 +675,16 @@
     background-position:-0px -0px;
     cursor: pointer;
     opacity: 0.5;
+}
+
+.list_equipment_card
+{
+    background-image: url('img/equipment_card_sprite_240w.jpg');
+    width: 240px;
+    height: 336px;
+
+    border-radius: 10px;
+    border: 1px black solid;
 }
 
 .active_center_equipment_card

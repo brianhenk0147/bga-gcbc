@@ -82,6 +82,7 @@ function (dojo, declare) {
 
             this.initializeHandEquipment(this.gamedatas.playerLetters);
             this.initializeActiveEquipment(this.gamedatas.playerLetters);
+            this.initializeEquipmentList(this.gamedatas.equipmentList);
             this.initializeZombieDice();
 
             // Setting up player boards
@@ -345,6 +346,44 @@ function (dojo, declare) {
                 case 'askShootReaction':
                 this.EXTRA_DESCRIPTION_TEXT = ''; // in case special instructions were given, clear them out
                 break;
+/*
+                case 'chooseActiveOrHandEquipmentCard':
+                console.log("entering chooseActiveOrHandEquipmentCard");
+
+                var playerBoardEquipmentList = args.args.playerBoardEquipmentList;
+console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
+                const eqKeys = Object.keys(playerBoardEquipmentList);
+                for (const eqKey of eqKeys)
+                { // go through each player
+
+                    var isActive = playerBoardEquipmentList[eqKey]['isActive'];
+                    var collectorIdOrEquipmentId = playerBoardEquipmentList[eqKey]['equipmentOrCollectorId'];
+                    var playerId = playerBoardEquipmentList[eqKey]['ownerId'];
+                    var playerLetter = this.gamedatas.playerLetters[playerId].player_letter;
+
+                    var cardHtmlId = 'player_board_hand_equipment_'+playerLetter+'_item_'+collectorIdOrEquipmentId; // hand equipmentId 26
+                    if(isActive)
+                    { // this is a face-up active equipment
+                        cardHtmlId = 'player_board_active_equipment_'+playerLetter+'_item_'+collectorIdOrEquipmentId; // face-up card collectorId 30
+                    }
+                    player_board_hand_equipment_c_item_13
+                    player_board_hand_equipment_f_item_5
+                    player_board_active_equipment_a_item_13
+
+
+                    player_board_active_equipment_a_item_13
+                    player_board_hand_equipment_c_item_13
+                    player_board_hand_equipment_f_item_5
+
+
+                    this.disconnect( $(cardHtmlId), 'onclick'); // disconnect any previously registered onclicks for this
+                    dojo.connect( $(cardHtmlId), 'onclick', this, 'onClickEquipmentCard' ); // connect to calling the equipment click action (Evidence Bag)
+
+                    console.log('connected '+cardHtmlId+' to onClickEquipmentCard');
+                }
+
+                break;
+*/
             }
         },
 
@@ -360,6 +399,7 @@ function (dojo, declare) {
               case 'chooseIntegrityCards':
 
                   break;
+
             }
         },
 
@@ -368,7 +408,7 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-            console.log("onUpdateActionButtons state " + stateName);
+//            console.log("onUpdateActionButtons state " + stateName);
 
             if( this.isCurrentPlayerActive() )
             {
@@ -608,7 +648,7 @@ function (dojo, declare) {
 
        initializeZombieDice : function()
        {
-            this.tableDice = new ebg.stock(); // create a new set of cards for the player's equipment
+            this.tableDice = new ebg.stock(); // create a new set of cards for the dice
             this.tableDice.create( this, $('dice'), this.dieWidth, this.dieHeight ); // specify where it goes and how wide/tall it should be
             this.tableDice.image_items_per_row = 6; // specify that there are 13 images per row in the CSS sprite image
 
@@ -628,6 +668,122 @@ function (dojo, declare) {
             this.tableDice.addItemType( 11, 12, g_gamethemeurl+'img/zombie_dice.jpg', 11 ); // zombie die | infection token face
 
 
+       },
+
+       initializeEquipmentList : function(allEquipment)
+       {
+         this.equipmentList = new ebg.stock(); // create a new set of cards for the player's equipment
+         this.equipmentList.create( this, $('equipment_list'), this.equipmentCardWidth, this.equipmentCardHeight );
+         this.equipmentList.image_items_per_row = 6;
+         this.equipmentList.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
+         this.equipmentList.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
+         this.equipmentList.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
+         this.equipmentList.addItemType( 12, 12, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 2 ); // smoke grenade
+         this.equipmentList.addItemType( 15, 15, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 1 ); // truth serum
+         this.equipmentList.addItemType( 16, 16, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 7 ); // wiretap
+         this.equipmentList.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
+         this.equipmentList.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+         this.equipmentList.addItemType( 37, 37, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 14 ); // mobile detonator
+         this.equipmentList.addItemType( 4, 4, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 12 ); // evidence bag
+         this.equipmentList.addItemType( 35, 35, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 13 ); // med kit
+         this.equipmentList.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
+         this.equipmentList.addItemType( 3, 3, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 17 ); // Defibrillator
+         this.equipmentList.addItemType( 1, 1, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 16 ); // Blackmail
+         this.equipmentList.addItemType( 45, 45, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 11 ); // Walkie Talkie
+         this.equipmentList.addItemType( 9, 9, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 10 ); // Polygraph
+         this.equipmentList.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // Surveillance Camera
+         this.equipmentList.addItemType( 7, 7, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 5 ); // Metal Detector
+         this.equipmentList.addItemType( 17, 17, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 4 ); // Deliriant
+         this.equipmentList.addItemType( 6, 6, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 3 ); // K-9 Unit
+
+         this.equipmentList.addItemType( 60, 60, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 24 ); // Crossbow
+         this.equipmentList.addItemType( 61, 61, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 27 ); // Transfusion Tube
+         this.equipmentList.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // Zombie Serum
+         this.equipmentList.addItemType( 63, 63, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 25 ); // Flamethrower
+         this.equipmentList.addItemType( 64, 64, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 23 ); // Chainsaw
+         this.equipmentList.addItemType( 65, 65, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 28 ); // Zombie Mask
+         this.equipmentList.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
+         this.equipmentList.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
+         this.equipmentList.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
+
+         var defibrillatorIndex = 301;
+         for( var i in allEquipment )
+         { // go through the cards
+             var equipment = allEquipment[i];
+
+             var collectorNumber = equipment['card_type_arg']; // collector number
+             var stockId = equipment['card_type_arg']; // collector number
+             var equipmentId = equipment['card_id']; // equipment ID
+             var location = equipment['card_location']; // location
+             var locationArg = equipment['card_location_arg']; // holder
+             var equipName = equipment['equip_name'];
+             var equipEffect = equipment['equip_effect'];
+             var discardedBy = equipment['discarded_by'];
+             var equipment_played_on_turn = equipment['equipment_played_on_turn'];
+             var equipmentHtmlId = 'equipment_list_item_'+collectorNumber;
+
+             if(collectorNumber == 3)
+             { // defibrillator (2 copies of the card)
+                  stockId = defibrillatorIndex;
+                  equipmentHtmlId = 'equipment_list_item_'+defibrillatorIndex;
+
+                  defibrillatorIndex++; // add one to index for the second copy
+             }
+
+             this.equipmentList.addToStockWithId( collectorNumber, stockId );
+
+             this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber, equipName, equipEffect); // add a hoverover tooltip with a bigger version of the card
+
+             if( locationArg == this.player_id ||
+               discardedBy == this.player_id ||
+               location == 'active' ||
+               (location == 'discard' && equipment_played_on_turn != '') )
+             {
+                if(document.getElementById(equipmentHtmlId))
+                {
+                    dojo.addClass( equipmentHtmlId, 'used_equipment'); // dim the card
+                }
+             }
+
+             if(document.getElementById(equipmentHtmlId))
+             {
+                dojo.connect( $(equipmentHtmlId), 'onclick', this, 'onClickReferenceEquipmentCard' );
+             }
+         }
+
+         /*
+         this.equipmentList.addToStockWithId( 2, 2 );
+         this.equipmentList.addToStockWithId( 8, 8 );
+         this.equipmentList.addToStockWithId( 12, 12 );
+         this.equipmentList.addToStockWithId( 15, 15 );
+         this.equipmentList.addToStockWithId( 16, 16 );
+         this.equipmentList.addToStockWithId( 44, 44 );
+         this.equipmentList.addToStockWithId( 11, 11 );
+         this.equipmentList.addToStockWithId( 4, 4 );
+         this.equipmentList.addToStockWithId( 35, 35 );
+         this.equipmentList.addToStockWithId( 14, 14 );
+         this.equipmentList.addToStockWithId( 30, 301 ); // defibrillator
+         this.equipmentList.addToStockWithId( 30, 302 ); // defibrillator
+         this.equipmentList.addToStockWithId( 1, 1 );
+         this.equipmentList.addToStockWithId( 45, 45 );
+         this.equipmentList.addToStockWithId( 9, 9 );
+         this.equipmentList.addToStockWithId( 13, 13 );
+         this.equipmentList.addToStockWithId( 7, 7 );
+         this.equipmentList.addToStockWithId( 6, 6 );
+
+         if(gamedatas.zombieExpansion == 2)
+         { // we are using the zombies expansion
+             this.equipmentList.addToStockWithId( 60, 60 );
+             this.equipmentList.addToStockWithId( 61, 61 );
+             this.equipmentList.addToStockWithId( 62, 62 );
+             this.equipmentList.addToStockWithId( 63, 63 );
+             this.equipmentList.addToStockWithId( 64, 64 );
+             this.equipmentList.addToStockWithId( 65, 65 );
+             this.equipmentList.addToStockWithId( 66, 66 );
+             this.equipmentList.addToStockWithId( 67, 67 );
+             this.equipmentList.addToStockWithId( 68, 68 );
+         }
+         */
        },
 
        initializeOneActiveEquipment : function(playerLetter)
@@ -1118,7 +1274,7 @@ function (dojo, declare) {
 
             this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber, equipName, equipEffect); // add a hoverover tooltip with a bigger version of the card
 
-            dojo.connect( $(equipmentHtmlId), 'onclick', this, 'onClickEquipmentCard' ); // re-add the onclick connection
+            dojo.connect( $(equipmentHtmlId), 'onclick', this, 'onClickReferenceEquipmentCard' ); // re-add the onclick connection
             return equipmentHtmlId;
         },
 
@@ -1137,8 +1293,13 @@ function (dojo, declare) {
         placeActivePlayerEquipmentCard: function(equipmentId, collectorNumber, playerLetter, rotation, equipName, equipEffect, numberOfActiveEquipmentPlayerHas)
         {
             this.addActivePlayerEquipmentToStock(playerLetter, collectorNumber, equipName, equipEffect);
+            var equipmentPlayerBoardId = 'player_board_active_equipment_'+playerLetter+'_item_'+collectorNumber; // the id of the equipment on the player board
+            dojo.connect( $(equipmentPlayerBoardId), 'onclick', this, 'onClickPlayerBoardEquipmentCard' ); // connect it to the click where it
 
-            return 'player_board_active_equipment_'+playerLetter+'_item_'+collectorNumber;
+            var equipmentListId = 'equipment_list_item_'+collectorNumber; // the id of the equipment in the list of equipment
+            dojo.addClass(equipmentListId, 'used_equipment'); // darken the equipment in the list of equipment
+
+            return equipmentPlayerBoardId;
         },
 
         addMyHandPlayerEquipmentToStock(collectorNumber, equipmentId, equipName, equipEffect)
@@ -1152,7 +1313,7 @@ function (dojo, declare) {
             dojo.place( htmlEquipmentEffect, "player_a_equipment_hand_holder_item_"+equipmentId );
 
             var htmlIdForCardInStock = 'player_a_equipment_hand_holder_item_'+equipmentId;
-            dojo.connect( $(htmlIdForCardInStock), 'onclick', this, 'onClickEquipmentCard' );
+            dojo.connect( $(htmlIdForCardInStock), 'onclick', this, 'onClickEquipmentCardInHand' );
 
             dojo.addClass(htmlIdForCardInStock, "large_component_rounding"); // give more corner rounding and shadow to these larger equipment cards
 
@@ -1191,7 +1352,9 @@ function (dojo, declare) {
 
             var htmlIdForCardInStock = 'player_board_active_equipment_'+playerLetter+'_item_'+collectorNumber;
             this.addLargeEquipmentTooltip(htmlIdForCardInStock, collectorNumber, equipName, equipEffect); // add a hoverover tooltip with a bigger version of the card
-            dojo.connect( $(htmlIdForCardInStock), 'onclick', this, 'onClickEquipmentCard' );
+
+            this.disconnect( $(htmlIdForCardInStock), 'onclick'); // disconnect any previously registered onclicks for this
+            dojo.connect( $(htmlIdForCardInStock), 'onclick', this, 'onClickPlayerBoardEquipmentCard' );
         },
 
         // Add a hoverover tooltip with a bigger version of the card.
@@ -1251,7 +1414,8 @@ function (dojo, declare) {
             }
 
             var htmlIdForCardInStock = 'player_board_hand_equipment_'+playerLetter+'_item_'+equipmentId;
-            dojo.connect( $(htmlIdForCardInStock), 'onclick', this, 'onClickEquipmentCard' );
+            this.disconnect( $(htmlIdForCardInStock), 'onclick'); // disconnect any previously registered onclicks for this
+            dojo.connect( $(htmlIdForCardInStock), 'onclick', this, 'onClickPlayerBoardEquipmentCard' );
         },
 
         placeIntegrityCard: function(playerLetter, cardPosition, visibilityToYou, cardType, rotation, isHidden, playersSeen)
@@ -1404,6 +1568,8 @@ function (dojo, declare) {
                 case "14": // taser
                     return 2;
                 case "3": // Defibrillator
+                case "301": // Defibrillator
+                case "302": // Defibrillator
                     return 5;
                 case "1": // Blackmail
                     return 4;
@@ -1421,6 +1587,25 @@ function (dojo, declare) {
                     return 4;
                 case "6": // K-9 Unit
                     return 3;
+
+                case "60": // Crossbow
+                    return 0;
+                case "61": // Transfusion Tube
+                    return 3;
+                case "62": // Zombie Serum
+                    return 5;
+                case "63": // Flamethrower
+                    return 1;
+                case "64": // Chainsaw
+                    return 5;
+                case "65": // Zombie Mask
+                    return 4;
+                case "66": // Machete
+                    return 2;
+                case "67": // Weapon Crate
+                    return 3;
+                case "68": // Alarm Clock
+                    return 4;
 
             }
         },
@@ -1452,6 +1637,8 @@ function (dojo, declare) {
                 case "14": // taser
                     return 3;
                 case "3": // Defibrillator
+                case "301": // Defibrillator
+                case "302": // Defibrillator
                     return 2;
                 case "1": // Blackmail
                     return 2;
@@ -1469,6 +1656,26 @@ function (dojo, declare) {
                     return 0;
                 case "6": // K-9 Unit
                     return 0;
+
+
+                case "60": // Crossbow
+                    return 4;
+                case "61": // Transfusion Tube
+                    return 4;
+                case "62": // Zombie Serum
+                    return 4;
+                case "63": // Flamethrower
+                    return 4;
+                case "64": // Chainsaw
+                    return 3;
+                case "65": // Zombie Mask
+                    return 4;
+                case "66": // Machete
+                    return 4;
+                case "67": // Weapon Crate
+                    return 3;
+                case "68": // Alarm Clock
+                    return 3;
             }
         },
 
@@ -2128,26 +2335,91 @@ function (dojo, declare) {
             }
         },
 
-        onClickEquipmentCard: function( evt )
+        showEquipmentDialog: function(collectorNumber)
         {
+             // Create the new dialog over the play zone. You should store the handler in a member variable to access it later
+             this.myDlg = new ebg.popindialog();
+             this.myDlg.create( 'myDialogUniqueId' );
+             //this.myDlg.setTitle( _("my dialog title to translate") );
+             this.myDlg.setMaxWidth( this.largeEquipmentCardWidth ); // Optional
 
+             if(collectorNumber == "301" || collectorNumber == "302")
+             { // Defibrillator
+                collectorNumber = "3";
+             }
+
+             // Create the HTML of my dialog.
+             // The best practice here is to use Javascript templates
+             var html = this.format_block( 'jstpl_listEquipment', {
+                           x: this.largeEquipmentCardWidth*(this.getEquipmentSpriteX(collectorNumber)),
+                           y: this.largeEquipmentCardHeight*(this.getEquipmentSpriteY(collectorNumber)),
+                           collectorNumber: collectorNumber,
+                           equipmentName: this.gamedatas.equipmentDetails[collectorNumber].equip_name,
+                           equipmentEffect: this.gamedatas.equipmentDetails[collectorNumber].equip_effect
+                       } );
+
+             // Show the dialog
+             this.myDlg.setContent( html ); // Must be set before calling show() so that the size of the content is defined before positioning the dialog
+             this.myDlg.show();
+        },
+
+        onClickPlayerBoardEquipmentCard: function( evt )
+        {
             var node = evt.currentTarget.id;
             if(node)
             { // if node is defind
-                var equipmentId = node.split('_')[6]; // the id of the equipment clicked (active player equipment... player_board_active_equipment_f_item_8)
+                var equipmentIdOrCollectorNumber = node.split('_')[6]; // the id of the equipment clicked in hand or board (active player equipment... player_board_active_equipment_f_item_8)
+                var location = node.split('_')[2]; // hand or active
 
-                if(!equipmentId)
+                if(!equipmentIdOrCollectorNumber)
                 { // the equipment ID is not valid
-                    equipmentId = node.split('_')[3]; // the id of the equipment clicked (active central equipment... center_active_equipment_12)
+                    equipmentIdOrCollectorNumber = node.split('_')[3]; // the id of the equipment clicked (active central equipment center_active_equipment_12 OR equipment reference equipment_list_item_6)
                 }
 
+                //if(this.checkPossibleActions('clickEquipmentCard'))
+                if(location == 'hand' || this.checkPossibleActions('clickEquipmentCardToTarget'))
+                { // we are targeting equipment with Evidence Bag
+
+                    //dojo.stopEvent( evt ); // Preventing default browser reaction
+
+                    this.clickEquipmentCard(equipmentIdOrCollectorNumber, node);
+                }
+                else
+                {
+                    this.showEquipmentDialog(equipmentIdOrCollectorNumber); // show them a larger version of the equipment
+                }
+            }
+        },
+
+        onClickReferenceEquipmentCard: function( evt )
+        {
+            var node = evt.currentTarget.id;
+            if(node)
+            { // if node is defind
+                var collectorNumber = node.split('_')[6]; // the id of the equipment clicked in hand or board (active player equipment... player_board_active_equipment_f_item_8)
+
+                if(!collectorNumber)
+                { // the equipment ID is not valid
+                    collectorNumber = node.split('_')[3]; // the id of the equipment clicked (active central equipment center_active_equipment_12 OR equipment reference equipment_list_item_6)
+                }
+
+                this.showEquipmentDialog(collectorNumber); // show them a larger version of the equipment
+            }
+        },
+
+        onClickEquipmentCardInHand: function( evt )
+        {
+            var node = evt.currentTarget.id;
+            if(node)
+            { // if node is defind
+                var equipmentIdOrCollectorNumber = node.split('_')[6]; // the id of the equipment clicked in hand or board (active player equipment... player_a_equipment_hand_holder_item_18)
 
                 if(this.checkPossibleActions('clickEquipmentCard'))
                 { // we are allowed to select cards based on our current state
 
                     dojo.stopEvent( evt ); // Preventing default browser reaction
 
-                    this.clickEquipmentCard(equipmentId, node);
+                    this.clickEquipmentCard(equipmentIdOrCollectorNumber, node);
                 }
                 else
                 {

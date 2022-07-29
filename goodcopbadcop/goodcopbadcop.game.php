@@ -151,6 +151,8 @@ class goodcopbadcop extends Table
         $sql = "SELECT player_id id, player_score score FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
 				$result['playerLetters'] = $this->getPlayerLetterList($currentPlayerId, $result['players']);
+				$result['equipmentDetails'] = $this->getEquipmentDetails();
+
 
 				$result['zombieExpansion'] = $this->getGameStateValue('ZOMBIES_EXPANSION'); // send whether we have the zombies expansion activated
 				$result['currentPlayerTurn'] = $this->getGameStateValue('CURRENT_PLAYER'); // let the client know whose turn it is
@@ -185,6 +187,7 @@ class goodcopbadcop extends Table
 				$result['sharedActiveEquimentCards'] = $this->getSharedActiveEquipmentCards(); // get all the active equipment cards in the center
 				$result['playerActiveEquipmentCards'] = $this->getPlayerActiveEquipmentCards($currentPlayerId); // get all the active equipment cards targeting a specific player
 				$result['equipment_effects'] = $this->getEquipmentEffects();
+				$result['equipmentList'] = $this->getEquipmentList();
 
 				$result['eliminatedPlayers'] = $this->getEliminatedPlayers($currentPlayerId);
 				$result['zombiePlayers'] = $this->getZombiesWithLetterOrder($currentPlayerId);
@@ -835,6 +838,26 @@ class goodcopbadcop extends Table
 				}
 		}
 
+		function getEquipmentDetails()
+		{
+				$equipmentList = array();
+
+				$sql = "SELECT * FROM equipmentCards ORDER BY equipment_name ASC ";
+				$equipmentListFromDb = self::getCollectionFromDb( $sql );
+
+				foreach( $equipmentListFromDb as $card )
+				{
+						$collectorNumber = $card['card_type_arg'];
+
+						$equipName = $this->getTranslatedEquipmentName($collectorNumber);
+						$equipEffect = $this->getTranslatedEquipmentEffect($collectorNumber);
+
+						$equipmentList[$collectorNumber] = array( 'equip_name' => $equipName, 'equip_effect' => $equipEffect, 'collector_number' => $collectorNumber);
+				}
+
+				return $equipmentList;
+		}
+
 		function getPlayerLetterList($askingPlayer, $playerList)
 		{
 				$playerLetterList = array();
@@ -851,6 +874,34 @@ class goodcopbadcop extends Table
 				}
 
 				return $playerLetterList;
+		}
+
+		function getEquipmentList()
+		{
+				$equipmentList = array();
+
+				$sql = "SELECT * FROM equipmentCards ORDER BY equipment_name ASC ";
+				$equipmentListFromDb = self::getCollectionFromDb( $sql );
+
+				$index = 0;
+				foreach( $equipmentListFromDb as $card )
+				{
+						$cardId = $card['card_id'];
+						$collectorNumber = $card['card_type_arg'];
+						$location = $card['card_location'];
+						$locationArg = $card['card_location_arg'];
+						$playedOnTurn = $card['equipment_played_on_turn'];
+						$discardedBy = ''; // TODO: switch this to the database table after all games were started after 7/27/2022
+						//$discardedBy = $card['discarded_by'];
+						$equipName = $this->getTranslatedEquipmentName($collectorNumber);
+						$equipEffect = $this->getTranslatedEquipmentEffect($collectorNumber);
+
+						$equipmentList[$index] = array( 'card_id' => $cardId, 'card_type_arg' => $collectorNumber, 'equip_name' => $equipName, 'equip_effect' => $equipEffect, 'card_location' => $location, 'card_location_arg' => $locationArg, 'equipment_played_on_turn' => $playedOnTurn, 'discarded_by' => $discardedBy);
+
+						$index++;
+				}
+
+				return $equipmentList;
 		}
 
 		function doesPlayerHaveRevealedLeader($playerId)
@@ -2401,6 +2452,11 @@ class goodcopbadcop extends Table
 		// Convert a player ID into a player NAME.
 		function getPlayerNameFromPlayerId($playerId)
 		{
+				if(is_null($playerId) || $playerId == '')
+				{
+						return '';
+				}
+
 				$sql = "SELECT player_name FROM `player` ";
 				$sql .= "WHERE player_id=$playerId ";
 
@@ -2930,10 +2986,26 @@ class goodcopbadcop extends Table
 				return self::getObjectListFromDB( $sql );
 		}
 
+		function getAllEquipmentInHands()
+		{
+				$sql = "SELECT * FROM `equipmentCards` ";
+				$sql .= "WHERE card_location='hand' ";
+
+				return self::getObjectListFromDB( $sql );
+		}
+
 		function getPlayersActiveEquipment($playerAsking)
 		{
 				$sql = "SELECT * FROM `equipmentCards` ";
 				$sql .= "WHERE card_location='active' AND equipment_owner=$playerAsking";
+
+				return self::getObjectListFromDB( $sql );
+		}
+
+		function getAllActiveEquipmentCards()
+		{
+				$sql = "SELECT * FROM `equipmentCards` ";
+				$sql .= "WHERE card_location='active' ";
 
 				return self::getObjectListFromDB( $sql );
 		}
@@ -3875,8 +3947,11 @@ class goodcopbadcop extends Table
 
 		function resetEquipmentAfterDiscard($cardId)
 		{
+				$ownerId = $this->getEquipmentCardOwner($cardId);
+
 				$sqlUpdate = "UPDATE equipmentCards SET ";
 				$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0 WHERE ";
+				//$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0,discarded_by=$ownerId WHERE ";
 				$sqlUpdate .= "card_id=$cardId";
 
 				self::DbQuery( $sqlUpdate );
@@ -6812,8 +6887,24 @@ class goodcopbadcop extends Table
 
 		function dropGun($gunId)
 		{
+				if(is_null($gunId) || $gunId == '')
+				{ // invalid gun id
+						return;
+				}
+
 				$gunHolderPlayerId = $this->getPlayerIdOfGunHolder($gunId);
-				$gunType = $this->getGunTypeHeldByPlayer($gunHolderPlayerId); // arm or gun
+				$playerName = $this->getPlayerNameFromPlayerId($gunHolderPlayerId); // get the player's name who is dropping the gun
+
+				if($playerName == '')
+				{ // could not find player ID
+						return;
+				}
+
+				$gunType = 'gun'; // default to gun
+				if(!is_null($gunHolderPlayerId) && $gunHolderPlayerId != '')
+				{
+						$gunType = $this->getGunTypeHeldByPlayer($gunHolderPlayerId); // see if this is an arm or gun
+				}
 
 				$sqlUpdate = "UPDATE guns SET ";
 				$sqlUpdate .= "gun_aimed_at='', gun_held_by='', gun_state='center', gun_acquired_in_state='' WHERE ";
@@ -6821,14 +6912,14 @@ class goodcopbadcop extends Table
 
 				self::DbQuery( $sqlUpdate );
 
-
-			  $playerName = $this->getPlayerNameFromPlayerId($gunHolderPlayerId); // get the player's name who is dropping the gun
-
-				self::notifyAllPlayers( "dropGun", clienttranslate( '${player_name} is no longer armed.' ), array(
-						'player_name' => $playerName,
-						'gunId' => $gunId,
-						'gunType' => $gunType
-				) );
+				if($playerName != '')
+				{
+						self::notifyAllPlayers( "dropGun", clienttranslate( '${player_name} is no longer armed.' ), array(
+								'player_name' => $playerName,
+								'gunId' => $gunId,
+								'gunType' => $gunType
+						) );
+				}
 		}
 
 
@@ -7126,6 +7217,43 @@ class goodcopbadcop extends Table
 											 'eliminated_player_id' => $playerId
 						) );
 				}
+		}
+
+		function getPlayerBoardEquipmentList()
+		{
+				$result = array();
+
+				$arrayIndex = 0;
+				$equipmentInHands = $this->getAllEquipmentInHands(); // get all the equipment in player hands
+				foreach( $equipmentInHands as $cardInHand )
+				{ // go through each card
+						$equipmentId = $cardInHand['card_id'];
+						$ownerId = $cardInHand['equipment_owner'];
+
+						$result[$arrayIndex] = array(); // create an array for this equipment
+						$result[$arrayIndex]['equipmentOrCollectorId'] = $equipmentId;
+						$result[$arrayIndex]['ownerId'] = $ownerId;
+						$result[$arrayIndex]['isActive'] = false;
+
+						$arrayIndex++;
+				}
+
+				$activeEquipment = $this->getAllActiveEquipmentCards(); // get all the equipment players have active targeting them
+				foreach( $activeEquipment as $activeCard)
+				{ // go through each card
+						$collectorNumber = $activeCard['card_type_arg'];
+						$ownerId = $activeCard['equipment_owner'];
+
+						$result[$arrayIndex] = array(); // create an array for this equipment
+						$result[$arrayIndex]['equipmentOrCollectorId'] = $collectorNumber;
+						$result[$arrayIndex]['ownerId'] = $ownerId;
+						$result[$arrayIndex]['isActive'] = true;
+
+						$arrayIndex++;
+				}
+
+
+				return $result;
 		}
 
 		function getPlayerTurnDiscardToDiscardButtonList($isPlayerTurn)
@@ -8444,6 +8572,7 @@ class goodcopbadcop extends Table
 				}
 		}
 
+		// Called when clicking on a card in hand to play or a card on a player board to target it.
 		function clickedEquipmentCard($cardIdClicked, $equipmentType)
 		{
 				self::checkAction( 'clickEquipmentCard' ); // make sure we can take this action from this state
@@ -8807,6 +8936,13 @@ class goodcopbadcop extends Table
 		{
 				return array(
 						'buttonList' => self::getPlayerTurnDiscardToDiscardButtonList(true)
+				);
+		}
+
+		function argGetPlayerBoardEquipment()
+		{
+				return array(
+						'playerBoardEquipmentList' => self::getPlayerBoardEquipmentList()
 				);
 		}
 

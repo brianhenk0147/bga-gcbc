@@ -300,6 +300,11 @@
     </div>
 
     <div id="player_a_equipment_hand_holder"></div>
+
+    <h2 id="equipment_reference_header">Equipment Reference</h2>
+    <div id="equipment_list">
+
+    </div>
 </div>
 
 
@@ -325,6 +330,8 @@ var jstpl_integrityCardToken = '<div id="integrity_token_${cardType}" style="bac
 var jstpl_largeEquipment = '<div class="large_equipment large_component_rounding" style="background-position:-${x}px -${y}px"><div class="large_equipment_name">${equipmentName}</div><div class="large_equipment_effect">${equipmentEffect}</div>\
                         </div>';
 var jstpl_activeEquipment = '<div class="active_equipment_card component_rounding" id="player_${playerLetter}_active_equipment_${equipmentId}" style="background-position:-${x}px -${y}px">\
+                        </div>';
+var jstpl_listEquipment = '<div class="list_equipment_card component_rounding" id="list_equipment_${collectorNumber}" style="background-position:-${x}px -${y}px"><div class="large_equipment_name">${equipmentName}</div><div class="large_equipment_effect">${equipmentEffect}</div>\
                         </div>';
 var jstpl_equipmentInHand = '<div class="hand_equipment_card component_rounding" id="player_${playerLetter}_hand_equipment_${equipmentId}" style="background-position:-${x}px -${y}px">\
                         </div>';

@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS `equipmentCards` (
   `card_location` varchar(30) NOT NULL,
   `card_location_arg` int(11) NOT NULL,
   `equipment_owner` int(11) NOT NULL,
+  `discarded_by` varchar(30) NOT NULL DEFAULT '',
   `equipment_name` varchar(60) NOT NULL DEFAULT '',
   `equipment_played_in_state` varchar(60) NOT NULL DEFAULT '',
   `equipment_played_on_turn` varchar(30) NOT NULL DEFAULT '',

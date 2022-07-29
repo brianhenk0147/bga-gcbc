@@ -240,8 +240,8 @@ $machinestates = array(
 
     29 => array(
         "name" => "askEndTurnReaction",
-        "description" => clienttranslate('Other players are deciding if they will use an Equipment at the end of this turn.'),
-        "descriptionmyturn" => clienttranslate('${you} may use Equipment at the end of this turn.'),
+        "description" => clienttranslate('Other players are deciding if they will use an Equipment at the end of this player turn.'),
+        "descriptionmyturn" => clienttranslate('${you} may use Equipment at the end of this player turn.'),
         "type" => "multipleactiveplayer",
         "possibleactions" => array( "clickPassOnUseEquipmentButton", "clickUseEquipmentButton", "clickEquipmentCard" ),
         "transitions" => array( "allPassedOnReactions" => 30, "endTurnReaction" => 29, "useEquipment" => 16 )
@@ -335,7 +335,8 @@ $machinestates = array(
     		"description" => clienttranslate('${actplayer} is choosing an Equipment target.'),
     		"descriptionmyturn" => clienttranslate('${you} must select an Equipment to give to another player.'),
     		"type" => "activeplayer",
-    		"possibleactions" => array( "clickEquipmentCard", "clickCancelButton" ),
+        'args' => 'argGetPlayerBoardEquipment',
+    		"possibleactions" => array( "clickEquipmentCardToTarget", "clickEquipmentCard", "clickCancelButton" ),
     		"transitions" => array( "executeEquipment" => 31, "chooseAnotherPlayer" => 43, "playerAction" => 2, "chooseEquipmentToPlayReactEndOfTurn" => 16, "chooseEquipmentToPlayReactInvestigate" => 17, "chooseEquipmentToPlayReactShoot" => 18 )
     ),
 
