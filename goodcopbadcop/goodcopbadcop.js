@@ -125,7 +125,11 @@ function (dojo, declare) {
                 var cardType = card['card_type']; // kingpin, agent, honest, crooked
                 var playersSeen = card['player_list']; // the list of players who have seen this card
 
-                this.placeIntegrityCard(playerLetter, cardPosition, 'REVEALED', cardType, rotation, 0, playersSeen); // put a revealed card face-up
+                var affectedByPlantedEvidence = card['affectedByPlantedEvidence'];
+                var affectedByDisguise = card['affectedByDisguise'];
+                var affectedBySurveillanceCamera = card['affectedBySurveillanceCamera'];
+
+                this.placeIntegrityCard(playerLetter, cardPosition, 'REVEALED', cardType, rotation, 0, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // put a revealed card face-up
             }
 
             //hiddenCardsIHaveSeen
@@ -141,7 +145,11 @@ function (dojo, declare) {
                 var cardType = card['card_type']; // kingpin, agent, honest, crooked
                 var playersSeen = card['player_list']; // the list of players who have seen this card
 
-                this.placeIntegrityCard(playerLetter, cardPosition, 'HIDDEN_SEEN', cardType, rotation, 1, playersSeen); // put a hidden card out so i can see what it is but it is clear it is not visible to everyone
+                var affectedByPlantedEvidence = card['affectedByPlantedEvidence'];
+                var affectedByDisguise = card['affectedByDisguise'];
+                var affectedBySurveillanceCamera = card['affectedBySurveillanceCamera'];
+
+                this.placeIntegrityCard(playerLetter, cardPosition, 'HIDDEN_SEEN', cardType, rotation, 1, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // put a hidden card out so i can see what it is but it is clear it is not visible to everyone
             }
 
             //hiddenCardsIHaveNotSeen
@@ -156,7 +164,11 @@ function (dojo, declare) {
                 var cardType = _("Unknown");
                 var playersSeen = card['player_list']; // the list of players who have seen this card
 
-                this.placeIntegrityCard(playerLetter, cardPosition, 'HIDDEN_NOT_SEEN', cardType, rotation, 1, playersSeen); // put a face-down integrity card out
+                var affectedByPlantedEvidence = card['affectedByPlantedEvidence'];
+                var affectedByDisguise = card['affectedByDisguise'];
+                var affectedBySurveillanceCamera = card['affectedBySurveillanceCamera'];
+
+                this.placeIntegrityCard(playerLetter, cardPosition, 'HIDDEN_NOT_SEEN', cardType, rotation, 1, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // put a face-down integrity card out
             }
 
             for( var gun_id in gamedatas.guns )
@@ -311,7 +323,7 @@ function (dojo, declare) {
             // First Param: css class to target
             // Second Param: type of events
             // Third Param: the method that will be called when the event defined by the second parameter happen
-            this.addEventToClass( "integrity_card", "onclick", "onClickIntegrityCard" );
+            //this.addEventToClass( "integrity_card", "onclick", "onClickIntegrityCard" );
             //this.addEventToClass( "hand_equipment_card", "onclick", "onClickEquipmentCard" );
 
 
@@ -346,44 +358,7 @@ function (dojo, declare) {
                 case 'askShootReaction':
                 this.EXTRA_DESCRIPTION_TEXT = ''; // in case special instructions were given, clear them out
                 break;
-/*
-                case 'chooseActiveOrHandEquipmentCard':
-                console.log("entering chooseActiveOrHandEquipmentCard");
 
-                var playerBoardEquipmentList = args.args.playerBoardEquipmentList;
-console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
-                const eqKeys = Object.keys(playerBoardEquipmentList);
-                for (const eqKey of eqKeys)
-                { // go through each player
-
-                    var isActive = playerBoardEquipmentList[eqKey]['isActive'];
-                    var collectorIdOrEquipmentId = playerBoardEquipmentList[eqKey]['equipmentOrCollectorId'];
-                    var playerId = playerBoardEquipmentList[eqKey]['ownerId'];
-                    var playerLetter = this.gamedatas.playerLetters[playerId].player_letter;
-
-                    var cardHtmlId = 'player_board_hand_equipment_'+playerLetter+'_item_'+collectorIdOrEquipmentId; // hand equipmentId 26
-                    if(isActive)
-                    { // this is a face-up active equipment
-                        cardHtmlId = 'player_board_active_equipment_'+playerLetter+'_item_'+collectorIdOrEquipmentId; // face-up card collectorId 30
-                    }
-                    player_board_hand_equipment_c_item_13
-                    player_board_hand_equipment_f_item_5
-                    player_board_active_equipment_a_item_13
-
-
-                    player_board_active_equipment_a_item_13
-                    player_board_hand_equipment_c_item_13
-                    player_board_hand_equipment_f_item_5
-
-
-                    this.disconnect( $(cardHtmlId), 'onclick'); // disconnect any previously registered onclicks for this
-                    dojo.connect( $(cardHtmlId), 'onclick', this, 'onClickEquipmentCard' ); // connect to calling the equipment click action (Evidence Bag)
-
-                    console.log('connected '+cardHtmlId+' to onClickEquipmentCard');
-                }
-
-                break;
-*/
             }
         },
 
@@ -408,7 +383,7 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
         //
         onUpdateActionButtons: function( stateName, args )
         {
-//            console.log("onUpdateActionButtons state " + stateName);
+            //console.log("onUpdateActionButtons state " + stateName);
 
             if( this.isCurrentPlayerActive() )
             {
@@ -739,8 +714,8 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
                location == 'active' ||
                (location == 'discard' && equipment_played_on_turn != '') )
              {
-                if(document.getElementById(equipmentHtmlId))
-                {
+                if(document.getElementById(equipmentHtmlId) && this.gamedatas.playerLetters[this.player_id])
+                { // equipment HTML node exists and they are not a spectator
                     dojo.addClass( equipmentHtmlId, 'used_equipment'); // dim the card
                 }
              }
@@ -1241,8 +1216,8 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             }
          },
 
-        // PLAY actice cards to the center area FROM HAND.
-        playActiveCentralEquipmentCardFromHand: function(equipmentId, collectorNumber, playerLetter, equipName, equipEffect)
+        // PLAY card to the center area FROM HAND.
+        playEquipmentCardFromHand: function(equipmentId, collectorNumber, playerLetter, equipName, equipEffect)
         {
             this.discardEquipmentFromHand(playerLetter, equipmentId, true); // remove from player A hand and all player side board stocks
             var htmlIdOfCard = this.placeActiveCentralEquipmentCard(equipmentId, collectorNumber, 0, equipName, equipEffect); // place on active_equipment_center_holder
@@ -1263,13 +1238,13 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
         placeActiveCentralEquipmentCard: function(equipmentId, collectorNumber, rotation, equipName, equipEffect)
         {
             var htmlIdCenterHolder = "active_equipment_center_holder"; // the HTML ID of the container for the card
-            var equipmentHtmlId = "center_active_equipment_" + equipmentId; // the HTML ID of the card
+            var equipmentHtmlId = "center_active_equipment_" + collectorNumber; // the HTML ID of the card
 
             dojo.place(
                     this.format_block( 'jstpl_activeCenterEquipment', {
                         x: this.equipmentCardWidth*(this.getEquipmentSpriteX(collectorNumber)),
                         y: this.equipmentCardHeight*(this.getEquipmentSpriteY(collectorNumber)),
-                        equipmentId: equipmentId
+                        collectorNumber: collectorNumber
                     } ), htmlIdCenterHolder );
 
             this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber, equipName, equipEffect); // add a hoverover tooltip with a bigger version of the card
@@ -1286,6 +1261,7 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             var playerBoardId = 'player_board_active_equipment_'+playerLetterReceiving;
             var placedId = this.placeActivePlayerEquipmentCard(equipmentId, collectorNumber, playerLetterReceiving, rotation, equipName, equipEffect, numberOfActiveEquipmentReceiverHas); // add to receiver player board
             dojo.addClass( placedId, 'cardHighlighted'); // highlight the card just investigated
+
             this.discardEquipmentFromHand(playerLetterPlaying, equipmentId, true); // remove from giver player board
 
         },
@@ -1294,10 +1270,17 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
         {
             this.addActivePlayerEquipmentToStock(playerLetter, collectorNumber, equipName, equipEffect);
             var equipmentPlayerBoardId = 'player_board_active_equipment_'+playerLetter+'_item_'+collectorNumber; // the id of the equipment on the player board
-            dojo.connect( $(equipmentPlayerBoardId), 'onclick', this, 'onClickPlayerBoardEquipmentCard' ); // connect it to the click where it
+            //this.disconnect( $(equipmentPlayerBoardId), 'onclick'); // disconnect any previously registered onclicks for this
+            //dojo.connect( $(equipmentPlayerBoardId), 'onclick', this, 'onClickPlayerBoardEquipmentCard' ); // connect it to the click where it
+            dojo.addClass( equipmentPlayerBoardId, 'modified_glow'); // add yellow border (glow) around it so we know this card is being modified by something
 
             var equipmentListId = 'equipment_list_item_'+collectorNumber; // the id of the equipment in the list of equipment
-            dojo.addClass(equipmentListId, 'used_equipment'); // darken the equipment in the list of equipment
+            if(document.getElementById(equipmentListId) && this.gamedatas.playerLetters[this.player_id])
+            { // equipment HTML node exists and they are not a spectator
+                dojo.addClass(equipmentListId, 'used_equipment'); // darken the equipment in the list of equipment
+            }
+
+            dojo.addClass(equipmentPlayerBoardId, 'modified_glow');
 
             return equipmentPlayerBoardId;
         },
@@ -1418,23 +1401,46 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             dojo.connect( $(htmlIdForCardInStock), 'onclick', this, 'onClickPlayerBoardEquipmentCard' );
         },
 
-        placeIntegrityCard: function(playerLetter, cardPosition, visibilityToYou, cardType, rotation, isHidden, playersSeen)
+        placeIntegrityCard: function(playerLetter, cardPosition, visibilityToYou, cardType, rotation, isHidden, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera)
         {
-
             var visibilityOffset = this.getVisibilityOffset(visibilityToYou); // get sprite X value for this card type
+
+            if(affectedByPlantedEvidence)
+            {
+                if(cardType == 'honest')
+                {
+                    cardType = 'crooked';
+                }
+                else if(cardType == 'crooked')
+                {
+                    cardType = 'honest';
+                }
+            }
+
             var cardTypeOffset = this.getCardTypeOffset(cardType); // get sprite Y value for this card type
 
-            var cardHolderDiv = 'player_'+playerLetter+'_integrity_card_'+cardPosition+'_holder';
+            var cardHolderDiv = 'player_'+playerLetter+'_integrity_card_'+cardPosition+'_holder'; // html ID of the card's container
+            var cardDiv = 'player_'+playerLetter+'_integrity_card_'+cardPosition; // HTML ID of the new card
+
+
+
 
             dojo.place(
-                    this.format_block( 'jstpl_integrityCard', {
-                        x: this.integrityCardWidth*(visibilityOffset),
-                        y: this.integrityCardHeight*(cardTypeOffset),
-                        playerLetter: playerLetter,
-                        cardPosition: cardPosition
+                        this.format_block( 'jstpl_integrityCard', {
+                            x: this.integrityCardWidth*(visibilityOffset),
+                            y: this.integrityCardHeight*(cardTypeOffset),
+                            playerLetter: playerLetter,
+                            cardPosition: cardPosition
                     } ), cardHolderDiv );
 
-            var cardDiv = 'player_'+playerLetter+'_integrity_card_'+cardPosition;
+
+
+
+            if(affectedByPlantedEvidence ||
+              (isHidden && (affectedByDisguise || affectedBySurveillanceCamera)))
+            {
+                dojo.addClass( cardDiv, 'modified_glow'); // add yellow border (glow) around it so we know this card is being modified by something
+            }
 
             if(visibilityToYou == 'HIDDEN_NOT_SEEN')
             { // this player has not seen the value of this card
@@ -1442,22 +1448,38 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             }
 
             // add tooltip
-            this.addIntegrityCardTooltip(cardDiv, cardType, isHidden, playersSeen, cardPosition);
+            this.addIntegrityCardTooltip(cardDiv, cardType, isHidden, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera);
 
-            this.rotateTo( cardDiv, rotation );
+
+            //this.rotateTo( cardDiv, rotation );
+
+            var animation = dojo.animateProperty({
+              	node: cardDiv,
+              	duration: 1000,
+                delay: 1000,
+              	properties: {
+              		propertyTransform: {start: 0, end: rotation}
+              	},
+              	onAnimate: function (values) {
+              		dojo.style(this.node, 'transform', 'rotate(' + parseFloat(values.propertyTransform.replace("px", "")) + 'deg)');
+              	}
+            });
+            animation.play();
+
+            dojo.connect( $(cardDiv), 'onclick', this, 'onClickIntegrityCard' ); // re-add the onclick connection
 
             return cardDiv;
         },
 
-        addIntegrityCardTooltip: function(htmlId, cardType, isHidden, playersSeen, cardPositionInt)
+        addIntegrityCardTooltip: function(htmlId, cardType, isHidden, playersSeen, cardPositionInt, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera)
         {
             var typeLabel = _("Type:"); // separate out labels for translation
             var stateLabel = _("State:"); // separate out labels for translation
             var positionLabel = _("Position:"); // separate out labels for translation
             var playersSeenLabel = _("Seen By:"); // separate out labels for translation
 
-            var isHiddenText = this.convertIsHiddenToText(isHidden); // convert whether it is hidden to a translated text
-            var cardTypeText = this.convertCardTypeToText(cardType); // convert the type of card to a translated version
+            var isHiddenText = this.convertIsHiddenToText(isHidden, affectedByDisguise, affectedBySurveillanceCamera); // convert whether it is hidden to a translated text
+            var cardTypeText = this.convertCardTypeToText(cardType, affectedByPlantedEvidence); // convert the type of card to a translated version
             var positionText = this.convertCardPositionToText(cardPositionInt); // convert card position (1,2,3) to text (LEFT,MIDDLE,RIGHT)
 
             var html = '<div><div><b>'+ typeLabel + '</b> '+ cardTypeText +'</div><div><b>'+ stateLabel +'</b> '+ isHiddenText +'</div><div><b>'+ positionLabel + '</b> '+ positionText +'</div><div><b>'+ playersSeenLabel + '</b> '+ playersSeen + '</div></div>';
@@ -2008,7 +2030,7 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             }
         },
 
-        discardEquipmentFromActive: function( playerLetter, collectorNumber )
+        discardEquipmentFromActive: function( playerLetter, collectorNumber, equipmentId, equipName, equipEffect )
         {
             switch(playerLetter)
             {
@@ -2037,6 +2059,20 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
                 this.activePlayerEquipmentH.removeFromStockById(collectorNumber);
                 break;
             }
+
+            var htmlIdOfCard = this.placeActiveCentralEquipmentCard(equipmentId, collectorNumber, 0, equipName, equipEffect); // place on active_equipment_center_holder
+
+            this.placeOnObject( htmlIdOfCard, "player_board_hand_equipment_"+playerLetter );
+
+            // slide to active_equipment_center_holder
+            var destination = 'active_equipment_center_holder';
+            var anim1 = this.slideToObject(htmlIdOfCard, destination, 1000, 250);
+            dojo.connect(anim1, 'onEnd', function(node)
+            { // do the following after the animation ends
+
+              dojo.addClass( htmlIdOfCard, 'cardHighlighted'); // highlight the card just moved
+            });
+            anim1.play();
         },
 
         drawEquipmentCard: function(equipmentCardId, collectorNumber, equipName, equipEffect)
@@ -2102,12 +2138,22 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             }
         },
 
-        convertIsHiddenToText: function(isHidden)
+        convertIsHiddenToText: function(isHidden, affectedByDisguise, affectedBySurveillanceCamera)
         {
             var isHiddenText = _("Revealed");
             if(isHidden == 1)
-            {
+            { // card is hidden
                 isHiddenText = _("Hidden");
+
+                if(affectedByDisguise)
+                {
+                    isHiddenText += _(" (Disguise)");
+                }
+
+                if(affectedBySurveillanceCamera)
+                {
+                    isHiddenText += _(" (Surveillance Camera)");
+                }
             }
             return isHiddenText;
         },
@@ -2134,16 +2180,26 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             }
         },
 
-        convertCardTypeToText: function(cardType)
+        convertCardTypeToText: function(cardType, affectedByPlantedEvidence)
         {
             var cardTypeText = _("Unknown");
             if(cardType == "crooked")
             {
                 cardTypeText = _("Crooked");
+
+                if(affectedByPlantedEvidence)
+                {
+                    cardTypeText = _("Crooked (modified to Honest)");
+                }
             }
             else if(cardType == "honest")
             {
                 cardTypeText = _("Honest");
+
+                if(affectedByPlantedEvidence)
+                {
+                    cardTypeText = _("Honest (modified to Crooked)");
+                }
             }
             else if(cardType == "agent")
             {
@@ -2267,52 +2323,64 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             { // clicked MY integrity card
 
                 // Check that this action is possible (see "possibleactions" in states.inc.php)
-                if( ! this.checkAction( 'clickMyIntegrityCard' ) )
-                {   return; }
+                //if( !this.checkAction( 'clickMyIntegrityCard' ) )
+                if( !this.checkPossibleActions('clickMyIntegrityCard'))
+                { // we can't click this card now
+                    this.showIntegrityCardDialog(playerPosition, cardPosition);
+                }
+                else
+                { // we can click integrity cards
 
-                this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedMyIntegrityCard.html", {
-                                                                        lock: true,
-                                                                        cardPosition: cardPosition
-                                                                     },
-                             this, function( result ) {
+                    this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedMyIntegrityCard.html", {
+                                                                            lock: true,
+                                                                            cardPosition: cardPosition
+                                                                         },
+                                 this, function( result ) {
 
-                                // What to do after the server call if it succeeded
-                                // (most of the time: nothing)
-                                dojo.addClass( node, 'cardHighlighted'); // highlight the card
+                                    // What to do after the server call if it succeeded
+                                    // (most of the time: nothing)
+                                    dojo.addClass( node, 'cardHighlighted'); // highlight the card
 
-                             }, function( is_error) {
+                                 }, function( is_error) {
 
-                                // What to do after the server call in anyway (success or failure)
-                                // (most of the time: nothing)
+                                    // What to do after the server call in anyway (success or failure)
+                                    // (most of the time: nothing)
 
-                             }
-                );
+                                 }
+                    );
+                }
             }
             else
             { // clicked OPPONENT integrity card
 
                 // Check that this action is possible (see "possibleactions" in states.inc.php)
-                if( ! this.checkAction( 'clickOpponentIntegrityCard' ) )
-                {   return; }
+                //if( !this.checkAction( 'clickOpponentIntegrityCard' ) )
+                if( !this.checkPossibleActions('clickOpponentIntegrityCard'))
+                { // we cannot click this integrity card
+                    this.showIntegrityCardDialog(playerPosition, cardPosition);
+                }
+                else
+                { // we can click this integrity card
 
-                this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedOpponentIntegrityCard.html", {
-                                                                        lock: true,
-                                                                        playerPosition: playerPosition,
-                                                                        cardPosition: cardPosition
-                                                                     },
-                             this, function( result ) {
+                    this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedOpponentIntegrityCard.html", {
+                                                                            lock: true,
+                                                                            playerPosition: playerPosition,
+                                                                            cardPosition: cardPosition
+                                                                         },
+                                 this, function( result ) {
 
-                                // What to do after the server call if it succeeded
-                                // (most of the time: nothing)
-                                dojo.addClass( node, 'cardHighlighted'); // highlight the card
+                                    // What to do after the server call if it succeeded
+                                    // (most of the time: nothing)
+                                    dojo.addClass( node, 'cardHighlighted'); // highlight the card
 
-                             }, function( is_error) {
+                                 }, function( is_error) {
 
-                                // What to do after the server call in anyway (success or failure)
-                                // (most of the time: nothing)
+                                    // What to do after the server call in anyway (success or failure)
+                                    // (most of the time: nothing)
 
-                             }
-                );
+                                 }
+                    );
+                }
             }
         },
 
@@ -2335,13 +2403,56 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             }
         },
 
+        showIntegrityCardDialog: function(playerPosition, cardPosition)
+        {
+            if(this.gamedatas.playerLetters[this.player_id])
+            { // not a spectator
+                this.ajaxcall( "/goodcopbadcop/goodcopbadcop/getIntegrityCardDetails.html", {
+                                                                        lock: true,
+                                                                        playerPosition: playerPosition,
+                                                                        cardPosition: cardPosition
+                                                                     },
+                             this, function( result )
+                             { // What to do after the server call if it succeeded (most of the time: nothing)
+
+    /*
+                                // Create the new dialog over the play zone. You should store the handler in a member variable to access it later
+                                this.myDlg = new ebg.popindialog();
+                                this.myDlg.create( 'integrityDialog' );
+                                //this.myDlg.setTitle( _("my dialog title to translate") );
+                                this.myDlg.setMaxWidth( this.largeEquipmentCardWidth ); // Optional
+
+                                // Create the HTML of my dialog.
+                                // The best practice here is to use Javascript templates
+                                var html = this.format_block( 'jstpl_listEquipment', {
+                                              x: this.largeEquipmentCardWidth*(this.getEquipmentSpriteX(collectorNumber)),
+                                              y: this.largeEquipmentCardHeight*(this.getEquipmentSpriteY(collectorNumber)),
+                                              collectorNumber: collectorNumber,
+                                              equipmentName: this.gamedatas.equipmentDetails[collectorNumber].equip_name,
+                                              equipmentEffect: this.gamedatas.equipmentDetails[collectorNumber].equip_effect
+                                          } );
+
+                                // Show the dialog
+                                this.myDlg.setContent( html ); // Must be set before calling show() so that the size of the content is defined before positioning the dialog
+                                this.myDlg.show();
+    */
+                             }, function( is_error) {
+
+                                // What to do after the server call in anyway (success or failure)
+                                // (most of the time: nothing)
+
+                             }
+                );
+            }
+        },
+
         showEquipmentDialog: function(collectorNumber)
         {
              // Create the new dialog over the play zone. You should store the handler in a member variable to access it later
              this.myDlg = new ebg.popindialog();
-             this.myDlg.create( 'myDialogUniqueId' );
+             this.myDlg.create( 'equipmentDialog' );
              //this.myDlg.setTitle( _("my dialog title to translate") );
-             this.myDlg.setMaxWidth( this.largeEquipmentCardWidth ); // Optional
+             //this.myDlg.setMaxWidth( this.largeEquipmentCardWidth ); // Optional
 
              if(collectorNumber == "301" || collectorNumber == "302")
              { // Defibrillator
@@ -2380,7 +2491,7 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
                 if(location == 'hand' || this.checkPossibleActions('clickEquipmentCardToTarget'))
                 { // we are targeting equipment with Evidence Bag
 
-                    //dojo.stopEvent( evt ); // Preventing default browser reaction
+                    dojo.stopEvent( evt ); // Preventing default browser reaction
 
                     this.clickEquipmentCard(equipmentIdOrCollectorNumber, node);
                 }
@@ -2749,7 +2860,6 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             //dojo.subscribe( 'otherPlayerDrawsEquipmentCards', this, "notif_otherPlayerDrawsEquipmentCards" );
             dojo.subscribe( 'discardEquipmentCard', this, "notif_discardEquipmentCard" );
             dojo.subscribe( 'discardActivePlayerEquipmentCard', this, "notif_discardActivePlayerEquipmentCard" );
-            dojo.subscribe( 'activateCentralEquipment', this, "notif_activateCentralEquipment" );
             dojo.subscribe( 'activatePlayerEquipment', this, "notif_activatePlayerEquipment" );
             dojo.subscribe( 'handEquipmentCardExchanged', this, "notif_handEquipmentCardExchanged" );
             dojo.subscribe( 'activeEquipmentCardExchanged', this, "notif_activeEquipmentCardExchanged" );
@@ -2764,6 +2874,10 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             dojo.subscribe( 'iDrawEquipmentCard', this, "notif_iDrawEquipmentCard" );
             dojo.subscribe( 'targetIntegrityCard', this, "notif_targetIntegrityCard" );
             dojo.subscribe( 'cancelEquipmentUse', this, "notif_cancelEquipmentUse" );
+            dojo.subscribe( 'reverseHonestCrooked', this, "notif_reverseHonestCrooked" );
+            dojo.subscribe( 'integrityCardDetails', this, "notif_integrityCardDetails" );
+            dojo.subscribe( 'rePlaceIntegrityCard', this, "notif_rePlaceIntegrityCard" );
+            dojo.subscribe( 'playEquipmentOnTable', this, "notif_playEquipmentOnTable" );
 
             // ZOMBIES
             dojo.subscribe( 'addInfectionToken', this, "notif_addInfectionToken" );
@@ -2814,7 +2928,11 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             var cardTypeRevealed = notif.args.card_type.toLowerCase();
             var revealerPlayerId = notif.args.revealer_player_id;
             var playerLetter = this.gamedatas.playerLetters[revealerPlayerId].player_letter;
+
             var playersSeen = _("All");
+            var affectedByPlantedEvidence = notif.args.affectedByPlantedEvidence;
+            var affectedByDisguise = notif.args.affectedByDisguise;
+            var affectedBySurveillanceCamera = notif.args.affectedBySurveillanceCamera;
 
             // update the integrity card for this player to the seen version of it... should be in format -${x}px -${y}px
             var visibilityOffset = this.getVisibilityOffset('REVEALED'); // get sprite X value for this card type
@@ -2827,7 +2945,7 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
 
             dojo.addClass( integrityCardHtmlId, 'cardHighlighted'); // highlight the card just investigated
 
-            this.addIntegrityCardTooltip(integrityCardHtmlId, cardTypeRevealed, 0, playersSeen, integrityCardPositionRevealed);
+            this.addIntegrityCardTooltip(integrityCardHtmlId, cardTypeRevealed, 0, playersSeen, integrityCardPositionRevealed, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera);
         },
 
         notif_targetIntegrityCard: function( notif )
@@ -2970,6 +3088,153 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             this.removeWoundedToken(woundedCardType); // put the token on the board
         },
 
+        notif_integrityCardDetails: function( notif )
+        {
+            var playerId = notif.args.player_id;
+            var cardPosition = notif.args.card_position;
+            var playerLetter = this.gamedatas.playerLetters[playerId].player_letter;
+            var cardType = notif.args.card_type;
+  					var isSeen = notif.args.is_seen;
+            var isHidden = notif.args.is_hidden;
+            var seenByList = notif.args.seen_by_list;
+
+            var isHiddenInt = 0;
+            if(isHidden)
+            {
+                isHiddenInt = 1;
+            }
+
+            var affectedByPlantedEvidence = notif.args.affectedByPlantedEvidence;
+            var affectedByDisguise = notif.args.affectedByDisguise;
+            var affectedBySurveillanceCamera = notif.args.affectedBySurveillanceCamera;
+
+            // Create the new dialog over the play zone. You should store the handler in a member variable to access it later
+            this.myDlg = new ebg.popindialog();
+            this.myDlg.create( 'integrityDialog' );
+            //this.myDlg.setTitle( _("my dialog title to translate") );
+            //this.myDlg.setMaxWidth( this.largeEquipmentCardWidth ); // Optional
+
+            var typeLabel = _("Type:"); // separate out labels for translation
+            var stateLabel = _("State:"); // separate out labels for translation
+            var positionLabel = _("Position:"); // separate out labels for translation
+            var seenByLabel = _("Seen By:"); // separate out labels for translation
+
+            var isHiddenText = this.convertIsHiddenToText(isHiddenInt, affectedByDisguise, affectedBySurveillanceCamera); // convert whether it is hidden to a translated text
+            var cardTypeText = this.convertCardTypeToText(cardType, affectedByPlantedEvidence); // convert the type of card to a translated version
+            var positionText = this.convertCardPositionToText(cardPosition); // convert card position (1,2,3) to text (LEFT,MIDDLE,RIGHT)
+
+            // Create the HTML of my dialog.
+            // The best practice here is to use Javascript templates
+            var html = this.format_block( 'jstpl_integrityDetails', {
+                          type: '<b>'+typeLabel+'</b> '+cardTypeText,
+                          state: '<b>'+stateLabel+'</b> '+isHiddenText,
+                          position: '<b>'+positionLabel+'</b> '+positionText,
+                          seenBy: '<b>'+seenByLabel+'</b> '+seenByList
+                      } );
+
+            // Show the dialog
+            this.myDlg.setContent( html ); // Must be set before calling show() so that the size of the content is defined before positioning the dialog
+            this.myDlg.show();
+        },
+
+        notif_rePlaceIntegrityCard: function( notif )
+        {
+            var playerId = notif.args.player_id;
+            var cardPosition = notif.args.card_position;
+            var cardType = notif.args.cardType;
+
+            var playersSeen = notif.args.playersSeen;
+            var hasInfection = notif.args.hasInfection;
+
+            var affectedByPlantedEvidence = notif.args.affectedByPlantedEvidence;
+            var affectedByDisguise = notif.args.affectedByDisguise;
+            var affectedBySurveillanceCamera = notif.args.affectedBySurveillanceCamera;
+
+            var playerLetter = this.gamedatas.playerLetters[playerId].player_letter;
+            var rotation = this.getIntegrityCardRotation(playerLetter); // 0, 90, -90
+
+            var isHidden = notif.args.cardIsHidden; // true or false
+            var isHiddenInt = 1;
+            var hasPlayerSeen = 0; // default to not seen
+            if(playersSeen[this.player_id])
+            { // not a spectator
+                hasPlayerSeen = playersSeen[this.player_id]; // 1 or 0
+            }
+            var cardVisibility = 'HIDDEN_NOT_SEEN';
+            if(hasPlayerSeen == 1)
+            { // this player has seen this card
+                cardVisibility = 'HIDDEN_SEEN';
+            }
+            if(!isHidden)
+            { // this card is revealed to everyone
+                cardVisibility = 'REVEALED';
+                isHiddenInt = 0;
+            }
+
+            var cardHtmlId = 'player_'+playerLetter+'_integrity_card_'+cardPosition;
+
+            if(document.getElementById(cardHtmlId))
+            { // it already exists
+                dojo.destroy(cardHtmlId);
+            }
+
+            var idOfCard = this.placeIntegrityCard(playerLetter, cardPosition, cardVisibility, cardType, rotation, isHiddenInt, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // place a new one with correct hover over and such
+
+            if(hasInfection)
+            {
+                var infectionCardType = cardPosition+''+playerLetter;
+                dojo.place(
+                            this.format_block( 'jstpl_integrityCardToken', {
+                                cardType: infectionCardType,
+                                x: 0,
+                                y: this.woundedTokenHeight
+                            } ), idOfCard );
+
+                            dojo.addClass("integrity_token_"+infectionCardType, "infection_token"); // add the infection token class
+
+            }
+        },
+
+        notif_reverseHonestCrooked: function( notif )
+        {
+
+            var playerId = notif.args.player_id;
+            var cardPosition = notif.args.card_position;
+            var playerLetter = this.gamedatas.playerLetters[playerId].player_letter;
+            var newCardType = notif.args.new_card_type;
+            var isSeen = notif.args.is_seen;
+            var isRevealed = notif.args.is_revealed;
+
+            var cardHtmlId = 'player_'+playerLetter+'_integrity_card_'+cardPosition;
+
+            if(newCardType == 'honest')
+            {
+                if(isRevealed == '1')
+                {
+
+                    dojo.style( cardHtmlId, 'backgroundPosition', '-1px -141px' ); // switch to HONEST image REVEALED
+                }
+                else if(isSeen == '1')
+                {
+
+                    dojo.style( cardHtmlId, 'backgroundPosition', '-51px -141px' ); // switch to HONEST image SEEN
+                }
+            }
+            else if(newCardType == 'crooked')
+            {
+                if(isRevealed == '1')
+                {
+
+                    dojo.style( cardHtmlId, 'backgroundPosition', '-1px -71px' ); // switch to CROOKED image REVEALED
+                }
+                else if(isSeen == '1')
+                {
+
+                    dojo.style( cardHtmlId, 'backgroundPosition', '-51px -71px' ); // switch to CROOKED image SEEN
+                }
+            }
+        },
+
         notif_rolledZombieDie: function( notif )
         {
             var rolledFace = notif.args.rolled_face;
@@ -3075,6 +3340,8 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
 
         notif_discardEquipmentCard: function( notif )
         {
+            // if discarding from hand, do so secretly
+            // if discarding because it was played, place it where everyone can see it
 
             var equipmentId = notif.args.equipment_id;
             var collectorNumber = notif.args.collector_number;
@@ -3092,20 +3359,7 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             }
         },
 
-        notif_discardActivePlayerEquipmentCard: function( notif )
-        {
-            var equipmentId = notif.args.equipment_id;
-            var equipmentOwnerPlayerId = notif.args.equipment_card_owner;
-
-            var playerLetter = this.gamedatas.playerLetters[equipmentOwnerPlayerId].player_letter;
-            var collectorNumber = notif.args.collector_number;
-
-            var equipmentHtmlId = 'player_'+playerLetter+'_hand_equipment_'+equipmentId;
-
-            this.discardEquipmentFromActive(playerLetter, collectorNumber); // remove from giver player board
-        },
-
-        notif_activateCentralEquipment: function( notif )
+        notif_playEquipmentOnTable: function( notif )
         {
             var equipmentId = notif.args.equipment_id;
             var collectorNumber = notif.args.collector_number;
@@ -3114,7 +3368,23 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             var equipName = notif.args.equipment_name;
             var equipEffect = notif.args.equipment_effect;
 
-            this.playActiveCentralEquipmentCardFromHand(equipmentId, collectorNumber, playerLetter, equipName, equipEffect);
+            this.playEquipmentCardFromHand(equipmentId, collectorNumber, playerLetter, equipName, equipEffect);
+        },
+
+        notif_discardActivePlayerEquipmentCard: function( notif )
+        {
+            var equipmentId = notif.args.equipment_id;
+            var equipmentOwnerPlayerId = notif.args.equipment_card_owner;
+
+            var playerLetter = this.gamedatas.playerLetters[equipmentOwnerPlayerId].player_letter;
+            var collectorNumber = notif.args.collector_number;
+
+            var equipName = notif.args.equipment_name;
+            var equipEffect = notif.args.equipment_effect;
+
+            var equipmentHtmlId = 'player_'+playerLetter+'_hand_equipment_'+equipmentId;
+
+            this.discardEquipmentFromActive(playerLetter, collectorNumber, equipmentId, equipName, equipEffect ); // remove from giver player board
         },
 
         notif_activatePlayerEquipment: function( notif )
@@ -3170,7 +3440,7 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             var equipEffect = notif.args.equipment_effect;
             var numberOfActiveEquipmentNewPlayerHas = notif.args.count_active_equipment;
 
-            this.discardEquipmentFromActive(playerLetterGiving, collectorNumber); // remove from giver player board
+            this.discardEquipmentFromActive(playerLetterGiving, collectorNumber, equipmentId, equipName, equipEffect); // remove from giver player board
             this.addActivePlayerEquipmentToStock(playerLetterReceiving, collectorNumber, equipName, equipEffect); // add to player board
         },
 
@@ -3194,6 +3464,12 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             var card2Wounded = notif.args.card2Wounded;
             var card1Infected = notif.args.card1Infected;
             var card2Infected = notif.args.card2Infected;
+            var card1affectedByPlantedEvidence = notif.args.card1affectedByPlantedEvidence;
+            var card2affectedByPlantedEvidence = notif.args.card2affectedByPlantedEvidence;
+            var card1affectedByDisguise = notif.args.card1affectedByDisguise;
+            var card2affectedByDisguise = notif.args.card2affectedByDisguise;
+            var card1affectedBySurveillanceCamera = notif.args.card1affectedBySurveillanceCamera;
+            var card2affectedBySurveillanceCamera = notif.args.card2affectedBySurveillanceCamera;
 
             var card1IsHidden = notif.args.card1IsHidden; // true or false
             var card1IsHiddenInt = 1;
@@ -3274,8 +3550,8 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
 
 
             // PLACE NEW INTEGRITY CARDS
-            this.placeIntegrityCard(playerLetter1, card1Position, card1Visibility, card1Type, card1Rotation, card1IsHiddenInt, card1PlayersSeen); // put a revealed card face-up
-            this.placeIntegrityCard(playerLetter2, card2Position, card2Visibility, card2Type, card2Rotation, card2IsHiddenInt, card2PlayersSeen); // put a revealed card face-up
+            this.placeIntegrityCard(playerLetter1, card1Position, card1Visibility, card1Type, card1Rotation, card1IsHiddenInt, card1PlayersSeen, card1affectedByPlantedEvidence, card1affectedByDisguise, card1affectedBySurveillanceCamera); // put a revealed card face-up
+            this.placeIntegrityCard(playerLetter2, card2Position, card2Visibility, card2Type, card2Rotation, card2IsHiddenInt, card2PlayersSeen, card2affectedByPlantedEvidence, card2affectedByDisguise, card2affectedBySurveillanceCamera); // put a revealed card face-up
 
             dojo.style(card1HtmlId, 'transform', 'rotate('+card1Rotation+'deg)');
             dojo.style(card2HtmlId, 'transform', 'rotate('+card2Rotation+'deg)');
@@ -3360,7 +3636,11 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             var playerLetter = this.gamedatas.playerLetters[playerIdInvestigated].player_letter;
             var cardPosition = notif.args.cardPosition;
             var cardType = notif.args.cardType.toLowerCase();
+
             var playersSeen = notif.args.playersSeen;
+            var affectedByPlantedEvidence = notif.args.affectedByPlantedEvidence;
+            var affectedByDisguise = notif.args.affectedByDisguise;
+            var affectedBySurveillanceCamera = notif.args.affectedBySurveillanceCamera;
 
             var isHidden = notif.args.isHidden;
             var isHiddenInt = 0;
@@ -3387,7 +3667,7 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
 
             dojo.addClass( htmlId, 'cardHighlighted'); // highlight the card just investigated
 
-            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition); // add tooltip to show who has seen this card
+            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // add tooltip to show who has seen this card
         },
 
         notif_investigationAttempt: function( notif )
@@ -3406,7 +3686,11 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
             var investigateePlayerLetter = this.gamedatas.playerLetters[investigatedPlayerId].player_letter;
             var cardPosition = notif.args.cardPosition;
             var cardType = notif.args.cardType;
+
             var playersSeen = notif.args.playersSeen;
+            var affectedByPlantedEvidence = notif.args.affectedByPlantedEvidence;
+            var affectedByDisguise = notif.args.affectedByDisguise;
+            var affectedBySurveillanceCamera = notif.args.affectedBySurveillanceCamera;
 
             var isHidden = notif.args.isHidden;
             var isHiddenInt = 0;
@@ -3419,7 +3703,7 @@ console.log('playerBoardEquipmentList:' + playerBoardEquipmentList);
 
             dojo.addClass( htmlId, 'cardHighlighted'); // highlight the card just investigated
 
-            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition); // add tooltip to show who has seen this card
+            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // add tooltip to show who has seen this card
         },
 
         notif_endTurn: function( notif )

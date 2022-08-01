@@ -84,6 +84,19 @@ class action_goodcopbadcop extends APP_GameAction
         self::ajaxResponse( );
     }
 
+    public function getIntegrityCardDetails()
+    {
+        self::setAjaxMode();
+
+        // Retrieve arguments
+        $playerPosition = self::getArg( "playerPosition", AT_alphanum, true ); // a, b, c, etc.
+        $cardPosition = self::getArg( "cardPosition", AT_posint, true ); // 1, 2, 3
+
+        $this->game->getIntegrityCardDetails( $playerPosition, $cardPosition ); // get data and send back via notification to this player
+
+        self::ajaxResponse();
+    }
+
     public function clickedCancelButton()
     {
         self::setAjaxMode();

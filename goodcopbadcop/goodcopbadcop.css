@@ -231,6 +231,28 @@
           5px 0 20px #009A44;
 */
 }
+@media (hover: none) {
+/*
+  #popin_integrityDialog
+  {
+      left: 10px !important;
+      top: 200px !important;
+  }
+
+  #popin_equipmentDialog
+  {
+      left: 0px !important;
+      top: 300px !important;
+  }
+*/
+}
+
+
+.modified_glow
+{
+    border-width: 2px !important;
+    border-color: yellow !important;
+}
 
 .other_equipment_active_holder_vertical {
     display: inline;

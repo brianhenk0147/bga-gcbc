@@ -333,13 +333,17 @@ var jstpl_activeEquipment = '<div class="active_equipment_card component_roundin
                         </div>';
 var jstpl_listEquipment = '<div class="list_equipment_card component_rounding" id="list_equipment_${collectorNumber}" style="background-position:-${x}px -${y}px"><div class="large_equipment_name">${equipmentName}</div><div class="large_equipment_effect">${equipmentEffect}</div>\
                         </div>';
+
+var jstpl_integrityDetails = '<div id="integrity_details"><div>${type}</div><div>${state}</div><div>${position}</div><div>${seenBy}</div>\
+                        </div>';
+
 var jstpl_equipmentInHand = '<div class="hand_equipment_card component_rounding" id="player_${playerLetter}_hand_equipment_${equipmentId}" style="background-position:-${x}px -${y}px">\
                         </div>';
 var jstpl_equipmentCardBack = '<div class="equipment_card_back component_rounding">\
                         </div>';
 var jstpl_movingEquipmentCard = '<div class="moving_equipment_card_back component_rounding" id="moving_equipment_card" style="background-position:-${x}px -${y}px">\
                         </div>';
-var jstpl_activeCenterEquipment = '<div class="active_center_equipment_card component_rounding" id="center_active_equipment_${equipmentId}" style="background-position:-${x}px -${y}px">\
+var jstpl_activeCenterEquipment = '<div class="active_center_equipment_card component_rounding" id="center_active_equipment_${collectorNumber}" style="background-position:-${x}px -${y}px">\
                         </div>';
 
 var jstpl_currentPlayerToken = '<div id="current_player_token" style="background-position:-${x}px -${y}px">\
