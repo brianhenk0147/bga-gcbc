@@ -1405,19 +1405,20 @@ function (dojo, declare) {
         {
             var visibilityOffset = this.getVisibilityOffset(visibilityToYou); // get sprite X value for this card type
 
+            var modifiedCardType = cardType;
             if(affectedByPlantedEvidence)
             {
-                if(cardType == 'honest')
+                if(modifiedCardType == 'honest')
                 {
-                    cardType = 'crooked';
+                    modifiedCardType = 'crooked';
                 }
-                else if(cardType == 'crooked')
+                else if(modifiedCardType == 'crooked')
                 {
-                    cardType = 'honest';
+                    modifiedCardType = 'honest';
                 }
             }
 
-            var cardTypeOffset = this.getCardTypeOffset(cardType); // get sprite Y value for this card type
+            var cardTypeOffset = this.getCardTypeOffset(modifiedCardType); // get sprite Y value for this card type
 
             var cardHolderDiv = 'player_'+playerLetter+'_integrity_card_'+cardPosition+'_holder'; // html ID of the card's container
             var cardDiv = 'player_'+playerLetter+'_integrity_card_'+cardPosition; // HTML ID of the new card
@@ -1477,7 +1478,7 @@ function (dojo, declare) {
             var stateLabel = _("State:"); // separate out labels for translation
             var positionLabel = _("Position:"); // separate out labels for translation
             var playersSeenLabel = _("Seen By:"); // separate out labels for translation
-
+console.log('cardPositionInt:' + cardPositionInt + ' cardType:' + cardType + ' plantedevidence:'+affectedByPlantedEvidence);
             var isHiddenText = this.convertIsHiddenToText(isHidden, affectedByDisguise, affectedBySurveillanceCamera); // convert whether it is hidden to a translated text
             var cardTypeText = this.convertCardTypeToText(cardType, affectedByPlantedEvidence); // convert the type of card to a translated version
             var positionText = this.convertCardPositionToText(cardPositionInt); // convert card position (1,2,3) to text (LEFT,MIDDLE,RIGHT)
@@ -2182,6 +2183,7 @@ function (dojo, declare) {
 
         convertCardTypeToText: function(cardType, affectedByPlantedEvidence)
         {
+
             var cardTypeText = _("Unknown");
             if(cardType == "crooked")
             {
