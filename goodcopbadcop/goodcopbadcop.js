@@ -1478,7 +1478,7 @@ function (dojo, declare) {
             var stateLabel = _("State:"); // separate out labels for translation
             var positionLabel = _("Position:"); // separate out labels for translation
             var playersSeenLabel = _("Seen By:"); // separate out labels for translation
-console.log('cardPositionInt:' + cardPositionInt + ' cardType:' + cardType + ' plantedevidence:'+affectedByPlantedEvidence);
+
             var isHiddenText = this.convertIsHiddenToText(isHidden, affectedByDisguise, affectedBySurveillanceCamera); // convert whether it is hidden to a translated text
             var cardTypeText = this.convertCardTypeToText(cardType, affectedByPlantedEvidence); // convert the type of card to a translated version
             var positionText = this.convertCardPositionToText(cardPositionInt); // convert card position (1,2,3) to text (LEFT,MIDDLE,RIGHT)
@@ -1825,7 +1825,7 @@ console.log('cardPositionInt:' + cardPositionInt + ' cardType:' + cardType + ' p
 
             dojo.addClass("integrity_token_"+cardType, "wounded_token"); // add the wounded token class
 
-            return 'wounded_token_'+cardType;
+            return 'integrity_token_'+cardType;
         },
 
         placeAndMoveWoundedToken: function(woundedPlayerLetterOrder, leaderCardPosition, cardType)
@@ -1848,8 +1848,8 @@ console.log('cardPositionInt:' + cardPositionInt + ' cardType:' + cardType + ' p
             var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 1000, 750);
             dojo.connect(anim1, 'onEnd', function(node)
             { // do the following after the animation ends
-              dojo.addClass( movingTokenHtmlId, 'cardHighlighted'); // highlight the gun that just moved
-              dojo.style( movingTokenHtmlId, 'marginTop', '-10px' ); // switch to the gun pointing right image
+              dojo.addClass( destinationHtmlId, 'cardHighlighted'); // highlight the integrity card that just got the token
+              dojo.style( movingTokenHtmlId, 'marginTop', '-10px' ); // move the token so it doesn't cover the name of the card and is visible when there is a infection token on it too
             });
             anim1.play();
 
@@ -3147,6 +3147,7 @@ console.log('cardPositionInt:' + cardPositionInt + ' cardType:' + cardType + ' p
 
             var playersSeen = notif.args.playersSeen;
             var hasInfection = notif.args.hasInfection;
+            var hasWound = notif.args.hasWound;
 
             var affectedByPlantedEvidence = notif.args.affectedByPlantedEvidence;
             var affectedByDisguise = notif.args.affectedByDisguise;
@@ -3183,7 +3184,7 @@ console.log('cardPositionInt:' + cardPositionInt + ' cardType:' + cardType + ' p
             var idOfCard = this.placeIntegrityCard(playerLetter, cardPosition, cardVisibility, cardType, rotation, isHiddenInt, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // place a new one with correct hover over and such
 
             if(hasInfection)
-            {
+            { // this integrity card has an infection on it
                 var infectionCardType = cardPosition+''+playerLetter;
                 dojo.place(
                             this.format_block( 'jstpl_integrityCardToken', {
@@ -3194,6 +3195,11 @@ console.log('cardPositionInt:' + cardPositionInt + ' cardType:' + cardType + ' p
 
                             dojo.addClass("integrity_token_"+infectionCardType, "infection_token"); // add the infection token class
 
+            }
+
+            if(hasWound)
+            { // this integrity card has a wound on it
+                this.placeWoundedToken(playerLetter, cardPosition, cardType);
             }
         },
 

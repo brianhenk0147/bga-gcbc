@@ -3661,30 +3661,37 @@ class goodcopbadcop extends Table
 				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2)
 				{ // we are using the zombies expansion
 
+
 						// UNZOMBIFY NEW LEADERS
 						if($this->isPlayerZombie($oldOwnerOfCardId1) && $this->isPlayerALeader($oldOwnerOfCardId1))
 						{ // player is a Leader and they are a zombie
-
+//throw new feException("oldOwnerOfCardId1 is zombie and oldOwnerOfCardId1 is leader");
 								$this->revivePlayer($oldOwnerOfCardId1); // unzombify them
 						}
 
 						if($this->isPlayerZombie($oldOwnerOfCardId2) && $this->isPlayerALeader($oldOwnerOfCardId2))
 						{ // player is a Leader and they are a zombie
+//							throw new feException("oldOwnerOfCardId2 is zombie and oldOwnerOfCardId2 is leader");
 								$this->revivePlayer($oldOwnerOfCardId2); // unzombify them
 						}
 
 
 						// ZOMBIFY NEW INFECTORS
-						if(!$this->isPlayerZombie($oldOwnerOfCardId1) && $this->getPlayerRole($oldOwnerOfCardId1) == 'zombie_infector')
-						{ // player is an Infector and NOT a zombie
+						$infectorCardId = $this->getInfectorCardId(); // get the card Id of the infector card
+						if($cardId1 == $infectorCardId || $cardId2 == $infectorCardId)
+						{ // the infector card is swapped
 
-								$this->eliminatePlayer($oldOwnerOfCardId1); // zombify them
-						}
+								if(!$this->isPlayerZombie($oldOwnerOfCardId1) && $this->getPlayerRole($oldOwnerOfCardId1) == 'zombie_infector')
+								{ // player is an Infector and NOT a zombie
+		//throw new feException("oldOwnerOfCardId1 is not zombie and oldOwnerOfCardId1 is infector");
+										$this->eliminatePlayer($oldOwnerOfCardId1); // zombify them
+								}
 
-						if(!$this->isPlayerZombie($oldOwnerOfCardId2) && $this->getPlayerRole($oldOwnerOfCardId2) == 'zombie_infector')
-						{ // player is an Infector and NOT a zombie
-
-								$this->eliminatePlayer($oldOwnerOfCardId2); // zombify them
+								if(!$this->isPlayerZombie($oldOwnerOfCardId2) && $this->getPlayerRole($oldOwnerOfCardId2) == 'zombie_infector')
+								{ // player is an Infector and NOT a zombie
+		//throw new feException("oldOwnerOfCardId2 is not zombie and oldOwnerOfCardId2 is infector");
+										$this->eliminatePlayer($oldOwnerOfCardId2); // zombify them
+								}
 						}
 				}
 
@@ -6670,28 +6677,29 @@ class goodcopbadcop extends Table
 										) );
 								}
 
-								// send notification with private information to the player who investigated
-								self::notifyPlayer( $playerInvestigating, 'viewCard', clienttranslate( 'You saw their ${position_text} ${cardType} card.' ), array(
-																		 'i18n' => array('position_text', 'cardType'),
-																		 'investigated_player_id' => $investigatedPlayerId,
-																		 'cardPosition' => $cardPosition,
-																		 'cardType' => strtoupper($cardType),
-																		 'player_name' => $investigateePlayerName,
-																		 'isHidden' => $isHidden,
-																		 'playersSeen' => $listOfPlayersSeen,
-																		 'position_text' => $cardPositionText,
-																		 'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
-																		 'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
-																		 'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId)
-								) );
+										// send notification with private information to the player who investigated
+										self::notifyPlayer( $playerInvestigating, 'viewCard', clienttranslate( 'You saw their ${position_text} ${cardType} card.' ), array(
+																				 'i18n' => array('position_text', 'cardType'),
+																				 'investigated_player_id' => $investigatedPlayerId,
+																				 'cardPosition' => $cardPosition,
+																				 'cardType' => strtoupper($cardType),
+																				 'player_name' => $investigateePlayerName,
+																				 'isHidden' => $isHidden,
+																				 'playersSeen' => $listOfPlayersSeen,
+																				 'position_text' => $cardPositionText,
+																				 'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
+																				 'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
+																				 'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId)
+										) );
 
-								// notify the player being investigated exactly what they saw
-								self::notifyPlayer( $investigatedPlayerId, 'iWasInvestigated', clienttranslate( '${player_name} saw your ${position_text} ${cardType} card.' ), array(
-																		 'i18n' => array('position_text', 'cardType'),
-																		 'cardType' => strtoupper($cardType),
-																		 'player_name' => $investigatingPlayerName,
-																		 'position_text' => $cardPositionText
-								) );
+										// notify the player being investigated exactly what they saw
+										self::notifyPlayer( $investigatedPlayerId, 'iWasInvestigated', clienttranslate( '${player_name} saw your ${position_text} ${cardType} card.' ), array(
+																				 'i18n' => array('position_text', 'cardType'),
+																				 'cardType' => strtoupper($cardType),
+																				 'player_name' => $investigatingPlayerName,
+																				 'position_text' => $cardPositionText
+										) );
+								
 
 								// if the investigated player has Surveillance camera active, reveal the card
 								if($viewOnly == false && $this->hasSurveillanceCamera($investigatedPlayerId))
@@ -6699,9 +6707,10 @@ class goodcopbadcop extends Table
 										$this->revealCard($investigatedPlayerId, $cardPosition);
 								}
 
-								if($viewOnly == false && $this->getInfectorCardId() == $cardId)
+								$infectorCardId = $this->getInfectorCardId();
+								if($viewOnly == false && $infectorCardId == $cardId)
 								{ // the infector was investigated
-
+//throw new feException( "infectorCardId: $infectorCardId cardId:$cardId" );
 										$this->infectorFound($investigatedPlayerId, $cardPosition, $playerInvestigating);
 								}
 						}
@@ -6895,6 +6904,7 @@ class goodcopbadcop extends Table
 						$isHidden = $this->isIntegrityCardHidden($cardId); // true if this card is hidden
 //throw new feException("cardType:$cardType");
 						$hasInfection = $this->isCardInfected($cardId);
+						$hasWound = $this->isCardWounded($cardId); // true if this card has a wound token on it
 						$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
 						foreach( $players as $player )
 						{ // go through each player
@@ -6914,6 +6924,7 @@ class goodcopbadcop extends Table
 										'cardType' => $cardType,
 										'playersSeen' => $listOfPlayersSeen,
 										'hasInfection' => $hasInfection,
+										'hasWound' => $hasWound,
 										'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
 										'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
 										'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId),
@@ -7977,8 +7988,8 @@ class goodcopbadcop extends Table
 								$cardId2 = $this->getCardIdFromPlayerAndPosition($integrityCardOwner2, $cardPosition2);
 
 								$this->swapIntegrityCards($cardId, $cardId2); // swap the owners of the two integrity cards
-								$this->investigateCard($cardId2, $integrityCardOwner, true); // let the new owner investigate this card and notify players
-								$this->investigateCard($cardId, $integrityCardOwner2, true); // let the new owner investigate this card and notify players
+								$this->investigateCard($cardId2, $integrityCardOwner2, true); // let the new owner investigate this card and notify players
+								$this->investigateCard($cardId, $integrityCardOwner, true); // let the new owner investigate this card and notify players
 
 								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
 
