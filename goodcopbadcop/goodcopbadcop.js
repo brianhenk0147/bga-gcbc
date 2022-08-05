@@ -383,7 +383,8 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-            //console.log("onUpdateActionButtons state " + stateName);
+//            console.log("onUpdateActionButtons state " + stateName);
+
 
             if( this.isCurrentPlayerActive() )
             {
@@ -3145,7 +3146,8 @@ function (dojo, declare) {
             var cardPosition = notif.args.card_position;
             var cardType = notif.args.cardType;
 
-            var playersSeen = notif.args.playersSeen;
+
+            var playersSeen = notif.args.playersSeenArray;
             var hasInfection = notif.args.hasInfection;
             var hasWound = notif.args.hasWound;
 
@@ -3159,10 +3161,12 @@ function (dojo, declare) {
             var isHidden = notif.args.cardIsHidden; // true or false
             var isHiddenInt = 1;
             var hasPlayerSeen = 0; // default to not seen
+
             if(playersSeen[this.player_id])
             { // not a spectator
                 hasPlayerSeen = playersSeen[this.player_id]; // 1 or 0
             }
+
             var cardVisibility = 'HIDDEN_NOT_SEEN';
             if(hasPlayerSeen == 1)
             { // this player has seen this card

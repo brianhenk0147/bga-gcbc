@@ -3701,7 +3701,7 @@ class goodcopbadcop extends Table
 				$soloWinner = $this->getSoloWinner();
 				if($soloWinner)
 				{ // someone got both leaders
-						$this->revealLeaderCards($soloWinner); // reveal the leader cards this player has
+						//$this->revealLeaderCards($soloWinner); // reveal the leader cards this player has
 						$this->endGameCleanup('solo_win', $soloWinner);
 
 						$this->gamestate->nextState( "endGame" );
@@ -5690,6 +5690,8 @@ class goodcopbadcop extends Table
 		// which state is next.
 		function setStateAfterTurnAction($playerWhoseTurnItIs)
 		{
+			$state = $this->getStateName();
+		//throw new feException( "setStateAfterTurnAction state:$state");
 				$playersOverEquipmentCardLimit = $this->getPlayersOverEquipmentHandLimit(); // get any players over the equipment card hand limit
 				if ($this->doesPlayerNeedToDiscard($playerWhoseTurnItIs))
 				{ // too many cards in hand
@@ -6699,7 +6701,7 @@ class goodcopbadcop extends Table
 																				 'player_name' => $investigatingPlayerName,
 																				 'position_text' => $cardPositionText
 										) );
-								
+
 
 								// if the investigated player has Surveillance camera active, reveal the card
 								if($viewOnly == false && $this->hasSurveillanceCamera($investigatedPlayerId))
@@ -6783,21 +6785,30 @@ class goodcopbadcop extends Table
 				self::incStat( 1, 'equipment_acquired', $playerDrawingId ); // increase end game player stat
 		}
 
-		// Reveal leader cards held by a player.
-		function revealLeaderCards($playerId)
+		// Reveal all Integrity Cards at end of game.
+		function revealAllIntegrityCards()
 		{
-			$hiddenCards = $this->getHiddenCardsFromPlayer($playerId);
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				foreach( $players as $player )
+				{ // go through each player
 
-			foreach( $hiddenCards as $integrityCard )
-			{
-					$card_id = $integrityCard['card_id'];
-					$cardPosition = $integrityCard['card_location_arg']; // 1, 2, 3
-					$cardType = $integrityCard['card_type']; // honest, crooked, agent, kingpin
-					if($cardType == 'kingpin' || $cardType == 'agent' || $cardType == 'infector')
-					{
-							$this->revealCard($playerId, $cardPosition);
-					}
-			}
+						$playerId = $player['player_id'];
+						$hiddenCards = $this->getHiddenCardsFromPlayer($playerId);
+
+						foreach( $hiddenCards as $integrityCard )
+						{
+								$card_id = $integrityCard['card_id'];
+								$cardPosition = $integrityCard['card_location_arg']; // 1, 2, 3
+
+								$this->revealCard($playerId, $cardPosition);
+						}
+				}
+		}
+
+		// Reveal all Equipment Cards at end of game.
+		function revealAllEquipmentCards()
+		{
+
 		}
 
 		// Reveal a card for all players.
@@ -6900,29 +6911,31 @@ class goodcopbadcop extends Table
 						$playerId = $this->getIntegrityCardOwner($cardId); // integrity card owner
 						$cardPosition = $this->getIntegrityCardPosition($cardId);
 						$cardType = $this->getCardTypeFromCardId($cardId);
-						$listOfPlayersSeen = $this->getListOfPlayersWhoHaveSeenCard($cardId); // get the list of players who have seen this card or "all" if all have seen it or "none" if none have seen it
+						$listOfPlayersSeenArray = $this->getArrayOfPlayersWhoHaveSeenCard($cardId); // get the list of players who have seen this card or "all" if all have seen it or "none" if none have seen it
 						$isHidden = $this->isIntegrityCardHidden($cardId); // true if this card is hidden
-//throw new feException("cardType:$cardType");
+
 						$hasInfection = $this->isCardInfected($cardId);
 						$hasWound = $this->isCardWounded($cardId); // true if this card has a wound token on it
 						$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+
 						foreach( $players as $player )
 						{ // go through each player
 
 								$playerAsking = $player['player_id'];
+								$cardTypeMasked = $cardType; // we may need to mask the card type for this player so we don't send it to the client
 								$isSeen = $this->isSeen($playerAsking, $playerId, $cardPosition); //1 if this player has seen it
+
 								if($isSeen != 1 && ($isHidden == 1 || $isHidden == true))
 								{ // the card is not seen by this player and it is hidden
-										$cardType = clienttranslate("Unknown");
-										//throw new feException("isHidden:$isHidden isSeen:$isSeen");
-								}
+										$cardTypeMasked = clienttranslate("Unknown");
 
+								}
 
 								self::notifyPlayer( $playerAsking, 'rePlaceIntegrityCard', '', array(
 										'player_id' => $playerId,
 										'card_position' => $cardPosition,
-										'cardType' => $cardType,
-										'playersSeen' => $listOfPlayersSeen,
+										'cardType' => $cardTypeMasked,
+										'playersSeenArray' => $listOfPlayersSeenArray,
 										'hasInfection' => $hasInfection,
 										'hasWound' => $hasWound,
 										'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
@@ -7253,8 +7266,10 @@ class goodcopbadcop extends Table
 		// $leader = the ELIMINATED leader in a team win and the WINNING leader in a solo win.
 		function endGameCleanup($winType, $winningTeam)
 		{
-			$this->awardEndGamePoints($winType, $winningTeam); // award end game points
+			$this->revealAllIntegrityCards();
+			$this->revealAllEquipmentCards();
 
+			$this->awardEndGamePoints($winType, $winningTeam); // award end game points
 			$this->countPlayersOnTeams('end'); // update stats on how many were on each team at the end of the game
 		}
 
@@ -9431,13 +9446,18 @@ class goodcopbadcop extends Table
 
 		function executeActionBite()
 		{
+				$initialStateName = $this->getStateName();
 				$diceRolled = $this->getZombieDiceRolled();
 				$playerBiting = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 				$armId = $this->getGunIdHeldByPlayer($playerBiting); // get the ID of the arms
 				//throw new feException( "armId:$armId" );
 				$playerBeingBitten = $this->getPlayerIdOfGunTarget($armId); // the player targeted by arms
+				$isTargetALeader = $this->isPlayerALeader($playerBeingBitten); // see if the player turning into a zombie was a LEADER
 				//throw new feException( "playerBeingBitten:$playerBeingBitten" );
 
+				$zombieFaceRolled = false;
+				$biterReaimsRolled = false;
+				$numberOfInfectionTokensAdded = 0;
 				foreach( $diceRolled as $die )
 				{
 						$dieId = $die['die_id']; // internal id
@@ -9446,53 +9466,49 @@ class goodcopbadcop extends Table
 						switch($dieValue)
 						{
 								case 6: // turn into a zombie
-										$isTargetALeader = $this->isPlayerALeader($playerBeingBitten); // see if the player turning into a zombie was a LEADER
-
-										// check for game over
-										if($isTargetALeader)
-										{ // if you're zombifying a leader, the game ends
-
-												$this->endGameCleanup('team_win', 'zombie');
-
-												$this->gamestate->nextState( "endGame" );
-										}
-										else
-										{ // non-leader
-												$this->eliminatePlayer($playerBeingBitten); // turn into a zombie, notify everyone, reveal all cards, drop guns
-
-												$this->setStateAfterTurnAction($playerBiting); // see which state we go into after completing this turn action
-										}
+										$zombieFaceRolled = true;
 
 								break;
+
 								case 7: // biter re-aims arms
 								case 8: // biter re-aims arms
-										if($this->getStateName() != "endGame" && $this->getStateName() != "askAimMustReaim")
-										{ // the game is ending
-										//$stateIs = $this->getStateName();
-										//throw new feException( "stateName:$stateIs" );
-												$this->gamestate->changeActivePlayer( $playerBiting ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
-												$this->gamestate->nextState( "askAimMustReaim" ); // ask the player to aim their arms
-										}
+										$biterReaimsRolled = true;
+								break;
 
-								break;
 								case 9: // blank
-									if($this->getStateName() == "askBiteReaction")
-									{ // we haven't set it to a new state yet from a different die roll
-										$this->setStateAfterTurnAction($playerBiting); // see which state we go into after completing this turn action
-									}
+										// do nothing
 								break;
+
 								case 10: // add extra infection token
 								case 11: // add extra infection token
 										$this->addInfectionToken($playerBeingBitten, true); // give them an extra Infection Token and notify them
-
-										if($this->getStateName() != "askAimMustReaim" && $this->getStateName() != "endGame")
-										{ // we must have rolled a 7 or 8 in addition to this so we need the zombie to re-aim next or the game is ending
-												$this->gamestate->changeActivePlayer( $playerBiting ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
-												$this->setStateAfterTurnAction($playerBiting); // see which state we go into after completing this turn action
-										}
 								break;
 						}
 				}
+
+				// ELIMINATE A NON-ZOMBIE IF THEY WERE BITTEN
+				if($zombieFaceRolled && !$isTargetALeader)
+				{ // we are zombifying a NON-leader
+
+						$this->eliminatePlayer($playerBeingBitten); // turn into a zombie, notify everyone, reveal all cards, drop guns
+				}
+
+				// SEE WHICH STATE WE END UP IN
+				if($zombieFaceRolled && $isTargetALeader)
+				{ // we are zombifying a LEADER
+						$this->endGameCleanup('team_win', 'zombie');
+						$this->gamestate->nextState( "endGame" );
+				}
+				elseif($biterReaimsRolled)
+				{ // the biter must re-aim
+						$this->gamestate->changeActivePlayer( $playerBiting ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+						$this->gamestate->nextState( "askAimMustReaim" ); // ask the player to aim their arms
+				}
+				else
+				{ // the game is NOT ending and the zombie does NOT need to reaim
+						$this->setStateAfterTurnAction($playerBiting); // see which state we go into after completing this turn action
+				}
+
 		}
 
 		// All equipment cards have been resolved in reaction to a SHOOT action so it's time to
