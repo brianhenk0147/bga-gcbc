@@ -157,6 +157,7 @@ class goodcopbadcop extends Table
 				$result['zombieExpansion'] = $this->getGameStateValue('ZOMBIES_EXPANSION'); // send whether we have the zombies expansion activated
 				$result['currentPlayerTurn'] = $this->getGameStateValue('CURRENT_PLAYER'); // let the client know whose turn it is
 				$result['isClockwise'] = $this->isTurnOrderClockwise(); // true if we are currently going clockwise
+				$result['currentState'] = $this->getStateName();
 
 				$result['currentPlayerName'] = $this->getCurrPlayerName();
 				$result['nextPlayerName'] = $this->getNextPlayerName();
@@ -1685,7 +1686,8 @@ class goodcopbadcop extends Table
 				return $cardIdArray;
 		}
 
-		function countAllActiveEquipmentCards()
+		// Get all equipment cards that are currently active.
+		function getAllActiveEquipmentCards()
 		{
 				$sql = "SELECT card_id FROM `equipmentCards` ";
 				$sql .= "WHERE equipment_is_active=1 ";
@@ -1693,7 +1695,16 @@ class goodcopbadcop extends Table
 				return self::getObjectListFromDB( $sql );
 		}
 
-		function countAllEquipmentCardsInHand()
+		// Get the equipment cards in the player board that are actively targeting a player.
+		function getAllPlayerBoardActiveEquipmentCards()
+		{
+				$sql = "SELECT * FROM `equipmentCards` ";
+				$sql .= "WHERE card_location='active' ";
+
+				return self::getObjectListFromDB( $sql );
+		}
+
+		function getAllEquipmentCardsInHand()
 		{
 				$sql = "SELECT card_id FROM `equipmentCards` ";
 				$sql .= "WHERE card_location='hand' ";
@@ -1759,7 +1770,10 @@ class goodcopbadcop extends Table
 								//die('ok');
 								foreach($equipmentCardIds as $id)
 								{
-										$opponentEquipmentCards[$playerId] = array( 'player_id' => $playerId, 'playerLetterOrder' => $playerLetterOrder, 'equipmentCardIds' => $id); // save the count of equipment cards to the 2D array we will be returning
+										$collectorNumber = $this->getCollectorNumberFromId($id);
+										$equipName = $this->getTranslatedEquipmentName($collectorNumber);
+										$equipEffect = $this->getTranslatedEquipmentEffect($collectorNumber);
+										$opponentEquipmentCards[$playerId] = array( 'player_id' => $playerId, 'playerLetterOrder' => $playerLetterOrder, 'equipmentCardIds' => $id, 'collectorNumber' => $collectorNumber, 'equipName' => $equipName, 'equipEffect' => $equipEffect ); // save the count of equipment cards to the 2D array we will be returning
 								}
 						//}
 				}
@@ -3068,14 +3082,6 @@ class goodcopbadcop extends Table
 				return self::getObjectListFromDB( $sql );
 		}
 
-		function getAllActiveEquipmentCards()
-		{
-				$sql = "SELECT * FROM `equipmentCards` ";
-				$sql .= "WHERE card_location='active' ";
-
-				return self::getObjectListFromDB( $sql );
-		}
-
 		function getLastPlayerInvestigated($playerId)
 		{
 				return self::getUniqueValueFromDb("SELECT last_player_investigated FROM player WHERE player_id=$playerId");
@@ -4112,10 +4118,10 @@ class goodcopbadcop extends Table
 						break;
 
 						case 4: // evidence bag
-							$allEquipmentCardsInHand = $this->countAllEquipmentCardsInHand();
-							$allEquipmentCardsThatAreActive = $this->countAllActiveEquipmentCards();
+							$allEquipmentCardsInHand = $this->getAllEquipmentCardsInHand();
+							$allEquipmentCardsThatAreActive = $this->getAllPlayerBoardActiveEquipmentCards();
 							//throw new feException( "cards in hand: $allEquipmentCardsInHand and active cards: $allEquipmentCardsThatAreActive");
-							if($allEquipmentCardsInHand < 1 && $allEquipmentCardsThatAreActive < 1)
+							if(count($allEquipmentCardsInHand) < 1 && count($allEquipmentCardsThatAreActive) < 1)
 							{ // there are no valid targets
 									return false;
 							}
@@ -6680,10 +6686,11 @@ class goodcopbadcop extends Table
 								}
 
 										// send notification with private information to the player who investigated
-										self::notifyPlayer( $playerInvestigating, 'viewCard', clienttranslate( 'You saw their ${position_text} ${cardType} card.' ), array(
-																				 'i18n' => array('position_text', 'cardType'),
+										self::notifyPlayer( $playerInvestigating, 'viewCard', clienttranslate( 'You saw their ${position_text} ${cardTypeTranslated} card.' ), array(
+																				 'i18n' => array('position_text', 'cardTypeTranslated'),
 																				 'investigated_player_id' => $investigatedPlayerId,
 																				 'cardPosition' => $cardPosition,
+																				 'cardTypeTranslated' => strtoupper($cardType),
 																				 'cardType' => strtoupper($cardType),
 																				 'player_name' => $investigateePlayerName,
 																				 'isHidden' => $isHidden,
@@ -6808,7 +6815,12 @@ class goodcopbadcop extends Table
 		// Reveal all Equipment Cards at end of game.
 		function revealAllEquipmentCards()
 		{
-
+				$equipmentCards = $this->getAllEquipmentCardsInHand();
+				foreach( $equipmentCards as $equipmentCard )
+				{ // go through each card in all player's hands (the face-down cards on the player board)
+						$equipmentCardId = $equipmentCard['card_id'];
+						$this->revealEquipmentCard($equipmentCardId);
+				}
 		}
 
 		// Reveal a card for all players.
@@ -7071,6 +7083,27 @@ class goodcopbadcop extends Table
 				) );
 
 				$this->resetEquipmentAfterDiscard($equipmentCardId); // set this equipment back to defaults in the database
+		}
+
+		// Make a face-down equipment card in a player's hand (on the player board) face-up.
+		function revealEquipmentCard($equipmentCardId)
+		{
+				$equipmentCardHolderId = $this->getEquipmentCardOwner($equipmentCardId); // get the player ID of the player discarding this
+				$equipmentCardName = $this->getEquipmentName($equipmentCardId); // get the name of the equipment card
+				$collectorNumber = $this->getCollectorNumberFromId($equipmentCardId);
+				$playerName = $this->getPlayerNameFromPlayerId($equipmentCardHolderId); // get the player's name who is discarding
+
+				$equipName = $this->getTranslatedEquipmentName($collectorNumber);
+				$equipEffect = $this->getTranslatedEquipmentEffect($collectorNumber);
+
+				self::notifyAllPlayers( "revealEquipmentCard", '', array(
+						'player_name' => $playerName,
+						'equipment_id' => $equipmentCardId,
+						'collector_number' => $collectorNumber,
+						'player_id' => $equipmentCardHolderId,
+						'equipment_name' => $equipName,
+						'equipment_effect' => $equipEffect
+				) );
 		}
 
 		// Play an Equipment that is NOT active and discard it.
@@ -7489,7 +7522,7 @@ class goodcopbadcop extends Table
 						$arrayIndex++;
 				}
 
-				$activeEquipment = $this->getAllActiveEquipmentCards(); // get all the equipment players have active targeting them
+				$activeEquipment = $this->getAllPlayerBoardActiveEquipmentCards(); // get all the equipment players have active targeting them
 				foreach( $activeEquipment as $activeCard)
 				{ // go through each card
 						$collectorNumber = $activeCard['card_type_arg'];

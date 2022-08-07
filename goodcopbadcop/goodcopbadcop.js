@@ -255,8 +255,20 @@ function (dojo, declare) {
                 var player_id = playerEquipmentCards['player_id'];
                 var playerLetterOrder = playerEquipmentCards['playerLetterOrder']; // a, b, c
                 var equipmentCardId = playerEquipmentCards['equipmentCardIds']; // the number of cards this player has
+                var collectorNumber = playerEquipmentCards['collectorNumber'];
+                var equipName = playerEquipmentCards['equipName'];
+                var equipEffect = playerEquipmentCards['equipEffect'];
+                var state = gamedatas.currentState;
 
-                this.placeOpponentEquipmentCard(playerLetterOrder, equipmentCardId); // put this card out
+                if(state == "gameEnd")
+                {
+                    this.revealEquipmentInHand( playerLetterOrder, equipmentCardId, collectorNumber, equipName, equipEffect );
+                }
+                else
+                {
+                    this.placeOpponentEquipmentCard(playerLetterOrder, equipmentCardId); // put this card out
+                }
+
             }
 
             // active SHARED equipment cards
@@ -770,113 +782,282 @@ function (dojo, declare) {
                this.activePlayerEquipmentA = new ebg.stock();
                this.activePlayerEquipmentA.create( this, $('player_board_active_equipment_a'), this.equipmentCardWidth, this.equipmentCardHeight );
                this.activePlayerEquipmentA.image_items_per_row = 6;
-               this.activePlayerEquipmentA.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
                this.activePlayerEquipmentA.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
-               this.activePlayerEquipmentA.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentA.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
-               this.activePlayerEquipmentA.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentA.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
+               this.activePlayerEquipmentA.addItemType( 12, 12, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 2 ); // smoke grenade
+               this.activePlayerEquipmentA.addItemType( 15, 15, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 1 ); // truth serum
+               this.activePlayerEquipmentA.addItemType( 16, 16, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 7 ); // wiretap
                this.activePlayerEquipmentA.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
-               this.activePlayerEquipmentA.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
-               this.activePlayerEquipmentA.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentA.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentA.addItemType( 37, 37, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 14 ); // mobile detonator
+               this.activePlayerEquipmentA.addItemType( 4, 4, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 12 ); // evidence bag
+               this.activePlayerEquipmentA.addItemType( 35, 35, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 13 ); // med kit
                this.activePlayerEquipmentA.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
+               this.activePlayerEquipmentA.addItemType( 3, 3, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 17 ); // Defibrillator
+               this.activePlayerEquipmentA.addItemType( 1, 1, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 16 ); // Blackmail
+               this.activePlayerEquipmentA.addItemType( 45, 45, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 11 ); // Walkie Talkie
+               this.activePlayerEquipmentA.addItemType( 9, 9, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 10 ); // Polygraph
+               this.activePlayerEquipmentA.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // Surveillance Camera
+               this.activePlayerEquipmentA.addItemType( 7, 7, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 5 ); // Metal Detector
+               this.activePlayerEquipmentA.addItemType( 17, 17, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 4 ); // Deliriant
+               this.activePlayerEquipmentA.addItemType( 6, 6, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 3 ); // K-9 Unit
+
+               this.activePlayerEquipmentA.addItemType( 60, 60, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 24 ); // Crossbow
+               this.activePlayerEquipmentA.addItemType( 61, 61, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 27 ); // Transfusion Tube
+               this.activePlayerEquipmentA.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // Zombie Serum
+               this.activePlayerEquipmentA.addItemType( 63, 63, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 25 ); // Flamethrower
+               this.activePlayerEquipmentA.addItemType( 64, 64, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 23 ); // Chainsaw
+               this.activePlayerEquipmentA.addItemType( 65, 65, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 28 ); // Zombie Mask
+               this.activePlayerEquipmentA.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
+               this.activePlayerEquipmentA.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
+               this.activePlayerEquipmentA.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
                break;
                case 'b':
                this.activePlayerEquipmentB = new ebg.stock();
                this.activePlayerEquipmentB.create( this, $('player_board_active_equipment_b'), this.equipmentCardWidth, this.equipmentCardHeight );
                this.activePlayerEquipmentB.image_items_per_row = 6;
-               this.activePlayerEquipmentB.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
                this.activePlayerEquipmentB.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
-               this.activePlayerEquipmentB.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentB.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
-               this.activePlayerEquipmentB.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentB.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
+               this.activePlayerEquipmentB.addItemType( 12, 12, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 2 ); // smoke grenade
+               this.activePlayerEquipmentB.addItemType( 15, 15, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 1 ); // truth serum
+               this.activePlayerEquipmentB.addItemType( 16, 16, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 7 ); // wiretap
                this.activePlayerEquipmentB.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
-               this.activePlayerEquipmentB.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
-               this.activePlayerEquipmentB.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentB.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentB.addItemType( 37, 37, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 14 ); // mobile detonator
+               this.activePlayerEquipmentB.addItemType( 4, 4, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 12 ); // evidence bag
+               this.activePlayerEquipmentB.addItemType( 35, 35, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 13 ); // med kit
                this.activePlayerEquipmentB.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
+               this.activePlayerEquipmentB.addItemType( 3, 3, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 17 ); // Defibrillator
+               this.activePlayerEquipmentB.addItemType( 1, 1, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 16 ); // Blackmail
+               this.activePlayerEquipmentB.addItemType( 45, 45, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 11 ); // Walkie Talkie
+               this.activePlayerEquipmentB.addItemType( 9, 9, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 10 ); // Polygraph
+               this.activePlayerEquipmentB.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // Surveillance Camera
+               this.activePlayerEquipmentB.addItemType( 7, 7, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 5 ); // Metal Detector
+               this.activePlayerEquipmentB.addItemType( 17, 17, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 4 ); // Deliriant
+               this.activePlayerEquipmentB.addItemType( 6, 6, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 3 ); // K-9 Unit
+
+               this.activePlayerEquipmentB.addItemType( 60, 60, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 24 ); // Crossbow
+               this.activePlayerEquipmentB.addItemType( 61, 61, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 27 ); // Transfusion Tube
+               this.activePlayerEquipmentB.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // Zombie Serum
+               this.activePlayerEquipmentB.addItemType( 63, 63, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 25 ); // Flamethrower
+               this.activePlayerEquipmentB.addItemType( 64, 64, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 23 ); // Chainsaw
+               this.activePlayerEquipmentB.addItemType( 65, 65, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 28 ); // Zombie Mask
+               this.activePlayerEquipmentB.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
+               this.activePlayerEquipmentB.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
+               this.activePlayerEquipmentB.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
                break;
                case 'c':
                this.activePlayerEquipmentC = new ebg.stock();
                this.activePlayerEquipmentC.create( this, $('player_board_active_equipment_c'), this.equipmentCardWidth, this.equipmentCardHeight );
                this.activePlayerEquipmentC.image_items_per_row = 6;
-               this.activePlayerEquipmentC.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
                this.activePlayerEquipmentC.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
-               this.activePlayerEquipmentC.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentC.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
-               this.activePlayerEquipmentC.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentC.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
+               this.activePlayerEquipmentC.addItemType( 12, 12, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 2 ); // smoke grenade
+               this.activePlayerEquipmentC.addItemType( 15, 15, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 1 ); // truth serum
+               this.activePlayerEquipmentC.addItemType( 16, 16, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 7 ); // wiretap
                this.activePlayerEquipmentC.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
-               this.activePlayerEquipmentC.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
-               this.activePlayerEquipmentC.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentC.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentC.addItemType( 37, 37, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 14 ); // mobile detonator
+               this.activePlayerEquipmentC.addItemType( 4, 4, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 12 ); // evidence bag
+               this.activePlayerEquipmentC.addItemType( 35, 35, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 13 ); // med kit
                this.activePlayerEquipmentC.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
+               this.activePlayerEquipmentC.addItemType( 3, 3, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 17 ); // Defibrillator
+               this.activePlayerEquipmentC.addItemType( 1, 1, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 16 ); // Blackmail
+               this.activePlayerEquipmentC.addItemType( 45, 45, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 11 ); // Walkie Talkie
+               this.activePlayerEquipmentC.addItemType( 9, 9, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 10 ); // Polygraph
+               this.activePlayerEquipmentC.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // Surveillance Camera
+               this.activePlayerEquipmentC.addItemType( 7, 7, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 5 ); // Metal Detector
+               this.activePlayerEquipmentC.addItemType( 17, 17, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 4 ); // Deliriant
+               this.activePlayerEquipmentC.addItemType( 6, 6, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 3 ); // K-9 Unit
+
+               this.activePlayerEquipmentC.addItemType( 60, 60, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 24 ); // Crossbow
+               this.activePlayerEquipmentC.addItemType( 61, 61, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 27 ); // Transfusion Tube
+               this.activePlayerEquipmentC.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // Zombie Serum
+               this.activePlayerEquipmentC.addItemType( 63, 63, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 25 ); // Flamethrower
+               this.activePlayerEquipmentC.addItemType( 64, 64, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 23 ); // Chainsaw
+               this.activePlayerEquipmentC.addItemType( 65, 65, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 28 ); // Zombie Mask
+               this.activePlayerEquipmentC.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
+               this.activePlayerEquipmentC.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
+               this.activePlayerEquipmentC.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
                break;
                case 'd':
                this.activePlayerEquipmentD = new ebg.stock();
                this.activePlayerEquipmentD.create( this, $('player_board_active_equipment_d'), this.equipmentCardWidth, this.equipmentCardHeight );
                this.activePlayerEquipmentD.image_items_per_row = 6;
-               this.activePlayerEquipmentD.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
                this.activePlayerEquipmentD.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
-               this.activePlayerEquipmentD.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentD.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
-               this.activePlayerEquipmentD.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentD.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
+               this.activePlayerEquipmentD.addItemType( 12, 12, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 2 ); // smoke grenade
+               this.activePlayerEquipmentD.addItemType( 15, 15, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 1 ); // truth serum
+               this.activePlayerEquipmentD.addItemType( 16, 16, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 7 ); // wiretap
                this.activePlayerEquipmentD.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
-               this.activePlayerEquipmentD.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
-               this.activePlayerEquipmentD.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentD.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentD.addItemType( 37, 37, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 14 ); // mobile detonator
+               this.activePlayerEquipmentD.addItemType( 4, 4, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 12 ); // evidence bag
+               this.activePlayerEquipmentD.addItemType( 35, 35, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 13 ); // med kit
                this.activePlayerEquipmentD.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
+               this.activePlayerEquipmentD.addItemType( 3, 3, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 17 ); // Defibrillator
+               this.activePlayerEquipmentD.addItemType( 1, 1, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 16 ); // Blackmail
+               this.activePlayerEquipmentD.addItemType( 45, 45, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 11 ); // Walkie Talkie
+               this.activePlayerEquipmentD.addItemType( 9, 9, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 10 ); // Polygraph
+               this.activePlayerEquipmentD.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // Surveillance Camera
+               this.activePlayerEquipmentD.addItemType( 7, 7, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 5 ); // Metal Detector
+               this.activePlayerEquipmentD.addItemType( 17, 17, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 4 ); // Deliriant
+               this.activePlayerEquipmentD.addItemType( 6, 6, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 3 ); // K-9 Unit
+
+               this.activePlayerEquipmentD.addItemType( 60, 60, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 24 ); // Crossbow
+               this.activePlayerEquipmentD.addItemType( 61, 61, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 27 ); // Transfusion Tube
+               this.activePlayerEquipmentD.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // Zombie Serum
+               this.activePlayerEquipmentD.addItemType( 63, 63, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 25 ); // Flamethrower
+               this.activePlayerEquipmentD.addItemType( 64, 64, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 23 ); // Chainsaw
+               this.activePlayerEquipmentD.addItemType( 65, 65, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 28 ); // Zombie Mask
+               this.activePlayerEquipmentD.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
+               this.activePlayerEquipmentD.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
+               this.activePlayerEquipmentD.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
                break;
                case 'e':
                this.activePlayerEquipmentE = new ebg.stock();
                this.activePlayerEquipmentE.create( this, $('player_board_active_equipment_e'), this.equipmentCardWidth, this.equipmentCardHeight );
                this.activePlayerEquipmentE.image_items_per_row = 6;
-               this.activePlayerEquipmentE.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
                this.activePlayerEquipmentE.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
-               this.activePlayerEquipmentE.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentE.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
-               this.activePlayerEquipmentE.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentE.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
+               this.activePlayerEquipmentE.addItemType( 12, 12, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 2 ); // smoke grenade
+               this.activePlayerEquipmentE.addItemType( 15, 15, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 1 ); // truth serum
+               this.activePlayerEquipmentE.addItemType( 16, 16, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 7 ); // wiretap
                this.activePlayerEquipmentE.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
-               this.activePlayerEquipmentE.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
-               this.activePlayerEquipmentE.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentE.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentE.addItemType( 37, 37, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 14 ); // mobile detonator
+               this.activePlayerEquipmentE.addItemType( 4, 4, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 12 ); // evidence bag
+               this.activePlayerEquipmentE.addItemType( 35, 35, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 13 ); // med kit
                this.activePlayerEquipmentE.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
+               this.activePlayerEquipmentE.addItemType( 3, 3, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 17 ); // Defibrillator
+               this.activePlayerEquipmentE.addItemType( 1, 1, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 16 ); // Blackmail
+               this.activePlayerEquipmentE.addItemType( 45, 45, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 11 ); // Walkie Talkie
+               this.activePlayerEquipmentE.addItemType( 9, 9, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 10 ); // Polygraph
+               this.activePlayerEquipmentE.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // Surveillance Camera
+               this.activePlayerEquipmentE.addItemType( 7, 7, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 5 ); // Metal Detector
+               this.activePlayerEquipmentE.addItemType( 17, 17, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 4 ); // Deliriant
+               this.activePlayerEquipmentE.addItemType( 6, 6, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 3 ); // K-9 Unit
+
+               this.activePlayerEquipmentE.addItemType( 60, 60, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 24 ); // Crossbow
+               this.activePlayerEquipmentE.addItemType( 61, 61, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 27 ); // Transfusion Tube
+               this.activePlayerEquipmentE.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // Zombie Serum
+               this.activePlayerEquipmentE.addItemType( 63, 63, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 25 ); // Flamethrower
+               this.activePlayerEquipmentE.addItemType( 64, 64, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 23 ); // Chainsaw
+               this.activePlayerEquipmentE.addItemType( 65, 65, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 28 ); // Zombie Mask
+               this.activePlayerEquipmentE.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
+               this.activePlayerEquipmentE.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
+               this.activePlayerEquipmentE.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
                break;
                case 'f':
                this.activePlayerEquipmentF = new ebg.stock();
                this.activePlayerEquipmentF.create( this, $('player_board_active_equipment_f'), this.equipmentCardWidth, this.equipmentCardHeight );
                this.activePlayerEquipmentF.image_items_per_row = 6;
-               this.activePlayerEquipmentF.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
                this.activePlayerEquipmentF.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
-               this.activePlayerEquipmentF.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentF.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
-               this.activePlayerEquipmentF.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentF.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
+               this.activePlayerEquipmentF.addItemType( 12, 12, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 2 ); // smoke grenade
+               this.activePlayerEquipmentF.addItemType( 15, 15, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 1 ); // truth serum
+               this.activePlayerEquipmentF.addItemType( 16, 16, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 7 ); // wiretap
                this.activePlayerEquipmentF.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
-               this.activePlayerEquipmentF.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
-               this.activePlayerEquipmentF.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentF.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentF.addItemType( 37, 37, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 14 ); // mobile detonator
+               this.activePlayerEquipmentF.addItemType( 4, 4, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 12 ); // evidence bag
+               this.activePlayerEquipmentF.addItemType( 35, 35, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 13 ); // med kit
                this.activePlayerEquipmentF.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
+               this.activePlayerEquipmentF.addItemType( 3, 3, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 17 ); // Defibrillator
+               this.activePlayerEquipmentF.addItemType( 1, 1, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 16 ); // Blackmail
+               this.activePlayerEquipmentF.addItemType( 45, 45, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 11 ); // Walkie Talkie
+               this.activePlayerEquipmentF.addItemType( 9, 9, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 10 ); // Polygraph
+               this.activePlayerEquipmentF.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // Surveillance Camera
+               this.activePlayerEquipmentF.addItemType( 7, 7, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 5 ); // Metal Detector
+               this.activePlayerEquipmentF.addItemType( 17, 17, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 4 ); // Deliriant
+               this.activePlayerEquipmentF.addItemType( 6, 6, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 3 ); // K-9 Unit
+
+               this.activePlayerEquipmentF.addItemType( 60, 60, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 24 ); // Crossbow
+               this.activePlayerEquipmentF.addItemType( 61, 61, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 27 ); // Transfusion Tube
+               this.activePlayerEquipmentF.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // Zombie Serum
+               this.activePlayerEquipmentF.addItemType( 63, 63, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 25 ); // Flamethrower
+               this.activePlayerEquipmentF.addItemType( 64, 64, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 23 ); // Chainsaw
+               this.activePlayerEquipmentF.addItemType( 65, 65, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 28 ); // Zombie Mask
+               this.activePlayerEquipmentF.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
+               this.activePlayerEquipmentF.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
+               this.activePlayerEquipmentF.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
                break;
                case 'g':
                this.activePlayerEquipmentG = new ebg.stock();
                this.activePlayerEquipmentG.create( this, $('player_board_active_equipment_g'), this.equipmentCardWidth, this.equipmentCardHeight );
                this.activePlayerEquipmentG.image_items_per_row = 6;
-               this.activePlayerEquipmentG.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
                this.activePlayerEquipmentG.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
-               this.activePlayerEquipmentG.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentG.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
-               this.activePlayerEquipmentG.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentG.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
+               this.activePlayerEquipmentG.addItemType( 12, 12, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 2 ); // smoke grenade
+               this.activePlayerEquipmentG.addItemType( 15, 15, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 1 ); // truth serum
+               this.activePlayerEquipmentG.addItemType( 16, 16, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 7 ); // wiretap
                this.activePlayerEquipmentG.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
-               this.activePlayerEquipmentG.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
-               this.activePlayerEquipmentG.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentG.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentG.addItemType( 37, 37, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 14 ); // mobile detonator
+               this.activePlayerEquipmentG.addItemType( 4, 4, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 12 ); // evidence bag
+               this.activePlayerEquipmentG.addItemType( 35, 35, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 13 ); // med kit
                this.activePlayerEquipmentG.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
+               this.activePlayerEquipmentG.addItemType( 3, 3, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 17 ); // Defibrillator
+               this.activePlayerEquipmentG.addItemType( 1, 1, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 16 ); // Blackmail
+               this.activePlayerEquipmentG.addItemType( 45, 45, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 11 ); // Walkie Talkie
+               this.activePlayerEquipmentG.addItemType( 9, 9, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 10 ); // Polygraph
+               this.activePlayerEquipmentG.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // Surveillance Camera
+               this.activePlayerEquipmentG.addItemType( 7, 7, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 5 ); // Metal Detector
+               this.activePlayerEquipmentG.addItemType( 17, 17, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 4 ); // Deliriant
+               this.activePlayerEquipmentG.addItemType( 6, 6, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 3 ); // K-9 Unit
+
+               this.activePlayerEquipmentG.addItemType( 60, 60, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 24 ); // Crossbow
+               this.activePlayerEquipmentG.addItemType( 61, 61, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 27 ); // Transfusion Tube
+               this.activePlayerEquipmentG.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // Zombie Serum
+               this.activePlayerEquipmentG.addItemType( 63, 63, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 25 ); // Flamethrower
+               this.activePlayerEquipmentG.addItemType( 64, 64, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 23 ); // Chainsaw
+               this.activePlayerEquipmentG.addItemType( 65, 65, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 28 ); // Zombie Mask
+               this.activePlayerEquipmentG.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
+               this.activePlayerEquipmentG.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
+               this.activePlayerEquipmentG.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
                break;
                case 'h':
                this.activePlayerEquipmentH = new ebg.stock();
                this.activePlayerEquipmentH.create( this, $('player_board_active_equipment_h'), this.equipmentCardWidth, this.equipmentCardHeight );
                this.activePlayerEquipmentH.image_items_per_row = 6;
-               this.activePlayerEquipmentH.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
+
                this.activePlayerEquipmentH.addItemType( 30, 30, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 15 ); // disguise
-               this.activePlayerEquipmentH.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // surveillance camera
                this.activePlayerEquipmentH.addItemType( 2, 2, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 6 ); // coffee
-               this.activePlayerEquipmentH.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentH.addItemType( 8, 8, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 8 ); // planted evidence
+               this.activePlayerEquipmentH.addItemType( 12, 12, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 2 ); // smoke grenade
+               this.activePlayerEquipmentH.addItemType( 15, 15, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 1 ); // truth serum
+               this.activePlayerEquipmentH.addItemType( 16, 16, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 7 ); // wiretap
                this.activePlayerEquipmentH.addItemType( 44, 44, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 19 ); // riot shield
-               this.activePlayerEquipmentH.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // zombie serum
-               this.activePlayerEquipmentH.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // weapon crate
+               this.activePlayerEquipmentH.addItemType( 11, 11, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 18 ); // restraining order
+               this.activePlayerEquipmentH.addItemType( 37, 37, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 14 ); // mobile detonator
+               this.activePlayerEquipmentH.addItemType( 4, 4, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 12 ); // evidence bag
+               this.activePlayerEquipmentH.addItemType( 35, 35, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 13 ); // med kit
                this.activePlayerEquipmentH.addItemType( 14, 14, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 20 ); // taser
+               this.activePlayerEquipmentH.addItemType( 3, 3, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 17 ); // Defibrillator
+               this.activePlayerEquipmentH.addItemType( 1, 1, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 16 ); // Blackmail
+               this.activePlayerEquipmentH.addItemType( 45, 45, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 11 ); // Walkie Talkie
+               this.activePlayerEquipmentH.addItemType( 9, 9, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 10 ); // Polygraph
+               this.activePlayerEquipmentH.addItemType( 13, 13, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 9 ); // Surveillance Camera
+               this.activePlayerEquipmentH.addItemType( 7, 7, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 5 ); // Metal Detector
+               this.activePlayerEquipmentH.addItemType( 17, 17, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 4 ); // Deliriant
+               this.activePlayerEquipmentH.addItemType( 6, 6, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 3 ); // K-9 Unit
+
+               this.activePlayerEquipmentH.addItemType( 60, 60, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 24 ); // Crossbow
+               this.activePlayerEquipmentH.addItemType( 61, 61, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 27 ); // Transfusion Tube
+               this.activePlayerEquipmentH.addItemType( 62, 62, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 29 ); // Zombie Serum
+               this.activePlayerEquipmentH.addItemType( 63, 63, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 25 ); // Flamethrower
+               this.activePlayerEquipmentH.addItemType( 64, 64, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 23 ); // Chainsaw
+               this.activePlayerEquipmentH.addItemType( 65, 65, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 28 ); // Zombie Mask
+               this.activePlayerEquipmentH.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
+               this.activePlayerEquipmentH.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
+               this.activePlayerEquipmentH.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
                break;
            }
        },
@@ -1290,10 +1471,13 @@ function (dojo, declare) {
         {
             this.myHandEquipment.addToStockWithId( collectorNumber, equipmentId );
 
-            var htmlEquipmentName = "<div id=my_equipment_name_"+equipmentId+" class=large_equipment_name>"+equipName+"<div>";
+            var translatedName = _(equipName);
+            var translatedEffect = _(equipEffect);
+
+            var htmlEquipmentName = "<div id=my_equipment_name_"+equipmentId+" class=large_equipment_name>"+translatedName+"<div>";
             dojo.place( htmlEquipmentName, "player_a_equipment_hand_holder_item_"+equipmentId );
 
-            var htmlEquipmentEffect = "<div id=my_equipment_effect_"+equipmentId+" class=large_equipment_effect>"+equipEffect+"<div>";
+            var htmlEquipmentEffect = "<div id=my_equipment_effect_"+equipmentId+" class=large_equipment_effect>"+translatedEffect+"<div>";
             dojo.place( htmlEquipmentEffect, "player_a_equipment_hand_holder_item_"+equipmentId );
 
             var htmlIdForCardInStock = 'player_a_equipment_hand_holder_item_'+equipmentId;
@@ -1801,10 +1985,11 @@ function (dojo, declare) {
             var destinationHtmlId = 'player_'+playerLetterOfInfected+'_integrity_card_'+positionOfInfectedCard;
             dojo.addClass(movingTokenHtmlId, "infection_token"); // add the infection token class (must be done before moving)
             this.attachToNewParent( movingTokenHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
-            var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 1000, 750);
+            var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 750, 250);
             dojo.connect(anim1, 'onEnd', function(node)
             { // do the following after the animation ends
-              dojo.addClass( movingTokenHtmlId, 'cardHighlighted'); // highlight the gun that just moved
+              //dojo.addClass( movingTokenHtmlId, 'cardHighlighted'); // highlight the gun that just moved
+              dojo.addClass( movingTokenHtmlId, 'remove_top_left'); // highlight the gun that just moved
 
             });
             anim1.play();
@@ -1846,11 +2031,12 @@ function (dojo, declare) {
 
             dojo.addClass(movingTokenHtmlId, "wounded_token"); // add the wounded token class (must be done before moving)
             this.attachToNewParent( movingTokenHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
-            var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 1000, 750);
+            var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 750, 250);
             dojo.connect(anim1, 'onEnd', function(node)
             { // do the following after the animation ends
-              dojo.addClass( destinationHtmlId, 'cardHighlighted'); // highlight the integrity card that just got the token
+              //dojo.addClass( destinationHtmlId, 'cardHighlighted'); // highlight the integrity card that just got the token
               dojo.style( movingTokenHtmlId, 'marginTop', '-10px' ); // move the token so it doesn't cover the name of the card and is visible when there is a infection token on it too
+              dojo.addClass( movingTokenHtmlId, 'remove_top_left'); // highlight the gun that just moved
             });
             anim1.play();
 
@@ -1972,6 +2158,29 @@ function (dojo, declare) {
             dojo.removeClass( htmlIdOfPlayerEliminatedArea, eliminatedClass ); // add style to show this player is eliminated on the player's mat
             dojo.removeClass( htmlIdOfRightPlayerBoardId, eliminatedClass ); // add style to show this player is eliminated on the right player board
             dojo.removeClass( htmlIdOfPlayerEliminatedArea, zombieClass ); // add style to show this player is a zombie on the player's mat
+        },
+
+        revealEquipmentInHand: function( playerLetter, equipmentId, collectorNumber, equipName, equipEffect )
+        {
+            //var playerAHandHtmlId = "player_a_equipment_hand_holder_item_" + equipmentId; // the html ID of the big card in the player A hand
+            //var revealedBoardEquipmentHtmlId = "player_" + playerLetter + "_hand_equipment_" + equipmentId;
+            var equipmentInHandHtmlId = "player_board_hand_equipment_"+playerLetter+"_item_"+equipmentId;
+
+            if(document.getElementById(equipmentInHandHtmlId))
+            { // this card exists on the player's board
+                dojo.destroy(equipmentInHandHtmlId); // destroy it
+            }
+
+            // place a new equipment
+            this.addActivePlayerEquipmentToStock(playerLetter, collectorNumber, equipName, equipEffect);
+            var htmlIdForCardInStock = 'player_board_active_equipment_'+playerLetter+'_item_'+collectorNumber;
+            dojo.addClass( htmlIdForCardInStock, 'cardHighlighted'); // highlight the card that was just revealed
+
+            var equipmentListId = 'equipment_list_item_'+collectorNumber; // the id of the equipment in the list of equipment
+            if(document.getElementById(equipmentListId) && this.gamedatas.playerLetters[this.player_id])
+            { // equipment HTML node exists and they are not a spectator
+                dojo.addClass(equipmentListId, 'used_equipment'); // darken the equipment in the list of equipment
+            }
         },
 
         discardEquipmentFromHand: function( playerLetter, equipmentId, removeFromPlayerAHand, animateDiscard )
@@ -2162,24 +2371,24 @@ function (dojo, declare) {
 
         convertCardPositionToText: function(positionInt)
         {
+            var positionText = _("Unknown");
             switch(positionInt)
             {
                 case "1":
                 case 1:
-                  return "Left";
+                  positionText = _("Left");
                 break;
                 case "2":
                 case 2:
-                  return "Middle";
+                  positionText = _("Middle");
                 break;
                 case "3":
                 case 3:
-                  return "Right";
-                break;
-                default:
-                  return "Unknown";
+                  positionText = _("Right");
                 break;
             }
+
+            return positionText;
         },
 
         convertCardTypeToText: function(cardType, affectedByPlantedEvidence)
@@ -2462,14 +2671,17 @@ function (dojo, declare) {
                 collectorNumber = "3";
              }
 
+             var equipmentNameTranslated = _(this.gamedatas.equipmentDetails[collectorNumber].equip_name);
+             var equipmentEffectTranslated = _(this.gamedatas.equipmentDetails[collectorNumber].equip_effect);
+
              // Create the HTML of my dialog.
              // The best practice here is to use Javascript templates
              var html = this.format_block( 'jstpl_listEquipment', {
                            x: this.largeEquipmentCardWidth*(this.getEquipmentSpriteX(collectorNumber)),
                            y: this.largeEquipmentCardHeight*(this.getEquipmentSpriteY(collectorNumber)),
                            collectorNumber: collectorNumber,
-                           equipmentName: this.gamedatas.equipmentDetails[collectorNumber].equip_name,
-                           equipmentEffect: this.gamedatas.equipmentDetails[collectorNumber].equip_effect
+                           equipmentName: equipmentNameTranslated,
+                           equipmentEffect: equipmentEffectTranslated
                        } );
 
              // Show the dialog
@@ -2861,6 +3073,7 @@ function (dojo, declare) {
             dojo.subscribe( 'removeWoundedToken', this, "notif_removeWoundedToken" );
             //dojo.subscribe( 'iDrawEquipmentCards', this, "notif_iDrawEquipmentCards" );
             //dojo.subscribe( 'otherPlayerDrawsEquipmentCards', this, "notif_otherPlayerDrawsEquipmentCards" );
+            dojo.subscribe( 'revealEquipmentCard', this, "notif_revealEquipmentCard" );
             dojo.subscribe( 'discardEquipmentCard', this, "notif_discardEquipmentCard" );
             dojo.subscribe( 'discardActivePlayerEquipmentCard', this, "notif_discardActivePlayerEquipmentCard" );
             dojo.subscribe( 'activatePlayerEquipment', this, "notif_activatePlayerEquipment" );
@@ -3326,7 +3539,6 @@ function (dojo, declare) {
 
         notif_iDrawEquipmentCard: function( notif )
         {
-
             var equipName = notif.args.equip_name;
             var equipEffect = notif.args.equip_effect;
             var equipmentId = notif.args.equipment_id;
@@ -3369,6 +3581,18 @@ function (dojo, declare) {
                 var destination = 'equipment_deck'; // the HTML ID of where we want to move it
                 this.slideToObjectAndDestroy( activeEquipmentHtmlId, destination, 1000, 0 ); // slide it to its destination
             }
+        },
+
+        notif_revealEquipmentCard: function( notif )
+        {
+            var equipmentId = notif.args.equipment_id;
+            var collectorNumber = notif.args.collector_number;
+            var playerIdDiscarding = notif.args.player_id;
+            var playerLetter = this.gamedatas.playerLetters[playerIdDiscarding].player_letter;
+            var equipName = notif.args.equipment_name;
+            var equipEffect = notif.args.equipment_effect;
+
+            this.revealEquipmentInHand( playerLetter, equipmentId, collectorNumber, equipName, equipEffect ); // remove from player hand and put face-up where active equipment goes
         },
 
         notif_playEquipmentOnTable: function( notif )
@@ -3643,7 +3867,6 @@ function (dojo, declare) {
 
         notif_viewCard: function( notif )
         {
-
             var playerIdInvestigated = notif.args.investigated_player_id;
             var playerLetter = this.gamedatas.playerLetters[playerIdInvestigated].player_letter;
             var cardPosition = notif.args.cardPosition;

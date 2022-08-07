@@ -526,6 +526,7 @@
     height: 50px;
     margin-right: -10px;
     background-image: url('img/wounded_50w.png');
+    z-index: 10;
 }
 
 .infection_token {
@@ -555,6 +556,12 @@
 }
 
 .integrity_card_reset
+{
+    top: 0px !important;
+    left: 0px !important;
+}
+
+.remove_top_left
 {
     top: 0px !important;
     left: 0px !important;
@@ -718,7 +725,7 @@
   background-image: url('img/equipment_card_sprite_50w.jpg');
   background-position:-0px -0px;
   cursor: pointer;
-  z-index: 10;
+  z-index: 10; /* we want it to be above any infection tokens */
 }
 
 .hand_equipment_card
