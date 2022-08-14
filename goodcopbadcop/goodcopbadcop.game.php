@@ -892,8 +892,8 @@ class goodcopbadcop extends Table
 						$location = $card['card_location'];
 						$locationArg = $card['card_location_arg'];
 						$playedOnTurn = $card['equipment_played_on_turn'];
-
-						$discardedBy = $card['discarded_by'];
+						$discardedBy = '';
+						//$discardedBy = $card['discarded_by'];
 						$equipName = $this->getTranslatedEquipmentName($collectorNumber);
 						$equipEffect = $this->getTranslatedEquipmentEffect($collectorNumber);
 
@@ -4004,8 +4004,8 @@ class goodcopbadcop extends Table
 				$ownerId = $this->getEquipmentCardOwner($cardId);
 
 				$sqlUpdate = "UPDATE equipmentCards SET ";
-				//$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0 WHERE ";
-				$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0,discarded_by=$ownerId WHERE ";
+				$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0 WHERE ";
+				//$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0,discarded_by=$ownerId WHERE ";
 				$sqlUpdate .= "card_id=$cardId";
 
 				self::DbQuery( $sqlUpdate );

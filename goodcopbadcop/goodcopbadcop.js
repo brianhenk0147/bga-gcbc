@@ -332,6 +332,12 @@ function (dojo, declare) {
                 // I don't know if we want to do anything with these yet
             }
 
+            // reset all the dice
+            this.resetDie('infectionDie', 'infectionDieResult');
+            this.resetDie('zombieDie1', 'zombieDie1Result');
+            this.resetDie('zombieDie2', 'zombieDie2Result');
+            this.resetDie('zombieDie3', 'zombieDie3Result');
+
             // First Param: css class to target
             // Second Param: type of events
             // Third Param: the method that will be called when the event defined by the second parameter happen
@@ -401,7 +407,7 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-//            console.log("onUpdateActionButtons state " + stateName);
+            //console.log("onUpdateActionButtons state " + stateName);
 
 
             if( this.isCurrentPlayerActive() )
@@ -791,7 +797,8 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
              var locationArg = equipment['card_location_arg']; // holder
              var equipName = equipment['equip_name'];
              var equipEffect = equipment['equip_effect'];
-             var discardedBy = equipment['discarded_by'];
+             //var discardedBy = equipment['discarded_by'];
+
              var equipment_played_on_turn = equipment['equipment_played_on_turn'];
              var equipmentHtmlId = 'equipment_list_item_'+collectorNumber;
 
