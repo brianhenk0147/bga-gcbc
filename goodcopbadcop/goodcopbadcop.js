@@ -370,6 +370,12 @@ function (dojo, declare) {
                 case 'askShootReaction':
                 this.EXTRA_DESCRIPTION_TEXT = ''; // in case special instructions were given, clear them out
                 break;
+                case 'playerTurn':
+                this.resetDie('infectionDie', 'infectionDieResult');
+                this.resetDie('zombieDie1', 'zombieDie1Result');
+                this.resetDie('zombieDie2', 'zombieDie2Result');
+                this.resetDie('zombieDie3', 'zombieDie3Result');
+                break;
 
             }
         },
@@ -623,6 +629,85 @@ function (dojo, declare) {
             return "'" + this.clienttranslate_string(token_id) + "'";
        },
 
+       rollDie: function(dieNodeId, resultNodeId, resultInt, animation, prefix)
+       {
+          //replace all of this kind with dojo.byId() at BGA Studio
+          //var dice=document.getElementById("infectionDie");
+          //var diceresult=document.getElementById("diceresult");
+
+          //dice.className ="rolled";
+          //diceresult.className ="num"+result;
+dojo.style( dieNodeId, 'display', 'block' ); // show the die
+           dojo.addClass( dieNodeId, animation ); // start the animation of rolling the die
+           dojo.addClass( resultNodeId, prefix+resultInt );
+       },
+
+       resetDie: function(dieNodeId, resultNodeId)
+       {
+         if(document.getElementById(dieNodeId))
+         {
+            dojo.style( dieNodeId, 'display', 'none' ); // hide the die
+
+            dojo.removeClass(dieNodeId, 'rolled');
+            dojo.removeClass(dieNodeId, 'zom1Rolled');
+            dojo.removeClass(dieNodeId, 'zom2Rolled');
+            dojo.removeClass(dieNodeId, 'zom3Rolled');
+         }
+         //dojo.style( 'infectionDie', 'left', '-200px' );
+           //var dice=document.getElementById("infectionDie");
+           //var diceresult=document.getElementById("diceresult");
+
+           //dice.className ="";
+           //diceresult.className ="";
+
+
+           if(document.getElementById(resultNodeId))
+           {
+              dojo.removeClass(resultNodeId, 'num1');
+              dojo.removeClass(resultNodeId, 'num2');
+              dojo.removeClass(resultNodeId, 'num3');
+              dojo.removeClass(resultNodeId, 'num4');
+              dojo.removeClass(resultNodeId, 'num5');
+              dojo.removeClass(resultNodeId, 'num6');
+
+              dojo.removeClass(resultNodeId, 'zom1Num1');
+              dojo.removeClass(resultNodeId, 'zom1Num2');
+              dojo.removeClass(resultNodeId, 'zom1Num3');
+              dojo.removeClass(resultNodeId, 'zom1Num4');
+              dojo.removeClass(resultNodeId, 'zom1Num5');
+              dojo.removeClass(resultNodeId, 'zom1Num6');
+
+              dojo.removeClass(resultNodeId, 'zom2Num1');
+              dojo.removeClass(resultNodeId, 'zom2Num2');
+              dojo.removeClass(resultNodeId, 'zom2Num3');
+              dojo.removeClass(resultNodeId, 'zom2Num4');
+              dojo.removeClass(resultNodeId, 'zom2Num5');
+              dojo.removeClass(resultNodeId, 'zom2Num6');
+
+              dojo.removeClass(resultNodeId, 'zom3Num1');
+              dojo.removeClass(resultNodeId, 'zom3Num2');
+              dojo.removeClass(resultNodeId, 'zom3Num3');
+              dojo.removeClass(resultNodeId, 'zom3Num4');
+              dojo.removeClass(resultNodeId, 'zom3Num5');
+              dojo.removeClass(resultNodeId, 'zom3Num6');
+            }
+
+            if(document.getElementById('integrity_token_bite'))
+            {
+                dojo.destroy('integrity_token_bite'); // destroy any tokens that were used during the bite animation
+            }
+       },
+
+       getTransformProperty: function(node)
+       {
+          if(!node.style.transform)
+          {
+
+          }
+
+          return node.style.transform;
+       },
+
        setPlayerInstructions: function(text) {
 
             var main = $('pagemaintitletext');
@@ -723,7 +808,6 @@ function (dojo, declare) {
              this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber, equipName, equipEffect); // add a hoverover tooltip with a bigger version of the card
 
              if( locationArg == this.player_id ||
-               discardedBy == this.player_id ||
                location == 'active' ||
                (location == 'discard' && equipment_played_on_turn != '') )
              {
@@ -1399,9 +1483,9 @@ function (dojo, declare) {
          },
 
         // PLAY card to the center area FROM HAND.
-        playEquipmentCardFromHand: function(equipmentId, collectorNumber, playerLetter, equipName, equipEffect)
+        playEquipmentCardFromHand: function(equipmentId, collectorNumber, playerLetter, equipName, equipEffect, playerIdPlaying)
         {
-            this.discardEquipmentFromHand(playerLetter, equipmentId, true); // remove from player A hand and all player side board stocks
+            this.discardEquipmentFromHand(playerLetter, equipmentId, true, playerIdPlaying, collectorNumber); // remove from player A hand and all player side board stocks
             var htmlIdOfCard = this.placeActiveCentralEquipmentCard(equipmentId, collectorNumber, 0, equipName, equipEffect); // place on active_equipment_center_holder
             this.placeOnObject( htmlIdOfCard, "player_board_hand_equipment_"+playerLetter+"_item_"+equipmentId );
 
@@ -1435,7 +1519,7 @@ function (dojo, declare) {
             return equipmentHtmlId;
         },
 
-        playActivePlayerEquipmentCardFromHand: function(equipmentId, collectorNumber, playerLetterPlaying, playerLetterReceiving, rotation, equipName, equipEffect, numberOfActiveEquipmentReceiverHas)
+        playActivePlayerEquipmentCardFromHand: function(equipmentId, collectorNumber, playerLetterPlaying, playerLetterReceiving, rotation, equipName, equipEffect, numberOfActiveEquipmentReceiverHas, playerIdPlaying)
         {
             var equipmentHtmlId = "player_" + playerLetterPlaying + "_hand_equipment_" + equipmentId; // the HTML ID of the card we want to move (it's the same for player A and other players)
             var targetActiveEquipmentHolderHtmlId = "player_" + playerLetterReceiving + "_first_equipment_active_holder"; // use the player position letter to move the card in the equipment player's hand to the target player's active equipment spot
@@ -1444,7 +1528,7 @@ function (dojo, declare) {
             var placedId = this.placeActivePlayerEquipmentCard(equipmentId, collectorNumber, playerLetterReceiving, rotation, equipName, equipEffect, numberOfActiveEquipmentReceiverHas); // add to receiver player board
             dojo.addClass( placedId, 'cardHighlighted'); // highlight the card just investigated
 
-            this.discardEquipmentFromHand(playerLetterPlaying, equipmentId, true); // remove from giver player board
+            this.discardEquipmentFromHand(playerLetterPlaying, equipmentId, true, playerIdPlaying, collectorNumber); // remove from giver player board
 
         },
 
@@ -2046,9 +2130,8 @@ function (dojo, declare) {
         removeWoundedToken: function(woundedCardId)
         {
             var woundedTokenHtml = 'integrity_token_' + woundedCardId;
-            var destination = 'wounded_tokens';
 
-            this.slideToObject( woundedTokenHtml, destination, 1000, 0 ).play(); // slide it to its destination
+            dojo.destroy(woundedTokenHtml); // remove the existing one (the sliding doesn't seem to be working)
 
             //dojo.addClass( woundedTokenHtml, 'cardHighlighted'); // highlight the token that just moved (DON'T HIGHLIGHT WOUNDED TOKENS BECAUSE THE TRANSPARENCY ON ROUND TOKENS MAKES IT LOOK WEIRD)
         },
@@ -2056,9 +2139,8 @@ function (dojo, declare) {
         removeInfectionToken: function(positionPlayerId)
         {
             var tokenHtml = 'integrity_token_' + positionPlayerId;
-            var destination = 'infection_tokens';
 
-            this.slideToObject( tokenHtml, destination, 1000, 0 ).play(); // slide it to its destination
+            dojo.destroy(tokenHtml); // remove the existing one (the sliding doesn't seem to be working)
 
             //dojo.addClass( tokenHtml, 'cardHighlighted'); // highlight the token that just moved (DON'T HIGHLIGHT INFECTION TOKENS BECAUSE THE TRANSPARENCY ON ROUND TOKENS MAKES IT LOOK WEIRD)
         },
@@ -2183,7 +2265,7 @@ function (dojo, declare) {
             }
         },
 
-        discardEquipmentFromHand: function( playerLetter, equipmentId, removeFromPlayerAHand, animateDiscard )
+        discardEquipmentFromHand: function( playerLetter, equipmentId, removeFromPlayerAHand, animateDiscard, playerIdDiscarding, collectorNumber )
         {
             var playerAHandHtmlId = "player_a_equipment_hand_holder_item_" + equipmentId; // the html ID of the big card in the player A hand
             var revealedBoardEquipmentHtmlId = "player_" + playerLetter + "_hand_equipment_" + equipmentId;
@@ -2286,7 +2368,7 @@ function (dojo, declare) {
             anim1.play();
         },
 
-        drawEquipmentCard: function(equipmentCardId, collectorNumber, equipName, equipEffect)
+        drawEquipmentCard: function(equipmentCardId, collectorNumber, equipName, equipEffect, playerIdDrawing)
         {
             var playerLetterOrder = 'a';
 
@@ -2296,6 +2378,16 @@ function (dojo, declare) {
             var cardHtmlId = this.placeMyEquipmentCard(equipmentCardId, collectorNumber, startHtmlId, equipName, equipEffect);
 
             dojo.addClass( cardHtmlId, 'cardHighlighted'); // highlight the card just investigated
+
+            // UPDATE THE EQUIPMENT LIST
+            var equipmentHtmlId = 'equipment_list_item_'+collectorNumber; // equipment html ID in the equipment list
+            if(playerIdDrawing == this.player_id)
+            { // this is the player who discarded the card
+                if(document.getElementById(equipmentHtmlId))
+                { // equipment HTML node exists
+                    dojo.addClass( equipmentHtmlId, 'used_equipment'); // dim the card
+                }
+            }
         },
 
         drawOpponentEquipmentCard: function(letterPositionOfPlayerDrawing, equipmentCardId)
@@ -3360,7 +3452,8 @@ function (dojo, declare) {
             var cardType = notif.args.cardType;
 
 
-            var playersSeen = notif.args.playersSeenArray;
+            var playersSeenArray = notif.args.playersSeenArray;
+            var playersSeenList = notif.args.playersSeenList;
             var hasInfection = notif.args.hasInfection;
             var hasWound = notif.args.hasWound;
 
@@ -3375,9 +3468,9 @@ function (dojo, declare) {
             var isHiddenInt = 1;
             var hasPlayerSeen = 0; // default to not seen
 
-            if(playersSeen[this.player_id])
+            if(playersSeenArray[this.player_id])
             { // not a spectator
-                hasPlayerSeen = playersSeen[this.player_id]; // 1 or 0
+                hasPlayerSeen = playersSeenArray[this.player_id]; // 1 or 0
             }
 
             var cardVisibility = 'HIDDEN_NOT_SEEN';
@@ -3398,7 +3491,7 @@ function (dojo, declare) {
                 dojo.destroy(cardHtmlId);
             }
 
-            var idOfCard = this.placeIntegrityCard(playerLetter, cardPosition, cardVisibility, cardType, rotation, isHiddenInt, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // place a new one with correct hover over and such
+            var idOfCard = this.placeIntegrityCard(playerLetter, cardPosition, cardVisibility, cardType, rotation, isHiddenInt, playersSeenList, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // place a new one with correct hover over and such
 
             if(hasInfection)
             { // this integrity card has an infection on it
@@ -3463,20 +3556,82 @@ function (dojo, declare) {
         notif_rolledZombieDie: function( notif )
         {
             var rolledFace = notif.args.rolled_face;
-            this.tableDice.addToStock( rolledFace );
 
-            var dieRolled = notif.args.die_rolled;
+            var dieRolled = notif.args.die_rolled; // 1, 2, 3
+
+            var resultInt = parseInt(rolledFace, 10);
+            resultInt += 1; // add one since our numbers go 6-11 but we want them to be 7-12
+            resultInt -= 6; // subtract six since the dice expect 1-6
+
+            this.rollDie('zombieDie'+dieRolled, 'zombieDie'+dieRolled+'Result', resultInt, 'zom'+dieRolled+'Rolled', 'zom'+dieRolled+'Num');
+
+            //dojo.addClass( 'dice_item_'+dieRolled, 'cardHighlighted'); // highlight the die
+
+            dojo.place(
+                    this.format_block( 'jstpl_integrityCardToken', {
+                        cardType: 'bite',
+                        x: 0,
+                        y: 0
+                    } ), 'wounded_tokens' );
 
 
-            dojo.addClass( 'dice_item_'+dieRolled, 'cardHighlighted'); // highlight the die
+            var movingTokenHtmlId = "integrity_token_bite";
+            var destinationHtmlId = 'wounded_tokens';
+            dojo.addClass("integrity_token_bite", "wounded_token"); // add the wounded token class
+            dojo.style( 'integrity_token_bite', 'display', 'none' ); // hide the die
+            var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 1000, 3000);
+            /*dojo.connect(anim1, 'onEnd', function(node)
+            { // do the following after the animation ends
+              //dojo.addClass( 'zombieDie'+dieRolled, 'cardHighlighted'); // highlight the gun that just moved
+              //dojo.addClass( 'dice_item_1', 'cardHighlighted'); // highlight the die
+
+              this.tableDice.addToStock( rolledFace );
+              dojo.style( 'zombieDie'+dieRolled, 'display', 'none' ); // hide the die
+            });
+            anim1.play();
+            */
+            dojo.connect(anim1, 'onEnd', dojo.hitch(this, 'afterRollingAnimation', rolledFace));
+            anim1.play();
+        },
+        afterRollingAnimation: function(param) {
+            dojo.style( 'zombieDie1', 'display', 'none' ); // hide the die
+            dojo.style( 'zombieDie2', 'display', 'none' ); // hide the die
+            dojo.style( 'zombieDie3', 'display', 'none' ); // hide the die
+            this.tableDice.addToStock( param );
+
         },
 
         notif_rolledInfectionDie: function( notif )
         {
             var rolledFace = notif.args.rolled_face;
-            this.tableDice.addToStock( rolledFace );
+            //this.tableDice.addToStock( rolledFace );
 
-            dojo.addClass( 'dice_item_1', 'cardHighlighted'); // highlight the die
+            var resultInt = parseInt(rolledFace, 10);
+            resultInt += 1; // add one since our numbers go 0-5 but the dice expect 1-6
+
+            this.rollDie('infectionDie', 'infectionDieResult', resultInt, 'rolled', 'num');
+
+            //dojo.addClass( 'dice_item_1', 'cardHighlighted'); // highlight the die
+
+            dojo.place(
+                    this.format_block( 'jstpl_integrityCardToken', {
+                        cardType: 'bite',
+                        x: 0,
+                        y: 0
+                    } ), 'wounded_tokens' );
+
+
+            var movingTokenHtmlId = "integrity_token_bite";
+            var destinationHtmlId = 'player_boards';
+            var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 750, 250);
+            dojo.connect(anim1, 'onEnd', function(node)
+            { // do the following after the animation ends
+              //dojo.addClass( movingTokenHtmlId, 'cardHighlighted'); // highlight the gun that just moved
+              //dojo.addClass( 'dice_item_1', 'cardHighlighted'); // highlight the die
+              this.tableDice.addToStock( rolledFace );
+            });
+            anim1.play();
+
         },
 
         notif_reRollingDice: function( notif )
@@ -3525,7 +3680,7 @@ function (dojo, declare) {
 
             var newHtmlId = this.placeInfectionToken(destinationPlayerLetter, destinationCardPosition); // place a new infection token so it has the correct id
 
-            dojo.addClass( newHtmlId, 'cardHighlighted'); // highlight the token that was just placed
+            //dojo.addClass( newHtmlId, 'cardHighlighted'); // highlight the token that was just placed (CARD HIGHLIGHT LOOKS WEIRD ON CIRCULAR DISC)
         },
 
         notif_playerDrawsEquipmentCard: function( notif )
@@ -3543,8 +3698,9 @@ function (dojo, declare) {
             var equipEffect = notif.args.equip_effect;
             var equipmentId = notif.args.equipment_id;
             var collectorNumber = notif.args.collector_number;
+            var playerIdDrawing = notif.args.drawing_player_id;
 
-            this.drawEquipmentCard(equipmentId, collectorNumber, equipName, equipEffect); // draw an Equipment Card into this player's hand
+            this.drawEquipmentCard(equipmentId, collectorNumber, equipName, equipEffect, playerIdDrawing); // draw an Equipment Card into this player's hand
         },
 
         notif_cancelEquipmentUse: function( notif )
@@ -3572,7 +3728,7 @@ function (dojo, declare) {
             var playerIdDiscarding = notif.args.player_id_discarding;
             var playerLetter = this.gamedatas.playerLetters[playerIdDiscarding].player_letter;
 
-            this.discardEquipmentFromHand(playerLetter, equipmentId, true); // remove from player A hand and all player side board stocks
+            this.discardEquipmentFromHand(playerLetter, equipmentId, true, playerIdDiscarding, collectorNumber); // remove from player A hand and all player side board stocks
 
             var activeEquipmentHtmlId = "player_board_active_equipment_" + playerLetter + "_item_" + collectorNumber; // the id of where it would be if it were active on a player's board
             var activeElementExists = document.getElementById(activeEquipmentHtmlId); // see if this equipment was active on a player's board
@@ -3604,7 +3760,7 @@ function (dojo, declare) {
             var equipName = notif.args.equipment_name;
             var equipEffect = notif.args.equipment_effect;
 
-            this.playEquipmentCardFromHand(equipmentId, collectorNumber, playerLetter, equipName, equipEffect);
+            this.playEquipmentCardFromHand(equipmentId, collectorNumber, playerLetter, equipName, equipEffect, playerIdEquipmentOwner);
         },
 
         notif_discardActivePlayerEquipmentCard: function( notif )
@@ -3637,7 +3793,7 @@ function (dojo, declare) {
             var equipName = notif.args.equipment_name;
             var equipEffect = notif.args.equipment_effect;
 
-            this.playActivePlayerEquipmentCardFromHand(equipmentId, collectorNumber, playerLetterPlaying, playerLetterReceiving, rotation, equipName, equipEffect, numberOfActiveEquipmentNewPlayerHas);
+            this.playActivePlayerEquipmentCardFromHand(equipmentId, collectorNumber, playerLetterPlaying, playerLetterReceiving, rotation, equipName, equipEffect, numberOfActiveEquipmentNewPlayerHas, playerIdPlaying);
         },
 
         notif_handEquipmentCardExchanged: function( notif )
@@ -3653,14 +3809,32 @@ function (dojo, declare) {
 
             var cardHtmlIdInGiverHand = 'player_'+playerLetterGiving+'_hand_equipment_'+equipmentId;
 
-            this.discardEquipmentFromHand(playerLetterGiving, equipmentId, true); // remove from giver player board
+            this.discardEquipmentFromHand(playerLetterGiving, equipmentId, true, playerIdGiving, collectorNumber); // remove from giver player board
 
 
             this.addHandPlayerEquipmentToStock(playerLetterReceiving, 0, equipmentId); // add to receiver player board
             if(playerLetterReceiving == 'a')
-            {
+            { // I am the player receiving the new card
                 this.addMyHandPlayerEquipmentToStock(collectorNumber, equipmentId, equipName, equipEffect);
 
+                var equipmentHtmlIdReceiver = 'equipment_list_item_'+collectorNumber; // equipment html ID in the equipment list
+
+                    if(document.getElementById(equipmentHtmlIdReceiver))
+                    { // equipment HTML node exists
+                        dojo.addClass( equipmentHtmlIdReceiver, 'used_equipment'); // dim the card
+                    }
+
+
+            }
+
+            // UPDATE THE EQUIPMENT LIST
+            var equipmentHtmlId = 'equipment_list_item_'+collectorNumber; // equipment html ID in the equipment list
+            if(playerIdGiving == this.player_id)
+            { // this is the player who gave the card
+                if(document.getElementById(equipmentHtmlId))
+                { // equipment HTML node exists
+                    dojo.removeClass( equipmentHtmlId, 'used_equipment'); // un-dim the card
+                }
             }
         },
 
@@ -4013,7 +4187,7 @@ function (dojo, declare) {
             if(revealCard)
             { // we want to show which equipment card is being played
 
-                this.discardEquipmentFromHand(playerLetter, equipmentId, false); // remove from all player side board stocks
+                this.discardEquipmentFromHand(playerLetter, equipmentId, false, playerIdPlaying, collectorNumber); // remove from all player side board stocks
 
                 // place equipment card on the stock id
                 dojo.place(

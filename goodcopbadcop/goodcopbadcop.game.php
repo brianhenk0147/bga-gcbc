@@ -892,8 +892,8 @@ class goodcopbadcop extends Table
 						$location = $card['card_location'];
 						$locationArg = $card['card_location_arg'];
 						$playedOnTurn = $card['equipment_played_on_turn'];
-						$discardedBy = ''; // TODO: switch this to the database table after all games were started after 7/27/2022
-						//$discardedBy = $card['discarded_by'];
+
+						$discardedBy = $card['discarded_by'];
 						$equipName = $this->getTranslatedEquipmentName($collectorNumber);
 						$equipEffect = $this->getTranslatedEquipmentEffect($collectorNumber);
 
@@ -3844,7 +3844,7 @@ class goodcopbadcop extends Table
 		function setEquipmentCardOwner($cardId, $playerId)
 		{
 				$sqlUpdate = "UPDATE equipmentCards SET ";
-				$sqlUpdate .= "equipment_owner=$playerId WHERE ";
+				$sqlUpdate .= "equipment_owner=$playerId,card_location_arg=$playerId WHERE ";
 				$sqlUpdate .= "card_id=$cardId";
 
 				self::DbQuery( $sqlUpdate );
@@ -4004,8 +4004,8 @@ class goodcopbadcop extends Table
 				$ownerId = $this->getEquipmentCardOwner($cardId);
 
 				$sqlUpdate = "UPDATE equipmentCards SET ";
-				$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0 WHERE ";
-				//$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0,discarded_by=$ownerId WHERE ";
+				//$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0 WHERE ";
+				$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0,discarded_by=$ownerId WHERE ";
 				$sqlUpdate .= "card_id=$cardId";
 
 				self::DbQuery( $sqlUpdate );
@@ -6924,6 +6924,7 @@ class goodcopbadcop extends Table
 						$cardPosition = $this->getIntegrityCardPosition($cardId);
 						$cardType = $this->getCardTypeFromCardId($cardId);
 						$listOfPlayersSeenArray = $this->getArrayOfPlayersWhoHaveSeenCard($cardId); // get the list of players who have seen this card or "all" if all have seen it or "none" if none have seen it
+						$listOfPlayersSeen = $this->getListOfPlayersWhoHaveSeenCard($cardId); // get the list of players who have seen this card or "all" if all have seen it or "none" if none have seen it
 						$isHidden = $this->isIntegrityCardHidden($cardId); // true if this card is hidden
 
 						$hasInfection = $this->isCardInfected($cardId);
@@ -6948,6 +6949,7 @@ class goodcopbadcop extends Table
 										'card_position' => $cardPosition,
 										'cardType' => $cardTypeMasked,
 										'playersSeenArray' => $listOfPlayersSeenArray,
+										'playersSeenList' => $listOfPlayersSeen,
 										'hasInfection' => $hasInfection,
 										'hasWound' => $hasWound,
 										'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
@@ -7439,12 +7441,14 @@ class goodcopbadcop extends Table
 						}
 
 						// discard any active equipment in front of them
+						/*
 						$playersActiveEquipmentCards = $this->getPlayersActiveEquipment($playerId);
 						foreach( $playersActiveEquipmentCards as $activeEquipmentCard )
 						{ // go through each card
 								$activeEquipmentCardId = $activeEquipmentCard['card_id'];
 								$this->discardEquipmentCard($activeEquipmentCardId);
 						}
+						*/
 
 						// discard guns they were holding
 						$guns = $this->getGunsHeldByPlayer($playerId);
@@ -7456,6 +7460,15 @@ class goodcopbadcop extends Table
 				}
 
 				$this->setAllPlayerIntegrityCardsToRevealed($playerId); // reveal all of the target's cards in the database
+
+				// re-place integrity cards at the end to correctly show their status, including Planted Evidence and Surveillance Camera and Disguise
+				$playerCards = $this->getIntegrityCardsForPlayer($playerId);
+				foreach($playerCards as $card)
+				{ // go through each of this player's cards
+						$cardId = $card['card_id'];
+						//$this->reverseHonestCrooked($cardId);
+						$this->rePlaceIntegrityCard($cardId);
+				}
 		}
 
 		function revivePlayer($playerId)

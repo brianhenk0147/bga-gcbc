@@ -29,6 +29,130 @@
 <div id="board_area">
     <div id="die_result_holder" class="whiteblock">
           <div id="dice"></div>
+
+          <div id="infectionDieResult">
+             <div id="infectionDie">
+
+                <div class="side front">
+                </div>
+                <div class="side front inner"></div>
+                <div class="side top">
+
+                </div>
+                <div class="side top inner"></div>
+                <div class="side right">
+
+                </div>
+                <div class="side right inner"></div>
+                <div class="side left">
+
+                </div>
+                <div class="side left inner"></div>
+                <div class="side bottom">
+
+                </div>
+                <div class="side bottom inner"></div>
+                <div class="side back">
+
+                </div>
+                <div class="side back inner"></div>
+
+              </div>
+          </div>
+
+          <div id="zombieDie1Result">
+              <div id="zombieDie1" class="zombieDie">
+
+                 <div class="zombieDie1Side front">
+                 </div>
+                 <div class="zombieDie1Side front inner"></div>
+                 <div class="zombieDie1Side top">
+
+                 </div>
+                 <div class="zombieDie1Side top inner"></div>
+                 <div class="zombieDie1Side right">
+
+                 </div>
+                 <div class="zombieDie1Side right inner"></div>
+                 <div class="zombieDie1Side left">
+
+                 </div>
+                 <div class="zombieDie1Side left inner"></div>
+                 <div class="zombieDie1Side bottom">
+
+                 </div>
+                 <div class="zombieDie1Side bottom inner"></div>
+                 <div class="zombieDie1Side back">
+
+                 </div>
+                 <div class="zombieDie1Side back inner"></div>
+
+               </div>
+           </div>
+
+           <div id="zombieDie2Result">
+               <div id="zombieDie2" class="zombieDie">
+
+                  <div class="zombieDie2Side front">
+                  </div>
+                  <div class="zombieDie2Side front inner"></div>
+                  <div class="zombieDie2Side top">
+
+                  </div>
+                  <div class="zombieDie2Side top inner"></div>
+                  <div class="zombieDie2Side right">
+
+                  </div>
+                  <div class="zombieDie2Side right inner"></div>
+                  <div class="zombieDie2Side left">
+
+                  </div>
+                  <div class="zombieDie2Side left inner"></div>
+                  <div class="zombieDie2Side bottom">
+
+                  </div>
+                  <div class="zombieDie2Side bottom inner"></div>
+                  <div class="zombieDie2Side back">
+
+                  </div>
+                  <div class="zombieDie2Side back inner"></div>
+
+                </div>
+            </div>
+
+            <div id="zombieDie3Result">
+                <div id="zombieDie3" class="zombieDie">
+
+                   <div class="zombieDie3Side front">
+                   </div>
+                   <div class="zombieDie3Side front inner"></div>
+                   <div class="zombieDie3Side top">
+
+                   </div>
+                   <div class="zombieDie3Side top inner"></div>
+                   <div class="zombieDie3Side right">
+
+                   </div>
+                   <div class="zombieDie3Side right inner"></div>
+                   <div class="zombieDie3Side left">
+
+                   </div>
+                   <div class="zombieDie3Side left inner"></div>
+                   <div class="zombieDie3Side bottom">
+
+                   </div>
+                   <div class="zombieDie3Side bottom inner"></div>
+                   <div class="zombieDie3Side back">
+
+                   </div>
+                   <div class="zombieDie3Side back inner"></div>
+
+                 </div>
+             </div>
+
+
+
+
     </div>
     <div id="board_row_1" class="board_row_vertical">
         <div id="upper_left_corner_box" class="corner_box">

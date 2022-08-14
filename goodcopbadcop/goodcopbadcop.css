@@ -588,7 +588,7 @@
     -webkit-box-shadow: 9px 9px 9px 0px rgba(0,0,0,0.4) !important;
     -o-box-shadow: 9px 9px 9px 0px rgba(0,0,0,0.4) !important;
     box-shadow: 9px 9px 9px 0px rgba(0,0,0,0.4) !important;
-    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30) !important;
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
 .stockitem
@@ -814,4 +814,669 @@
 {
     font-weight: bolder;
     /*background-color: #d8ccb8;*/
+}
+
+/* INFECTION DIE */
+@keyframes roll {
+   0% { transform: translate3d(  -800px ,-25px, 800px) rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+    13% { transform: translate3d( -700px ,-25px,  0px)    rotateX(360deg) rotateY(90deg) rotateZ(180deg); }
+    24% { transform: translate3d( -600px ,-50px, 400px)  rotateX(360deg) rotateY(180deg) rotateZ(360deg); }
+    35% { transform: translate3d( -500px ,-25px,  0px)    rotateX(180deg) rotateY(360deg) rotateZ(270deg); }
+    42% { transform: translate3d( -400px ,    0, 250px)   rotateX(90deg) rotateY(180deg) rotateZ(180deg); }
+    49% { transform: translate3d( -300px ,-25px,  0px)   rotateX(360deg) rotateY(90deg) rotateZ(180deg); }
+    67% { transform: translate3d( -200px ,-50px, 100px)   rotateX(270deg) rotateY(0deg) rotateZ(90deg); }
+    100%{ transform: translate3d( -100px ,-25px, 0px)    rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+}
+
+@keyframes num1 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg) }
+}
+@keyframes num2 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(-90deg) rotateY(0deg) rotateZ(0deg) }
+}
+@keyframes num3 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(0deg) rotateY(-90deg) rotateZ(0deg) }
+}
+@keyframes num4 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(0deg) rotateY(90deg) rotateZ(0deg) }
+}
+@keyframes num5 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(90deg) rotateY(0deg) rotateZ(0deg) }
+}
+@keyframes num6 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(180deg) rotateY(0deg) rotateZ(0deg) }
+}
+
+.rolled {
+    animation: roll 3s linear forwards;
+}
+
+.num1 {
+    animation: num1 3s 1 linear forwards;
+}
+.num2 {
+    animation: num2 3s 1 linear forwards;
+}
+.num3 {
+    animation: num3 3s 1 linear forwards;
+}
+.num4 {
+    animation: num4 3s 1 linear forwards;
+}
+.num5 {
+    animation: num5 3s 1 linear forwards;
+}
+.num6 {
+    animation: num6 3s 1 linear forwards;
+}
+
+#wrapper {
+    position: relative;
+    width: 100px;
+    padding-top: 50px;
+    margin: 0 auto;
+   margin-right: 100px;
+    perspective: 2000px;
+}
+
+#infectionDie span {
+    position:absolute;
+   right: 0;
+    margin:0px;
+    display: block;
+    font-size: 2.5em;
+    padding: 0px;
+}
+#infectionDie {
+    position: absolute;
+    width: 63px;
+    height: 63px;
+    transform-style: preserve-3d
+}
+
+#infectionDieResult {
+    position: absolute;
+    width: 63px;
+    height: 63px;
+    transform-style: preserve-3d;
+}
+.side {
+    position: absolute;
+    width: 63px;
+    height: 63px;
+    background: #f5d312;
+    border-radius: 10px;
+}
+#infectionDie .cover, #infectionDie .inner {
+    background: #f5d312;
+    backface-visibility:hidden;
+
+}
+#infectionDie .cover {
+    border-radius: 0;
+    transform: translateZ(0px);
+    z-index: -1;
+}
+#infectionDie .cover.x {
+
+    transform: rotateY(90deg);
+}
+#infectionDie .cover.z {
+    transform: rotateX(90deg);
+}
+#infectionDie .front  {
+  background-position:-0px -0px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: translateZ(32px);
+}
+#infectionDie .front.inner  {
+    transform: translateZ(31px);
+}
+
+#infectionDie .top {
+  background-position:-63px -0px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateX(90deg) translateZ(32px);
+}
+#infectionDie .top.inner {
+    transform: rotateX(90deg) translateZ(31px);
+}
+
+#infectionDie .right {
+  background-position:-126px -0px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateY(90deg) translateZ(32px);
+}
+#infectionDie .right.inner {
+    transform: rotateY(90deg) translateZ(31px);
+}
+#infectionDie .left {
+  background-position:-189px -0px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateY(-90deg) translateZ(32px);
+}
+#infectionDie .left.inner {
+    transform: rotateY(-90deg) translateZ(31px);
+}
+
+
+#infectionDie .bottom {
+  background-position:-252px -0px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateX(-90deg) translateZ(32px);
+}
+#infectionDie .bottom.inner {
+    transform: rotateX(-90deg) translateZ(31px);
+}
+
+
+#infectionDie .back {
+  background-position:-315px -0px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateX(-180deg) translateZ(32px);
+}
+#infectionDie .back.inner {
+    transform: rotateX(-180deg) translateZ(31px);
+}
+
+
+
+
+/* ZOMBIE DIE 1 */
+@keyframes zom1Roll {
+   0% { transform: translate3d(  -800px ,-25px, 800px) rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+    13% { transform: translate3d( -700px ,-25px,  0px)    rotateX(360deg) rotateY(90deg) rotateZ(180deg); }
+    24% { transform: translate3d( -600px ,-50px, 400px)  rotateX(360deg) rotateY(180deg) rotateZ(360deg); }
+    35% { transform: translate3d( -500px ,-25px,  0px)    rotateX(180deg) rotateY(360deg) rotateZ(270deg); }
+    42% { transform: translate3d( -400px ,    0, 250px)   rotateX(90deg) rotateY(180deg) rotateZ(180deg); }
+    49% { transform: translate3d( -300px ,-25px,  0px)   rotateX(360deg) rotateY(90deg) rotateZ(180deg); }
+    67% { transform: translate3d( -200px ,-50px, 100px)   rotateX(270deg) rotateY(0deg) rotateZ(90deg); }
+    100%{ transform: translate3d( -100px ,-25px, 0px)    rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+}
+
+@keyframes zom1Num1 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg) }
+}
+@keyframes zom1Num2 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(-90deg) rotateY(0deg) rotateZ(0deg) }
+}
+@keyframes zom1Num3 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(0deg) rotateY(-90deg) rotateZ(0deg) }
+}
+@keyframes zom1Num4 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(0deg) rotateY(90deg) rotateZ(0deg) }
+}
+@keyframes zom1Num5 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(90deg) rotateY(0deg) rotateZ(0deg) }
+}
+@keyframes zom1Num6 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(180deg) rotateY(0deg) rotateZ(0deg) }
+}
+
+.zom1Rolled {
+    animation: zom1Roll 3s linear forwards;
+}
+
+.zom1Num1 {
+    animation: zom1Num1 3s 1 linear forwards;
+}
+.zom1Num2 {
+    animation: zom1Num2 3s 1 linear forwards;
+}
+.zom1Num3 {
+    animation: zom1Num3 3s 1 linear forwards;
+}
+.zom1Num4 {
+    animation: zom1Num4 3s 1 linear forwards;
+}
+.zom1Num5 {
+    animation: zom1Num5 3s 1 linear forwards;
+}
+.zom1Num6 {
+    animation: zom1Num6 3s 1 linear forwards;
+}
+
+#zombieDie1 span {
+    position:absolute;
+   right: 0;
+    margin:0px;
+    display: block;
+    font-size: 2.5em;
+    padding: 0px;
+}
+
+#zombieDie1 {
+    position: absolute;
+    width: 63px;
+    height: 63px;
+    transform-style: preserve-3d
+}
+
+#zombieDie1Result {
+    position: absolute;
+    width: 63px;
+    height: 63px;
+    margin-left: 70px;
+    transform-style: preserve-3d;
+}
+.zombieDie1Side {
+    position: absolute;
+    width: 63px;
+    height: 63px;
+    background: #74ae59;
+    border-radius: 10px;
+}
+#zombieDie1 .cover, #zombieDie1 .inner {
+    background: #74ae59;
+    backface-visibility:hidden;
+
+}
+#zombieDie1 .cover {
+    border-radius: 0;
+    transform: translateZ(0px);
+    z-index: -1;
+}
+#zombieDie1 .cover.x {
+
+    transform: rotateY(90deg);
+}
+#zombieDie1 .cover.z {
+    transform: rotateX(90deg);
+}
+#zombieDie1 .front  {
+  background-position:-0px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: translateZ(32px);
+}
+#zombieDie1 .front.inner  {
+    transform: translateZ(31px);
+}
+
+#zombieDie1 .top {
+  background-position:-63px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateX(90deg) translateZ(32px);
+}
+#zombieDie1 .top.inner {
+    transform: rotateX(90deg) translateZ(31px);
+}
+
+#zombieDie1 .right {
+  background-position:-126px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateY(90deg) translateZ(32px);
+}
+#zombieDie1 .right.inner {
+    transform: rotateY(90deg) translateZ(31px);
+}
+#zombieDie1 .left {
+  background-position:-189px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateY(-90deg) translateZ(32px);
+}
+#zombieDie1 .left.inner {
+    transform: rotateY(-90deg) translateZ(31px);
+}
+
+
+#zombieDie1 .bottom {
+  background-position:-252px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateX(-90deg) translateZ(32px);
+}
+#zombieDie1 .bottom.inner {
+    transform: rotateX(-90deg) translateZ(31px);
+}
+
+
+#zombieDie1 .back {
+  background-position:-315px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateX(-180deg) translateZ(32px);
+}
+#zombieDie1 .back.inner {
+    transform: rotateX(-180deg) translateZ(31px);
+}
+
+
+
+
+/* ZOMBIE DIE 2 */
+@keyframes zom2Roll {
+   0% { transform: translate3d(  -800px ,-25px, 800px) rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+    13% { transform: translate3d( -700px ,-25px,  0px)    rotateX(360deg) rotateY(90deg) rotateZ(180deg); }
+    24% { transform: translate3d( -600px ,-50px, 400px)  rotateX(360deg) rotateY(180deg) rotateZ(360deg); }
+    35% { transform: translate3d( -500px ,-25px,  0px)    rotateX(180deg) rotateY(360deg) rotateZ(270deg); }
+    42% { transform: translate3d( -400px ,    0, 250px)   rotateX(90deg) rotateY(180deg) rotateZ(180deg); }
+    49% { transform: translate3d( -300px ,-25px,  0px)   rotateX(360deg) rotateY(90deg) rotateZ(180deg); }
+    67% { transform: translate3d( -200px ,-50px, 100px)   rotateX(270deg) rotateY(0deg) rotateZ(90deg); }
+    100%{ transform: translate3d( -100px ,-25px, 0px)    rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+}
+
+@keyframes zom2Num1 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg) }
+}
+@keyframes zom2Num2 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(-90deg) rotateY(0deg) rotateZ(0deg) }
+}
+@keyframes zom2Num3 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(0deg) rotateY(-90deg) rotateZ(0deg) }
+}
+@keyframes zom2Num4 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(0deg) rotateY(90deg) rotateZ(0deg) }
+}
+@keyframes zom2Num5 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(90deg) rotateY(0deg) rotateZ(0deg) }
+}
+@keyframes zom2Num6 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(180deg) rotateY(0deg) rotateZ(0deg) }
+}
+
+.zom2Rolled {
+    animation: zom1Roll 3s linear forwards;
+}
+
+.zom2Num1 {
+    animation: zom1Num1 3s 1 linear forwards;
+}
+.zom2Num2 {
+    animation: zom1Num2 3s 1 linear forwards;
+}
+.zom2Num3 {
+    animation: zom1Num3 3s 1 linear forwards;
+}
+.zom2Num4 {
+    animation: zom1Num4 3s 1 linear forwards;
+}
+.zom2Num5 {
+    animation: zom1Num5 3s 1 linear forwards;
+}
+.zom2Num6 {
+    animation: zom1Num6 3s 1 linear forwards;
+}
+
+#zombieDie2 span {
+    position:absolute;
+   right: 0;
+    margin:0px;
+    display: block;
+    font-size: 2.5em;
+    padding: 0px;
+}
+
+#zombieDie2 {
+    position: absolute;
+    width: 63px;
+    height: 63px;
+    transform-style: preserve-3d
+}
+
+#zombieDie2Result {
+    position: absolute;
+    width: 63px;
+    height: 63px;
+    margin-left: 140px;
+    transform-style: preserve-3d;
+}
+.zombieDie2Side {
+    position: absolute;
+    width: 63px;
+    height: 63px;
+    background: #74ae59;
+    border-radius: 10px;
+}
+#zombieDie2 .cover, #zombieDie2 .inner {
+    background: #74ae59;
+    backface-visibility:hidden;
+
+}
+#zombieDie2 .cover {
+    border-radius: 0;
+    transform: translateZ(0px);
+    z-index: -1;
+}
+#zombieDie2 .cover.x {
+
+    transform: rotateY(90deg);
+}
+#zombieDie2 .cover.z {
+    transform: rotateX(90deg);
+}
+#zombieDie2 .front  {
+  background-position:-0px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: translateZ(32px);
+}
+#zombieDie2 .front.inner  {
+    transform: translateZ(31px);
+}
+
+#zombieDie2 .top {
+  background-position:-63px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateX(90deg) translateZ(32px);
+}
+#zombieDie2 .top.inner {
+    transform: rotateX(90deg) translateZ(31px);
+}
+
+#zombieDie2 .right {
+  background-position:-126px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateY(90deg) translateZ(32px);
+}
+#zombieDie2 .right.inner {
+    transform: rotateY(90deg) translateZ(31px);
+}
+#zombieDie2 .left {
+  background-position:-189px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateY(-90deg) translateZ(32px);
+}
+#zombieDie2 .left.inner {
+    transform: rotateY(-90deg) translateZ(31px);
+}
+
+
+#zombieDie2 .bottom {
+  background-position:-252px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateX(-90deg) translateZ(32px);
+}
+#zombieDie2 .bottom.inner {
+    transform: rotateX(-90deg) translateZ(31px);
+}
+
+#zombieDie2 .back {
+  background-position:-315px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateX(-180deg) translateZ(32px);
+}
+#zombieDie2 .back.inner {
+    transform: rotateX(-180deg) translateZ(31px);
+}
+
+
+
+
+
+
+/* ZOMBIE DIE 3 */
+@keyframes zom3Roll {
+   0% { transform: translate3d(  -800px ,-25px, 800px) rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+    13% { transform: translate3d( -700px ,-25px,  0px)    rotateX(360deg) rotateY(90deg) rotateZ(180deg); }
+    24% { transform: translate3d( -600px ,-50px, 400px)  rotateX(360deg) rotateY(180deg) rotateZ(360deg); }
+    35% { transform: translate3d( -500px ,-25px,  0px)    rotateX(180deg) rotateY(360deg) rotateZ(270deg); }
+    42% { transform: translate3d( -400px ,    0, 250px)   rotateX(90deg) rotateY(180deg) rotateZ(180deg); }
+    49% { transform: translate3d( -300px ,-25px,  0px)   rotateX(360deg) rotateY(90deg) rotateZ(180deg); }
+    67% { transform: translate3d( -200px ,-50px, 100px)   rotateX(270deg) rotateY(0deg) rotateZ(90deg); }
+    100%{ transform: translate3d( -100px ,-25px, 0px)    rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+}
+
+@keyframes zom3Num1 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg) }
+}
+@keyframes zom3Num2 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(-90deg) rotateY(0deg) rotateZ(0deg) }
+}
+@keyframes zom3Num3 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(0deg) rotateY(-90deg) rotateZ(0deg) }
+}
+@keyframes zom3Num4 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(0deg) rotateY(90deg) rotateZ(0deg) }
+}
+@keyframes zom3Num5 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(90deg) rotateY(0deg) rotateZ(0deg) }
+}
+@keyframes zom3Num6 {
+    70%{ transform:     rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+   100%{ transform:   rotateX(180deg) rotateY(0deg) rotateZ(0deg) }
+}
+
+.zom3Rolled {
+    animation: zom1Roll 3s linear forwards;
+}
+
+.zom3Num1 {
+    animation: zom1Num1 3s 1 linear forwards;
+}
+.zom3Num2 {
+    animation: zom1Num2 3s 1 linear forwards;
+}
+.zom3Num3 {
+    animation: zom1Num3 3s 1 linear forwards;
+}
+.zom3Num4 {
+    animation: zom1Num4 3s 1 linear forwards;
+}
+.zom3Num5 {
+    animation: zom1Num5 3s 1 linear forwards;
+}
+.zom3Num6 {
+    animation: zom1Num6 3s 1 linear forwards;
+}
+
+#zombieDie3 span {
+    position:absolute;
+   right: 0;
+    margin:0px;
+    display: block;
+    font-size: 2.5em;
+    padding: 0px;
+}
+
+#zombieDie3 {
+    position: absolute;
+    width: 63px;
+    height: 63px;
+    transform-style: preserve-3d
+}
+
+#zombieDie3Result {
+    position: absolute;
+    width: 63px;
+    height: 63px;
+    margin-left: 210px;
+    transform-style: preserve-3d;
+}
+.zombieDie3Side {
+    position: absolute;
+    width: 63px;
+    height: 63px;
+    background: #74ae59;
+    border-radius: 10px;
+}
+#zombieDie3 .cover, #zombieDie3 .inner {
+    background: #74ae59;
+    backface-visibility:hidden;
+
+}
+#zombieDie3 .cover {
+    border-radius: 0;
+    transform: translateZ(0px);
+    z-index: -1;
+}
+#zombieDie3 .cover.x {
+
+    transform: rotateY(90deg);
+}
+#zombieDie3 .cover.z {
+    transform: rotateX(90deg);
+}
+#zombieDie3 .front  {
+  background-position:-0px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: translateZ(32px);
+}
+#zombieDie3 .front.inner  {
+    transform: translateZ(31px);
+}
+
+#zombieDie3 .top {
+  background-position:-63px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateX(90deg) translateZ(32px);
+}
+#zombieDie3 .top.inner {
+    transform: rotateX(90deg) translateZ(31px);
+}
+
+#zombieDie3 .right {
+  background-position:-126px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateY(90deg) translateZ(32px);
+}
+#zombieDie3 .right.inner {
+    transform: rotateY(90deg) translateZ(31px);
+}
+#zombieDie3 .left {
+  background-position:-189px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateY(-90deg) translateZ(32px);
+}
+#zombieDie3 .left.inner {
+    transform: rotateY(-90deg) translateZ(31px);
+}
+
+
+#zombieDie3 .bottom {
+  background-position:-252px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateX(-90deg) translateZ(32px);
+}
+#zombieDie3 .bottom.inner {
+    transform: rotateX(-90deg) translateZ(31px);
+}
+
+
+#zombieDie3 .back {
+  background-position:-315px -63px;
+  background-image: url('img/zombie_dice.jpg');
+    transform: rotateX(-180deg) translateZ(32px);
+}
+#zombieDie3 .back.inner {
+    transform: rotateX(-180deg) translateZ(31px);
 }
