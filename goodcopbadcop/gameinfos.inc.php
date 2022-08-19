@@ -144,6 +144,11 @@ $gameinfos = array(
 //  IMPORTANT: it is mandatory that the FIRST tag is 1, 2, 3 and 4 (= game category)
 'tags' => array( 2,11,25,200,205,217 ),
 
+'custom_buy_button' => array(
+   'url' => 'https://www.amazon.com/Overworld-Games-Good-Cop-Bad/dp/B07STLL2RC',
+   'label' => 'Amazon'
+),
+
 
 //////// BGA SANDBOX ONLY PARAMETERS (DO NOT MODIFY)
 
