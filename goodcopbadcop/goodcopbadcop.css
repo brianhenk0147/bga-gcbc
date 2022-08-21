@@ -187,6 +187,13 @@
     width: 85px;
 }
 
+.gun_reset
+{
+    top: 0px !important;
+    left: 0px !important;
+    position: relative !important;
+}
+
 
 .eliminated_player_area {
 
@@ -517,6 +524,7 @@
     width: 70px;
     height: 50px;
     background-image: url('img/gun_70w.jpg');
+    z-index: 20; /* make the gun show above everything else */
 }
 
 .wounded_token {
