@@ -52,10 +52,18 @@ $game_options = array(
 
     */
     100 => array(
-                'name' => totranslate('Zombies Expansion'),
+                'name' => totranslate('Add Expansion'),
                 'values' => array(
-                                1 => array( 'name' => totranslate('Disabled') ),
-                                2 => array( 'name' => totranslate('Enabled') )
+                                1 => array( 'name' => totranslate('None') ),
+                                2 => array( 'name' => totranslate('Zombies') )
+                            ),
+                'default' => 1
+            ),
+    101 => array(
+                'name' => totranslate('Add Extra Equipment'),
+                'values' => array(
+                                1 => array( 'name' => totranslate('None') ),
+                                2 => array( 'name' => totranslate('All') )
                             ),
                 'default' => 1
             ),

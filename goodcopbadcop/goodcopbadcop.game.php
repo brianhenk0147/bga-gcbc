@@ -58,6 +58,7 @@ class goodcopbadcop extends Table
 				$this->equipmentCards->init( "equipmentCards" );
 				//$this->equipmentCards->autoreshuffle_custom = array('equipmentCardDeck' => 'discard');
 				$this->equipmentCards->autoreshuffle = true; // automatically reshuffle when you run out of cards
+				$this->equipmentCards->autoreshuffle_trigger = array('obj' => $this, 'method' => 'deckAutoReshuffle'); // add a callback method so we know when the deck has been reshuffled
 	}
 
     protected function getGameName( )
@@ -233,7 +234,12 @@ class goodcopbadcop extends Table
 						}
 						else
 						{ // this card is NOT revealed
-								$numberOfPlayersWhoHaveSeenThis = $this->getNumberOfPlayersWhoHaveSeenCard($card_id);
+								$numberOfPlayersWhoHaveSeenThis = $this->getNumberOfPlayersWhoHaveSeenCard($card_id) - 1; // subtract 1 because we don't want to incldue the player whose card it is
+								if($numberOfPlayersWhoHaveSeenThis < 0)
+								{
+										$numberOfPlayersWhoHaveSeenThis = 0;
+								}
+
 								$percentageSeen = $numberOfPlayersWhoHaveSeenThis / $totalPlayers; // percentage of players who have seen this card
 
 								$progressionThisCardAdds = $percentageSeen * $maxProgressionPerCard; // multiply the percentage of players who have seen this by the max progression you can get from the card
@@ -260,6 +266,15 @@ class goodcopbadcop extends Table
     /*
         In this space, you can put any utility methods useful for your game logic
     */
+
+		function deckAutoReshuffle()
+		{
+				$this->resetEquipmentDeckAfterReshuffle();
+
+				self::notifyAllPlayers( "equipmentDeckReshuffled", clienttranslate( 'The equipment deck has been reshuffled.' ), array(
+					'allEquipment' => $this->getEquipmentList()
+				) );
+		}
 
 		function initializeStats()
 		{
@@ -892,8 +907,7 @@ class goodcopbadcop extends Table
 						$location = $card['card_location'];
 						$locationArg = $card['card_location_arg'];
 						$playedOnTurn = $card['equipment_played_on_turn'];
-						$discardedBy = '';
-						//$discardedBy = $card['discarded_by'];
+						$discardedBy = $card['discarded_by'];
 						$equipName = $this->getTranslatedEquipmentName($collectorNumber);
 						$equipEffect = $this->getTranslatedEquipmentEffect($collectorNumber);
 
@@ -3822,6 +3836,14 @@ class goodcopbadcop extends Table
 				self::DbQuery( $sqlUpdate );
 		}
 
+		function resetEquipmentDeckAfterReshuffle()
+		{
+				$sqlUpdate = "UPDATE equipmentCards SET ";
+				$sqlUpdate .= "discarded_by='' ";
+
+				self::DbQuery( $sqlUpdate );
+		}
+
 		function resetEquipmentCardAfterCancel($equipmentId)
 		{
 				if($equipmentId != '')
@@ -4004,8 +4026,8 @@ class goodcopbadcop extends Table
 				$ownerId = $this->getEquipmentCardOwner($cardId);
 
 				$sqlUpdate = "UPDATE equipmentCards SET ";
-				$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0 WHERE ";
-				//$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0,discarded_by=$ownerId WHERE ";
+				//$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0 WHERE ";
+				$sqlUpdate .= "equipment_owner=0,done_selecting=0,equipment_target_1='',equipment_target_2='',equipment_target_3='',equipment_target_4='',equipment_target_5='',equipment_target_6='',equipment_target_7='',equipment_target_8='',player_target_1='',player_target_2='',gun_target_1='',gun_target_2='',equipment_is_active=0,discarded_by=$ownerId WHERE ";
 				$sqlUpdate .= "card_id=$cardId";
 
 				self::DbQuery( $sqlUpdate );

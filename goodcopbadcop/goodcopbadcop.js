@@ -797,50 +797,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
          this.equipmentList.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
          this.equipmentList.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
 
-         var defibrillatorIndex = 301;
-         for( var i in allEquipment )
-         { // go through the cards
-             var equipment = allEquipment[i];
-
-             var collectorNumber = equipment['card_type_arg']; // collector number
-             var stockId = equipment['card_type_arg']; // collector number
-             var equipmentId = equipment['card_id']; // equipment ID
-             var location = equipment['card_location']; // location
-             var locationArg = equipment['card_location_arg']; // holder
-             var equipName = equipment['equip_name'];
-             var equipEffect = equipment['equip_effect'];
-             //var discardedBy = equipment['discarded_by'];
-
-             var equipment_played_on_turn = equipment['equipment_played_on_turn'];
-             var equipmentHtmlId = 'equipment_list_item_'+collectorNumber;
-
-             if(collectorNumber == 3)
-             { // defibrillator (2 copies of the card)
-                  stockId = defibrillatorIndex;
-                  equipmentHtmlId = 'equipment_list_item_'+defibrillatorIndex;
-
-                  defibrillatorIndex++; // add one to index for the second copy
-             }
-
-             this.equipmentList.addToStockWithId( collectorNumber, stockId );
-
-             this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber, equipName, equipEffect); // add a hoverover tooltip with a bigger version of the card
-
-             if( locationArg == this.player_id ||
-               location == 'active' ||
-               (location == 'discard' && equipment_played_on_turn != '') )
-             {
-                if(document.getElementById(equipmentHtmlId) && this.gamedatas.playerLetters[this.player_id])
-                { // equipment HTML node exists and they are not a spectator
-                    dojo.addClass( equipmentHtmlId, 'used_equipment'); // dim the card
-                }
-             }
-
-             if(document.getElementById(equipmentHtmlId))
-             {
-                dojo.connect( $(equipmentHtmlId), 'onclick', this, 'onClickReferenceEquipmentCard' );
-             }
-         }
+         this.resetEquipmentList(allEquipment);
 
          /*
          this.equipmentList.addToStockWithId( 2, 2 );
@@ -875,6 +832,65 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
              this.equipmentList.addToStockWithId( 68, 68 );
          }
          */
+       },
+
+       resetEquipmentList: function (allEquipment)
+       {
+           var defibrillatorIndex = 301;
+           for( var i in allEquipment )
+           { // go through the cards
+               var equipment = allEquipment[i];
+
+               var collectorNumber = equipment['card_type_arg']; // collector number
+               var stockId = equipment['card_type_arg']; // collector number
+               var equipmentId = equipment['card_id']; // equipment ID
+               var location = equipment['card_location']; // location
+               var locationArg = equipment['card_location_arg']; // holder
+               var equipName = equipment['equip_name'];
+               var equipEffect = equipment['equip_effect'];
+               var discardedBy = equipment['discarded_by'];
+
+               var equipment_played_on_turn = equipment['equipment_played_on_turn'];
+               var equipmentHtmlId = 'equipment_list_item_'+collectorNumber;
+
+               if(collectorNumber == 3)
+               { // defibrillator (2 copies of the card)
+                    stockId = defibrillatorIndex;
+                    equipmentHtmlId = 'equipment_list_item_'+defibrillatorIndex;
+
+                    defibrillatorIndex++; // add one to index for the second copy
+               }
+
+               this.equipmentList.addToStockWithId( collectorNumber, stockId );
+
+               this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber, equipName, equipEffect); // add a hoverover tooltip with a bigger version of the card
+
+               if( locationArg == this.player_id ||
+                 location == 'active' ||
+                 (location == 'discard' && equipment_played_on_turn != '') ||
+                  discardedBy == this.player_id )
+               { // this card is in this player's hand, they previously discarded it, it's active, or it was played publicly
+
+                  if(document.getElementById(equipmentHtmlId) && this.gamedatas.playerLetters[this.player_id])
+                  { // equipment HTML node exists and they are not a spectator
+                      dojo.addClass( equipmentHtmlId, 'used_equipment'); // dim the card
+                  }
+               }
+               else
+               { // this player has not seen this card
+
+                 if(document.getElementById(equipmentHtmlId) && this.gamedatas.playerLetters[this.player_id])
+                 { // equipment HTML node exists and they are not a spectator
+                     dojo.removeClass( equipmentHtmlId, 'used_equipment'); // un-dim the card
+                 }
+               }
+
+               if(document.getElementById(equipmentHtmlId))
+               {
+                  dojo.connect( $(equipmentHtmlId), 'onclick', this, 'onClickReferenceEquipmentCard' );
+               }
+           }
+
        },
 
        initializeOneActiveEquipment : function(playerLetter)
@@ -3209,6 +3225,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             dojo.subscribe( 'integrityCardDetails', this, "notif_integrityCardDetails" );
             dojo.subscribe( 'rePlaceIntegrityCard', this, "notif_rePlaceIntegrityCard" );
             dojo.subscribe( 'playEquipmentOnTable', this, "notif_playEquipmentOnTable" );
+            dojo.subscribe( 'equipmentDeckReshuffled', this, "notif_equipmentDeckReshuffled" );
 
             // ZOMBIES
             dojo.subscribe( 'addInfectionToken', this, "notif_addInfectionToken" );
@@ -3851,6 +3868,14 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                     dojo.removeClass( equipmentHtmlId, 'used_equipment'); // un-dim the card
                 }
             }
+        },
+
+        notif_equipmentDeckReshuffled: function( notif )
+        {
+
+            var allEquipment = notif.args.allEquipment;
+
+            this.resetEquipmentList(allEquipment);
         },
 
         notif_activeEquipmentCardExchanged: function( notif )
