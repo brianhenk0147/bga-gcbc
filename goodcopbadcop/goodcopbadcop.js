@@ -84,6 +84,7 @@ function (dojo, declare) {
             this.initializeActiveEquipment(this.gamedatas.playerLetters);
             this.initializeEquipmentList(this.gamedatas.equipmentList);
             this.initializeZombieDice();
+            this.initializePreferenceToggles();
 
             // Setting up player boards
             var numberOfPlayers = 0;
@@ -1507,6 +1508,31 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             }
         },
 
+        initializePreferenceToggles : function()
+        {
+            // insert toggle into right-side-first-part
+            //var htmlIdOfDestination = "maintitlebar_content";
+            var htmlIdOfDestination = "player_board_"+this.player_id;
+
+            //if(this.gamedatas.playerLetters[this.player_id])
+            if(false)
+            { // not a spectator
+
+                dojo.place(
+                        this.format_block( 'jstpl_toggle', {
+
+                        } ), htmlIdOfDestination );
+
+                        //var htmlHandEquipmentPlacing = "<div id=player_board_hand_equipment_"+playerLetter+" class=player_board_hand_equipment><div>";
+                        //dojo.place( htmlHandEquipmentPlacing, htmlBoardDestination );
+
+                var tooltipHtml = '<div>If this is enabled, you will not be asked if you want to react to opponent actions with your Equipment.</div>';
+                this.addTooltipHtml( 'toggle_container', tooltipHtml, 0 );
+
+                dojo.connect( $(toggle_EquipmentReactions), 'onclick', this, 'clickToggle_EquipmentReactions' ); // re-add the onclick connection
+            }
+        },
+
         initializeHandEquipment : function(playerLetters)
         {
             for( var i in playerLetters )
@@ -2846,6 +2872,31 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                     this.showEquipmentDialog(equipmentIdOrCollectorNumber); // show them a larger version of the equipment
                 }
             }
+        },
+
+        clickToggle_EquipmentReactions: function( evt )
+        {
+            var node = evt.currentTarget.id;
+            var isChecked = document.getElementById(node).checked;
+
+            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedToggle.html", {
+                                                                        toggleHtmlId: node,
+                                                                        isChecked: isChecked,
+                                                                        lock: true
+                                                                     },
+                             this, function( result ) {
+
+                                // What to do after the server call if it succeeded
+                                // (most of the time: nothing)
+
+
+
+                             }, function( is_error) {
+
+                                // What to do after the server call in anyway (success or failure)
+                                // (most of the time: nothing)
+
+            } );
         },
 
         onClickReferenceEquipmentCard: function( evt )

@@ -149,6 +149,18 @@ class action_goodcopbadcop extends APP_GameAction
         self::ajaxResponse( );
     }
 
+    public function clickedToggle()
+    {
+        self::setAjaxMode();
+
+        $toggleHtmlId = self::getArg( "toggleHtmlId", AT_alphanum, true ); // the html ID of the toggle that was clicked
+        $isChecked = self::getArg( "isChecked", AT_bool, true );
+
+        $this->game->clickedToggle( $toggleHtmlId, $isChecked );
+
+        self::ajaxResponse();
+    }
+
     public function clickedShootButton()
     {
         self::setAjaxMode();

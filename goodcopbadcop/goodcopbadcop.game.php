@@ -2778,6 +2778,23 @@ class goodcopbadcop extends Table
 				return $countUnwoundedLeaders;
 		}
 
+		function shouldWeSkipEquipmentReactions($playerId)
+		{
+				$sql = "SELECT skip_equipment_reactions FROM `player` ";
+				$sql .= "WHERE player_id=$playerId ";
+
+				$skipInt = self::getUniqueValueFromDb($sql);
+
+				if($skipInt == 1)
+				{ // player wants to skip equipment reactions
+						return true;
+				}
+				else
+				{ // player does NOT want to skip equipment reactions
+						return false;
+				}
+		}
+
 		// Returns true if the player is ELIMINATED, false otherwise.
 		function isPlayerEliminated($playerId)
 		{
@@ -7404,6 +7421,31 @@ class goodcopbadcop extends Table
 				) );
 		}
 
+		function toggleSkipEquipmentReactions($playerId, $isChecked)
+		{
+				$newValue = "0"; // stop skipping them
+				$message = clienttranslate("When opponents play Equipment, you WILL now be asked if you want to react with your Equipment, as long as your Equipment can legally be played.");
+				if($isChecked)
+				{ // we are currently skipping them
+						$newValue = "1"; // default to start skipping
+						$message = clienttranslate("When opponents play Equipment, you will NOT be asked if you want to react with Equipment.");
+				}
+				
+				if(!self::isSpectator())
+				{ // this is not a spectator
+
+						// update the database
+						$sqlUpdate = "UPDATE player SET ";
+						$sqlUpdate .= "skip_equipment_reactions=$newValue WHERE ";
+						$sqlUpdate .= "player_id=$playerId";
+						self::DbQuery( $sqlUpdate );
+
+						self::notifyPlayer( $playerId, 'toggleChanged', $message, array(
+
+						) );
+				}
+		}
+
 		function eliminatePlayer($playerId)
 		{
 				$targetName = $this->getPlayerNameFromPlayerId($playerId);
@@ -8777,6 +8819,13 @@ class goodcopbadcop extends Table
 						//throw new feException("executeArm");
 						$this->gamestate->nextState( "executeArm" ); // go to the state where they will pick up their gun
 				}
+		}
+
+		function clickedToggle($htmlIdOfToggle, $isChecked)
+		{
+				$currentPlayerId = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
+
+				$this->toggleSkipEquipmentReactions($currentPlayerId, $isChecked);
 		}
 
 		function clickedPlayer($playerPosition, $playerId)

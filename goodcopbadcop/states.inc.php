@@ -120,8 +120,8 @@ $machinestates = array(
 
     8 => array(
     		"name" => "askShootReaction",
-    		"description" => clienttranslate('Other players are deciding if they will use Equipment as a reaction to the Shoot action.'),
-    		"descriptionmyturn" => clienttranslate('${you} may use Equipment as a reaction to the Shoot action.'),
+    		"description" => clienttranslate('Other players are deciding if they will use Equipment as a reaction to the Shoot or Bite action.'),
+    		"descriptionmyturn" => clienttranslate('${you} may use Equipment as a reaction to the Shoot or Bite action.'),
     		"type" => "multipleactiveplayer",
     		"possibleactions" => array( "clickUseEquipmentButton", "clickPassOnUseEquipmentButton", "clickEquipmentCard" ),
     		"transitions" => array( "useEquipment" => 18, "allPassedOnReactions" => 9, "askShootReaction" => 8 )
