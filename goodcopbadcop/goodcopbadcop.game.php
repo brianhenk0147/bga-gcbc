@@ -2572,6 +2572,12 @@ class goodcopbadcop extends Table
 		function getNextPlayerName()
 		{
 				$next_player_id = $this->getPlayerAfter($this->getGameStateValue("CURRENT_PLAYER"));
+
+				if(!$this->isTurnOrderClockwise())
+				{ // we are going COUNTER-clockwise
+						$next_player_id = $this->getPlayerBefore($this->getGameStateValue("CURRENT_PLAYER"));
+				}
+
 				return $this->getPlayerNameFromPlayerId($next_player_id);
 		}
 
@@ -4201,6 +4207,11 @@ class goodcopbadcop extends Table
 										{ // the player trying to use Taser is already holding a gun
 												return false;
 										}
+								}
+
+								if(count($guns) < 1)
+								{ // no one is holding a gun
+										return false;
 								}
 
 								return true; // if we get here, there isn't at leats one player other than the equipment user holding a gun
@@ -7430,7 +7441,7 @@ class goodcopbadcop extends Table
 						$newValue = "1"; // default to start skipping
 						$message = clienttranslate("When opponents play Equipment, you will NOT be asked if you want to react with Equipment.");
 				}
-				
+
 				if(!self::isSpectator())
 				{ // this is not a spectator
 
@@ -7952,10 +7963,12 @@ class goodcopbadcop extends Table
 							// make it active
 							$this->makePlayerEquipmentActive($equipmentId, $playerWhoseTurnItWas); // activate this in the middle of the table
 
+							$isClockwise = $this->isTurnOrderClockwise();
+
 							// update the turn marker arrow to go in the correct direction
 							self::notifyAllPlayers( "updateTurnMarker", clienttranslate( 'THE TURN ORDER IS NOW REVERSED.' ), array(
 									'current_player_id' => $this->getGameStateValue("CURRENT_PLAYER"),
-									'is_clockwise' => $this->isTurnOrderClockwise(),
+									'is_clockwise' => $isClockwise,
 									'current_player_name' => $this->getCurrPlayerName(),
 									'next_player_name' => $this->getNextPlayerName()
 							) );
