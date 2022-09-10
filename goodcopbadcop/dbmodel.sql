@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS `guns` (
   `gun_aimed_at` varchar(30) NOT NULL DEFAULT '',
   `gun_state` varchar(30) NOT NULL DEFAULT 'center',
   `gun_can_shoot` smallint(5) unsigned NOT NULL DEFAULT 1,
+  `gun_fired_this_turn` smallint(5) unsigned NOT NULL DEFAULT 0,
   `gun_acquired_in_state` varchar(60) NOT NULL DEFAULT '',
   PRIMARY KEY (`gun_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;

@@ -276,7 +276,7 @@ $machinestates = array(
 
     33 => array(
     		"name" => "askAimOutOfTurn",
-    		"description" => clienttranslate('${actplayer} is aiming the gun they just got.'),
+    		"description" => clienttranslate('${actplayer} is aiming their gun.'),
     		"descriptionmyturn" => clienttranslate('${you} must aim your new gun.'),
     		"type" => "activeplayer",
         'args' => 'argGetGunTargets',

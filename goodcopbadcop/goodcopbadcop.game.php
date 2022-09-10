@@ -1090,7 +1090,7 @@ class goodcopbadcop extends Table
 
 		function getLeaderCardTypeForPlayer($playerId)
 		{
-				return self::getUniqueValueFromDb("SELECT ic.card_type FROM `integrityCards` ic WHERE ic.card_location=$playerId AND (ic.card_type='agent' OR ic.card_type='kingpin') ");
+				return self::getUniqueValueFromDb("SELECT ic.card_type FROM `integrityCards` ic WHERE ic.card_location=$playerId AND (ic.card_type='agent' OR ic.card_type='kingpin') LIMIT 1");
 		}
 
 		function getLeaderCardIdForPlayer($playerId)
@@ -2303,32 +2303,32 @@ class goodcopbadcop extends Table
 
 		function getCardIdFromPlayerAndPosition($playerId, $positionId)
 		{
-				return self::getUniqueValueFromDb("SELECT card_id FROM integrityCards WHERE card_location=$playerId AND card_location_arg=$positionId");
+				return self::getUniqueValueFromDb("SELECT card_id FROM integrityCards WHERE card_location=$playerId AND card_location_arg=$positionId LIMIT 1");
 		}
 
 		function getCardTypeFromCardId($cardId)
 		{
-				return self::getUniqueValueFromDb("SELECT card_type FROM integrityCards WHERE card_id=$cardId");
+				return self::getUniqueValueFromDb("SELECT card_type FROM integrityCards WHERE card_id=$cardId LIMIT 1");
 		}
 
 		function getInfectorCardId()
 		{
-				return self::getUniqueValueFromDb("SELECT card_id FROM integrityCards WHERE card_type='infector'");
+				return self::getUniqueValueFromDb("SELECT card_id FROM integrityCards WHERE card_type='infector' LIMIT 1");
 		}
 
 		function getCardTypeFromPlayerIdAndPosition($playerId, $positionId)
 		{
-				return self::getUniqueValueFromDb("SELECT card_type FROM integrityCards WHERE card_location=$playerId AND card_location_arg=$positionId");
+				return self::getUniqueValueFromDb("SELECT card_type FROM integrityCards WHERE card_location=$playerId AND card_location_arg=$positionId LIMIT 1");
 		}
 
 		function getIntegrityCardOwner($integrityCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT card_location FROM integrityCards WHERE card_id=$integrityCardId");
+				return self::getUniqueValueFromDb("SELECT card_location FROM integrityCards WHERE card_id=$integrityCardId LIMIT 1");
 		}
 
 		function getIntegrityCardPosition($integrityCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT card_location_arg FROM integrityCards WHERE card_id=$integrityCardId");
+				return self::getUniqueValueFromDb("SELECT card_location_arg FROM integrityCards WHERE card_id=$integrityCardId LIMIT 1");
 		}
 
 		function getIntegrityCardFlippedState($integrityCardId)
@@ -2338,7 +2338,7 @@ class goodcopbadcop extends Table
 						return 1;
 				}
 
-				return self::getUniqueValueFromDb("SELECT card_type_arg FROM integrityCards WHERE card_id=$integrityCardId");
+				return self::getUniqueValueFromDb("SELECT card_type_arg FROM integrityCards WHERE card_id=$integrityCardId LIMIT 1");
 		}
 
 		// If this CARD_ID is REVEALED, return 1, otherwise return 0.
@@ -2349,19 +2349,19 @@ class goodcopbadcop extends Table
 					return 1;
 				}
 
-				return self::getUniqueValueFromDb("SELECT card_type_arg FROM integrityCards WHERE card_id=$card_id");
+				return self::getUniqueValueFromDb("SELECT card_type_arg FROM integrityCards WHERE card_id=$card_id LIMIT 1");
 		}
 
 		// Get the player number (1, 2, 3, 4, 5, 6, 7, 8) from the player ID (1234567).
 		function getPlayerNumberFromPlayerId($playerId)
 		{
-				return self::getUniqueValueFromDb("SELECT player_no FROM player WHERE player_id=$playerId");
+				return self::getUniqueValueFromDb("SELECT player_no FROM player WHERE player_id=$playerId LIMIT 1");
 		}
 
 		// Get the player ID (1234567) from the player number (1, 2, 3, 4, 5, 6, 7, 8).
 		function getPlayerIdFromPlayerNo($nextTurnOrderPosition)
 		{
-				return self::getUniqueValueFromDb("SELECT player_id FROM player WHERE player_no=$nextTurnOrderPosition");
+				return self::getUniqueValueFromDb("SELECT player_id FROM player WHERE player_no=$nextTurnOrderPosition LIMIT 1");
 		}
 
 		function getAllIntegrityCards()
@@ -2413,7 +2413,7 @@ class goodcopbadcop extends Table
 
 		function isIntegrityCardInfected($cardId)
 		{
-				$value = self::getUniqueValueFromDb("SELECT has_infection FROM integrityCards WHERE card_id=$cardId");
+				$value = self::getUniqueValueFromDb("SELECT has_infection FROM integrityCards WHERE card_id=$cardId LIMIT 1");
 				if($value == 0)
 				{ // this card is not infected
 						return false;
@@ -2431,7 +2431,7 @@ class goodcopbadcop extends Table
 						return 0;
 				}
 
-				$hiddenValue = self::getUniqueValueFromDb("SELECT card_type_arg FROM integrityCards WHERE card_id=$cardId");
+				$hiddenValue = self::getUniqueValueFromDb("SELECT card_type_arg FROM integrityCards WHERE card_id=$cardId LIMIT 1");
 				if($hiddenValue == 0)
 				{
 						return true;
@@ -2444,7 +2444,7 @@ class goodcopbadcop extends Table
 
 		function isInfectorHidden()
 		{
-				$hiddenValue = self::getUniqueValueFromDb("SELECT card_type_arg FROM integrityCards WHERE card_type='infector'");
+				$hiddenValue = self::getUniqueValueFromDb("SELECT card_type_arg FROM integrityCards WHERE card_type='infector' LIMIT 1");
 				if($hiddenValue == 0)
 				{
 						return true;
@@ -2457,7 +2457,7 @@ class goodcopbadcop extends Table
 
 		function isKingpinHidden()
 		{
-				$hiddenValue = self::getUniqueValueFromDb("SELECT card_type_arg FROM integrityCards WHERE card_type='kingpin'");
+				$hiddenValue = self::getUniqueValueFromDb("SELECT card_type_arg FROM integrityCards WHERE card_type='kingpin' LIMIT 1");
 				if($hiddenValue == 0)
 				{
 						return true;
@@ -2470,7 +2470,7 @@ class goodcopbadcop extends Table
 
 		function isAgentHidden()
 		{
-				$hiddenValue = self::getUniqueValueFromDb("SELECT card_type_arg FROM integrityCards WHERE card_type='agent'");
+				$hiddenValue = self::getUniqueValueFromDb("SELECT card_type_arg FROM integrityCards WHERE card_type='agent' LIMIT 1");
 				if($hiddenValue == 0)
 				{
 						return true;
@@ -2522,14 +2522,14 @@ class goodcopbadcop extends Table
 
 		function getLetterOrderFromPlayerIds($askingPlayer, $targetPlayer)
 		{
-				return self::getUniqueValueFromDb("SELECT player_position FROM playerPositioning WHERE player_asking=$askingPlayer AND player_id=$targetPlayer");
+				return self::getUniqueValueFromDb("SELECT player_position FROM playerPositioning WHERE player_asking=$askingPlayer AND player_id=$targetPlayer LIMIT 1");
 		}
 
 		function getPlayerIdFromLetterOrder($playerAsking, $letterOrder)
 		{
 				$sql = "SELECT p.player_id FROM `playerPositioning` pp ";
 				$sql .= "JOIN `player` p ON p.player_id=pp.player_id ";
-				$sql .= "WHERE pp.player_asking=$playerAsking AND pp.player_position='$letterOrder' ";
+				$sql .= "WHERE pp.player_asking=$playerAsking AND pp.player_position='$letterOrder' LIMIT 1";
 
 				return self::getUniqueValueFromDb($sql);
 		}
@@ -2538,7 +2538,7 @@ class goodcopbadcop extends Table
 		{
 				$sql = "SELECT p.player_name FROM `playerPositioning` pp ";
 				$sql .= "JOIN `player` p ON p.player_id=pp.player_id ";
-				$sql .= "WHERE pp.player_asking=$playerAsking AND pp.player_position='$letterOrder' ";
+				$sql .= "WHERE pp.player_asking=$playerAsking AND pp.player_position='$letterOrder' LIMIT 1";
 
 				return self::getUniqueValueFromDb($sql);
 		}
@@ -2552,7 +2552,7 @@ class goodcopbadcop extends Table
 				}
 
 				$sql = "SELECT player_name FROM `player` ";
-				$sql .= "WHERE player_id=$playerId ";
+				$sql .= "WHERE player_id=$playerId LIMIT 1";
 
 				if(is_null($playerId) || $playerId == '')
 				{
@@ -2584,7 +2584,7 @@ class goodcopbadcop extends Table
 		function getPlayerColorFromId($playerId)
 		{
 				$sql = "SELECT player_color FROM `player` ";
-				$sql .= "WHERE player_id=$playerId ";
+				$sql .= "WHERE player_id=$playerId LIMIT 1";
 
 				$color = self::getUniqueValueFromDb($sql);
 
@@ -2622,7 +2622,7 @@ class goodcopbadcop extends Table
 				$isLeader = false;
 
 				$sql = "SELECT card_type FROM `integrityCards` ic ";
-				$sql .= "WHERE ic.card_location=$integrityCardOwner AND ic.card_location_arg=$cardPosition ";
+				$sql .= "WHERE ic.card_location=$integrityCardOwner AND ic.card_location_arg=$cardPosition LIMIT 1";
 
 				$cardType = self::getUniqueValueFromDb($sql);
 
@@ -2637,7 +2637,7 @@ class goodcopbadcop extends Table
 		function getKingpinPlayerId()
 		{
 				$sql = "SELECT card_location FROM `integrityCards` ";
-				$sql .= "WHERE card_type='kingpin' ";
+				$sql .= "WHERE card_type='kingpin' LIMIT 1";
 
 				return self::getUniqueValueFromDb($sql);
 		}
@@ -2645,7 +2645,7 @@ class goodcopbadcop extends Table
 		function getAgentPlayerId()
 		{
 				$sql = "SELECT card_location FROM `integrityCards` ";
-				$sql .= "WHERE card_type='agent' ";
+				$sql .= "WHERE card_type='agent' LIMIT 1";
 
 				return self::getUniqueValueFromDb($sql);
 		}
@@ -2653,7 +2653,7 @@ class goodcopbadcop extends Table
 		function getInfectorPlayerId()
 		{
 				$sql = "SELECT card_location FROM `integrityCards` ";
-				$sql .= "WHERE card_type='infector' ";
+				$sql .= "WHERE card_type='infector' LIMIT 1";
 
 				return self::getUniqueValueFromDb($sql);
 		}
@@ -2787,7 +2787,7 @@ class goodcopbadcop extends Table
 		function shouldWeSkipEquipmentReactions($playerId)
 		{
 				$sql = "SELECT skip_equipment_reactions FROM `player` ";
-				$sql .= "WHERE player_id=$playerId ";
+				$sql .= "WHERE player_id=$playerId LIMIT 1";
 
 				$skipInt = self::getUniqueValueFromDb($sql);
 
@@ -2805,7 +2805,7 @@ class goodcopbadcop extends Table
 		function isPlayerEliminated($playerId)
 		{
 				$sql = "SELECT is_eliminated FROM `player` ";
-				$sql .= "WHERE player_id=$playerId ";
+				$sql .= "WHERE player_id=$playerId LIMIT 1";
 
 				$isEliminatedInt = self::getUniqueValueFromDb($sql);
 
@@ -2822,7 +2822,7 @@ class goodcopbadcop extends Table
 		function isPlayerZombie($playerId)
 		{
 				$sql = "SELECT is_zombie FROM `player` ";
-				$sql .= "WHERE player_id=$playerId ";
+				$sql .= "WHERE player_id=$playerId LIMIT 1";
 
 				$isZombieInt = self::getUniqueValueFromDb($sql);
 
@@ -2932,6 +2932,22 @@ class goodcopbadcop extends Table
 				return $armedZombies;
 		}
 
+		function getArmedInfectedPlayers()
+		{
+				$armedInfectedPlayers = array();
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				foreach( $players as $player )
+				{ // go through each player
+						$playerId = $player['player_id']; // the ID of the player we're notifying
+						if($this->isPlayerHoldingGun($playerId) && $this->countInfectionTokensForPlayer($playerId) > 0)
+						{ // player is armed and has at least 1 infection token
+								array_push($armedInfectedPlayers, $player); // add this player to the array we are returning
+						}
+				}
+
+				return $armedInfectedPlayers;
+		}
+
 		function getUnarmedInfectedPlayers()
 		{
 				$unarmedInfectedPlayers = array();
@@ -2946,6 +2962,35 @@ class goodcopbadcop extends Table
 				}
 
 				return $unarmedInfectedPlayers;
+		}
+
+		function didNonZombiePlayerJustShootAZombie($playerId)
+		{
+			return false;
+				// get all guns held by this player
+				$sql = "SELECT * FROM `guns` ";
+				$sql .= "WHERE gun_held_by=$playerId ";
+
+				$gunsHeldByPlayer = self::getObjectListFromDB( $sql );
+
+				foreach( $gunsHeldByPlayer as $gun )
+				{ // go through each gun (should only be 1)
+
+						$gunId = $gun['gun_id']; // get the PLAYER ID of the player holding this gun
+						$gunFiredThisTurn = $gun['gun_fired_this_turn'];
+						$gunAimedAt = $gun['gun_aimed_at'];
+						$isTargetAZombie = $this->isPlayerZombie($gunAimedAt);
+						$isShooterAZombie = $this->isPlayerZombie($playerId);
+
+						if($gunFiredThisTurn && $isTargetAZombie && !$isShooterAZombie)
+						{ // the non-zombie player just shot a zombie
+								return true;
+						}
+						else
+						{ // player did NOT just shoot a zombie
+								return false;
+						}
+				}
 		}
 
 		function isPlayerHoldingGun($playerId)
@@ -3052,7 +3097,7 @@ class goodcopbadcop extends Table
 
 		function doneSelecting($equipmentId)
 		{
-				$allTargetsSelected = self::getUniqueValueFromDb("SELECT done_selecting FROM equipmentCards WHERE card_id=$equipmentId");
+				$allTargetsSelected = self::getUniqueValueFromDb("SELECT done_selecting FROM equipmentCards WHERE card_id=$equipmentId LIMIT 1");
 
 				if($allTargetsSelected == 0)
 				{
@@ -3071,8 +3116,8 @@ class goodcopbadcop extends Table
 						return false;
 				}
 
-				$activeValue = self::getUniqueValueFromDb("SELECT equipment_is_active FROM equipmentCards WHERE card_id=$equipmentId");
-				$locationValue = self::getUniqueValueFromDb("SELECT card_location FROM equipmentCards WHERE card_id=$equipmentId");
+				$activeValue = self::getUniqueValueFromDb("SELECT equipment_is_active FROM equipmentCards WHERE card_id=$equipmentId LIMIT 1");
+				$locationValue = self::getUniqueValueFromDb("SELECT card_location FROM equipmentCards WHERE card_id=$equipmentId LIMIT 1");
 
 				if($activeValue == 1 ||
 				$locationValue == 'playing' ||
@@ -3121,17 +3166,17 @@ class goodcopbadcop extends Table
 
 		function getLastPlayerInvestigated($playerId)
 		{
-				return self::getUniqueValueFromDb("SELECT last_player_investigated FROM player WHERE player_id=$playerId");
+				return self::getUniqueValueFromDb("SELECT last_player_investigated FROM player WHERE player_id=$playerId LIMIT 1");
 		}
 
 		function getLastCardPositionInvestigated($playerId)
 		{
-				return self::getUniqueValueFromDb("SELECT last_card_position_investigated FROM player WHERE player_id=$playerId");
+				return self::getUniqueValueFromDb("SELECT last_card_position_investigated FROM player WHERE player_id=$playerId LIMIT 1");
 		}
 
 		function getLastCardPositionRevealed($playerId)
 		{
-				return self::getUniqueValueFromDb("SELECT last_card_position_revealed FROM player WHERE player_id=$playerId");
+				return self::getUniqueValueFromDb("SELECT last_card_position_revealed FROM player WHERE player_id=$playerId LIMIT 1");
 		}
 
 		function getLeaderCardPositionFromPlayer($playerId)
@@ -3331,11 +3376,11 @@ class goodcopbadcop extends Table
 		function getEquipmentCardOwner($cardId)
 		{
 				$equipmentOwner = self::getUniqueValueFromDb( "SELECT equipment_owner FROM equipmentCards
-	                                                         WHERE card_id=$cardId " );
+	                                                         WHERE card_id=$cardId LIMIT 1" );
 				if(is_null($equipmentOwner) || $equipmentOwner == '')
 				{ // for some reason, this query is returning empty when it shouldn't be and I don't know why
 						return self::getUniqueValueFromDb( "SELECT card_location_arg FROM equipmentCards
-			                                                         WHERE card_id=$cardId " );
+			                                                         WHERE card_id=$cardId LIMIT 1" );
 				}
 				else
 				{ // not empty so it's doing what it's supposed to be doing
@@ -3345,13 +3390,13 @@ class goodcopbadcop extends Table
 
 		function getEquipmentCardLocation($equipmentCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT card_location FROM equipmentCards WHERE card_id=$equipmentCardId");
+				return self::getUniqueValueFromDb("SELECT card_location FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
 		}
 
 		function getEquipmentName($cardId)
 		{
 				return self::getUniqueValueFromDb( "SELECT equipment_name FROM equipmentCards
-	                                                         WHERE card_id=$cardId " );
+	                                                         WHERE card_id=$cardId LIMIT 1" );
 		}
 
 		function setEquipmentName($collectorNumber, $name)
@@ -3525,7 +3570,7 @@ class goodcopbadcop extends Table
 								return clienttranslate( 'Choose a player to drop their Gun.' );
 
 						case 67: // Weapon Crate
-								return clienttranslate( 'Each unarmed player with at least one Infection Token takes a Gun or Arms.' );
+								return clienttranslate( 'Each player with at least one Infection Token may Arm and/or change their aim.' );
 
 						case 66: // Machete
 								return clienttranslate( 'Choose a zombie. Exchange any number of their Integrity cards for the same number of revealed Honest or Crooked cards.' );
@@ -3753,62 +3798,62 @@ class goodcopbadcop extends Table
 
 		function getEquipmentTarget1($equipmentCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT equipment_target_1 FROM equipmentCards WHERE card_id=$equipmentCardId");
+				return self::getUniqueValueFromDb("SELECT equipment_target_1 FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
 		}
 
 		function getEquipmentTarget2($equipmentCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT equipment_target_2 FROM equipmentCards WHERE card_id=$equipmentCardId");
+				return self::getUniqueValueFromDb("SELECT equipment_target_2 FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
 		}
 
 		function getEquipmentTarget3($equipmentCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT equipment_target_3 FROM equipmentCards WHERE card_id=$equipmentCardId");
+				return self::getUniqueValueFromDb("SELECT equipment_target_3 FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
 		}
 
 		function getEquipmentTarget4($equipmentCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT equipment_target_4 FROM equipmentCards WHERE card_id=$equipmentCardId");
+				return self::getUniqueValueFromDb("SELECT equipment_target_4 FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
 		}
 
 		function getEquipmentTarget5($equipmentCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT equipment_target_5 FROM equipmentCards WHERE card_id=$equipmentCardId");
+				return self::getUniqueValueFromDb("SELECT equipment_target_5 FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
 		}
 
 		function getEquipmentTarget6($equipmentCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT equipment_target_6 FROM equipmentCards WHERE card_id=$equipmentCardId");
+				return self::getUniqueValueFromDb("SELECT equipment_target_6 FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
 		}
 
 		function getEquipmentTarget7($equipmentCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT equipment_target_7 FROM equipmentCards WHERE card_id=$equipmentCardId");
+				return self::getUniqueValueFromDb("SELECT equipment_target_7 FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
 		}
 
 		function getEquipmentTarget8($equipmentCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT equipment_target_8 FROM equipmentCards WHERE card_id=$equipmentCardId");
+				return self::getUniqueValueFromDb("SELECT equipment_target_8 FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
 		}
 
 		function getPlayerTarget1($equipmentCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT player_target_1 FROM equipmentCards WHERE card_id=$equipmentCardId");
+				return self::getUniqueValueFromDb("SELECT player_target_1 FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
 		}
 
 		function getPlayerTarget2($equipmentCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT player_target_2 FROM equipmentCards WHERE card_id=$equipmentCardId");
+				return self::getUniqueValueFromDb("SELECT player_target_2 FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
 		}
 
 		function getGunTarget1($equipmentCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT gun_target_1 FROM equipmentCards WHERE card_id=$equipmentCardId");
+				return self::getUniqueValueFromDb("SELECT gun_target_1 FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
 		}
 
 		function getGunTarget2($equipmentCardId)
 		{
-				return self::getUniqueValueFromDb("SELECT gun_target_2 FROM equipmentCards WHERE card_id=$equipmentCardId");
+				return self::getUniqueValueFromDb("SELECT gun_target_2 FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
 		}
 
 		function setLastPlayerInvestigated($playerInvestigating, $playerBeingInvestigated)
@@ -4207,6 +4252,11 @@ class goodcopbadcop extends Table
 										{ // the player trying to use Taser is already holding a gun
 												return false;
 										}
+
+										if(!$this->isPlayerZombie($gunHolderPlayerId))
+										{ // this player is not a zombie (taser does not work on zombies)
+												$canUse = true;
+										}
 								}
 
 								if(count($guns) < 1)
@@ -4214,7 +4264,7 @@ class goodcopbadcop extends Table
 										return false;
 								}
 
-								return true; // if we get here, there isn't at leats one player other than the equipment user holding a gun
+								return $canUse;
 						break;
 
 						case 3: // Defibrillator
@@ -4399,8 +4449,9 @@ class goodcopbadcop extends Table
 
 						case 67: // Weapon Crate
 							$unarmedInfectedPlayers = $this->getUnarmedInfectedPlayers();
-							if(count($unarmedInfectedPlayers) > 0)
-							{ // there is at least one unarmed infected player
+							$armedInfectedPlayers = $this->getArmedInfectedPlayers();
+							if(count($unarmedInfectedPlayers) > 0 || count($armedInfectedPlayers) > 0 )
+							{ // there is at least one infected player
 									return true;
 							}
 							else
@@ -4608,10 +4659,23 @@ class goodcopbadcop extends Table
 												return false;
 										}
 								}
+								elseif($this->isPlayerZombie($playerId))
+								{ // player is a zombie
+
+										if($throwErrors)
+										{
+												throw new BgaUserException( self::_("Tasers do not work on zombies.") );
+										}
+										else
+										{
+												return false;
+										}
+								}
 								else
 								{ // they are targeting a living player holding a gun
 										return true;
 								}
+
 								return false; // won't get here
 						break;
 						case 4: // evidence bag
@@ -5748,27 +5812,34 @@ class goodcopbadcop extends Table
 		{
 			$state = $this->getStateName();
 		//throw new feException( "setStateAfterTurnAction state:$state");
-				$playersOverEquipmentCardLimit = $this->getPlayersOverEquipmentHandLimit(); // get any players over the equipment card hand limit
-				if ($this->doesPlayerNeedToDiscard($playerWhoseTurnItIs))
-				{ // too many cards in hand
+			$playersOverEquipmentCardLimit = $this->getPlayersOverEquipmentHandLimit(); // get any players over the equipment card hand limit
+			if ($this->doesPlayerNeedToDiscard($playerWhoseTurnItIs))
+			{ // too many cards in hand
 						$this->gamestate->nextState( "discardEquipment" );
-				}
-				elseif(count($playersOverEquipmentCardLimit) > 0)
-				{ // someone else is over the equipment card hand limit
+			}
+			elseif(count($playersOverEquipmentCardLimit) > 0)
+			{ // someone else is over the equipment card hand limit
 					//throw new feException( "over hand limit" );
 					$firstPlayerNeedingToDiscard = array_values($playersOverEquipmentCardLimit)[0]; // get the first one
 					$playerIdOverLimit = $firstPlayerNeedingToDiscard['player_id'];
 
 					$this->gamestate->changeActivePlayer($playerIdOverLimit); // make that player active so they can aim it
 					$this->gamestate->nextState( "askDiscardOutOfTurn" );
-				}
-				elseif($this->isPlayerHoldingGun($playerWhoseTurnItIs))
-				{ // this player IS holding a gun
+			}
+			elseif($this->isPlayerHoldingGun($playerWhoseTurnItIs))
+			{ // this player IS holding a gun
 
-						$this->gamestate->nextState( "askAim" ); // ask the player to aim their gun
-				}
-				else
-				{ // this player is NOT holding a gun
+					if($this->didNonZombiePlayerJustShootAZombie($playerWhoseTurnItIs))
+					{ // this player just shot a zombie
+							$this->gamestate->nextState( "askAimMustReaim" ); // ask the player to aim their arms
+					}
+					else
+					{ // this player did NOT just shoot a zombie
+							$this->gamestate->nextState( "askAim" ); // ask the player to aim their gun
+					}
+			}
+			else
+			{ // this player is NOT holding a gun
 						if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
 						{ // we are using the zombies expansion and the Infector is hidden
 								$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
@@ -5778,7 +5849,7 @@ class goodcopbadcop extends Table
 								$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
 								//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
 						}
-				}
+			}
 		}
 
 		// The player has just played an equipment card and we need to put them into the state that will allow
@@ -6373,7 +6444,7 @@ class goodcopbadcop extends Table
 				$sql = "SELECT pcv.is_seen FROM `integrityCards` ic ";
 				$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
 				$sql .= "JOIN `playerPositioning` pp ON (ic.card_location=pp.player_id AND pp.player_asking=$playerAsking) ";
-				$sql .= "WHERE pcv.player_id=$playerAsking AND ic.card_location=$playerTargeting AND ic.card_location_arg=$cardPosition ";
+				$sql .= "WHERE pcv.player_id=$playerAsking AND ic.card_location=$playerTargeting AND ic.card_location_arg=$cardPosition LIMIT 1";
 
 				//var_dump( $sql );
 				//die('ok');
@@ -6384,7 +6455,7 @@ class goodcopbadcop extends Table
 		function getIntegrityCardId($playerTargeting, $cardPosition)
 		{
 				$sql = "SELECT ic.card_id FROM `integrityCards` ic ";
-				$sql .= "WHERE ic.card_location=$playerTargeting AND ic.card_location_arg=$cardPosition ";
+				$sql .= "WHERE ic.card_location=$playerTargeting AND ic.card_location_arg=$cardPosition LIMIT 1";
 
 				//var_dump( $sql );
 				//die('ok');
@@ -6444,7 +6515,7 @@ class goodcopbadcop extends Table
 						return null;
 				}
 
-				return self::getUniqueValueFromDb("SELECT gun_aimed_at FROM guns WHERE gun_id=$gunId");
+				return self::getUniqueValueFromDb("SELECT gun_aimed_at FROM guns WHERE gun_id=$gunId LIMIT 1");
 		}
 
 		function setGunState($gunId, $newState)
@@ -6458,7 +6529,23 @@ class goodcopbadcop extends Table
 
 		function getGunState($gunId)
 		{
-				return self::getUniqueValueFromDb("SELECT gun_state FROM guns WHERE gun_id=$gunId");
+				return self::getUniqueValueFromDb("SELECT gun_state FROM guns WHERE gun_id=$gunId LIMIT 1");
+		}
+
+		function setGunShotThisTurn($gunId, $value)
+		{
+			return;
+
+				$sqlUpdate = "UPDATE guns SET ";
+				$sqlUpdate .= "gun_fired_this_turn=$value WHERE ";
+				$sqlUpdate .= "gun_id=$gunId";
+
+				self::DbQuery( $sqlUpdate );
+		}
+
+		function getGunShotThisTurn($gunId)
+		{
+				return self::getUniqueValueFromDb("SELECT gun_fired_this_turn FROM guns WHERE gun_id=$gunId LIMIT 1");
 		}
 
 		// If gun_can_shoot is set to 0, it cannot shoot. Otherwise it can shoot.
@@ -6473,7 +6560,7 @@ class goodcopbadcop extends Table
 
 		function getGunCanShoot($gunId)
 		{
-				return self::getUniqueValueFromDb("SELECT gun_can_shoot FROM guns WHERE gun_id=$gunId");
+				return self::getUniqueValueFromDb("SELECT gun_can_shoot FROM guns WHERE gun_id=$gunId LIMIT 1");
 		}
 
 		function setGunAcquiredInState($gunId, $value)
@@ -6487,7 +6574,7 @@ class goodcopbadcop extends Table
 
 		function getGunAcquiredInState($gunId)
 		{
-				return self::getUniqueValueFromDb("SELECT gun_acquired_in_state FROM guns WHERE gun_id=$gunId");
+				return self::getUniqueValueFromDb("SELECT gun_acquired_in_state FROM guns WHERE gun_id=$gunId LIMIT 1");
 		}
 
 		function getPlayerGettingShot()
@@ -6537,7 +6624,7 @@ class goodcopbadcop extends Table
 				{ // this player is a leader
 						$leaderCardId = $this->getLeaderCardIdForPlayer($playerId); // get the card id of the leader card
 
-						$hasWound = self::getUniqueValueFromDb("SELECT has_wound FROM integrityCards WHERE card_id=$leaderCardId");
+						$hasWound = self::getUniqueValueFromDb("SELECT has_wound FROM integrityCards WHERE card_id=$leaderCardId LIMIT 1");
 
 						if($hasWound == 1)
 						{
@@ -6550,7 +6637,7 @@ class goodcopbadcop extends Table
 
 		function isCardWounded($cardId)
 		{
-						$hasWound = self::getUniqueValueFromDb("SELECT has_wound FROM integrityCards WHERE card_id=$cardId");
+						$hasWound = self::getUniqueValueFromDb("SELECT has_wound FROM integrityCards WHERE card_id=$cardId LIMIT 1");
 
 						if($hasWound == 1)
 						{
@@ -6564,7 +6651,7 @@ class goodcopbadcop extends Table
 
 		function isCardInfected($cardId)
 		{
-						$hasInfection = self::getUniqueValueFromDb("SELECT has_infection FROM integrityCards WHERE card_id=$cardId");
+						$hasInfection = self::getUniqueValueFromDb("SELECT has_infection FROM integrityCards WHERE card_id=$cardId LIMIT 1");
 
 						if($hasInfection == 1)
 						{
@@ -6579,13 +6666,13 @@ class goodcopbadcop extends Table
 		// Get the PLAYER ID of the player HOLDING the GUN.
 		function getPlayerIdOfGunHolder($gunId)
 		{
-				return self::getUniqueValueFromDb("SELECT gun_held_by FROM guns WHERE gun_id=$gunId");
+				return self::getUniqueValueFromDb("SELECT gun_held_by FROM guns WHERE gun_id=$gunId LIMIT 1");
 		}
 
 		// Get the GUN held by a specific PLAYER ID.
 		function getGunIdHeldByPlayer($playerId)
 		{
-				$sql = "SELECT gun_id FROM guns WHERE gun_held_by='$playerId'";
+				$sql = "SELECT gun_id FROM guns WHERE gun_held_by='$playerId' LIMIT 1";
 				$value = self::getUniqueValueFromDb($sql);
 				//	throw new feException( "value:$value" );
 				return $value;
@@ -6593,7 +6680,7 @@ class goodcopbadcop extends Table
 
 		function getGunTypeHeldByPlayer($playerId)
 		{
-				return self::getUniqueValueFromDb("SELECT gun_type FROM guns WHERE gun_held_by=$playerId");
+				return self::getUniqueValueFromDb("SELECT gun_type FROM guns WHERE gun_held_by=$playerId LIMIT 1");
 		}
 
 		function pickUpGun($playerWhoArmed, $previousState)
@@ -7237,19 +7324,30 @@ class goodcopbadcop extends Table
 						$gunType = $this->getGunTypeHeldByPlayer($gunHolderPlayerId); // see if this is an arm or gun
 				}
 
-				$sqlUpdate = "UPDATE guns SET ";
-				$sqlUpdate .= "gun_aimed_at='', gun_held_by='', gun_state='center', gun_acquired_in_state='' WHERE ";
-				$sqlUpdate .= "gun_id=$gunId";
+				if($this->isPlayerZombie($gunHolderPlayerId))
+				{ // player is a zombie
 
-				self::DbQuery( $sqlUpdate );
+						// aim arms at self
+						$this->aimGun($gunHolderPlayerId, $gunHolderPlayerId); // update the gun in the database for who it is now aimed at
 
-				if($playerName != '')
-				{
-						self::notifyAllPlayers( "dropGun", clienttranslate( '${player_name} is no longer armed.' ), array(
-								'player_name' => $playerName,
-								'gunId' => $gunId,
-								'gunType' => $gunType
-						) );
+				}
+				else
+				{ // NOT a zombie
+
+						$sqlUpdate = "UPDATE guns SET ";
+						$sqlUpdate .= "gun_aimed_at='', gun_held_by='', gun_state='center', gun_acquired_in_state='' WHERE ";
+						$sqlUpdate .= "gun_id=$gunId";
+
+						self::DbQuery( $sqlUpdate );
+
+						if($playerName != '')
+						{
+								self::notifyAllPlayers( "dropGun", clienttranslate( '${player_name} is no longer armed.' ), array(
+										'player_name' => $playerName,
+										'gunId' => $gunId,
+										'gunType' => $gunType
+								) );
+						}
 				}
 		}
 
@@ -7265,8 +7363,11 @@ class goodcopbadcop extends Table
 				$teamOfShooter = $this->getPlayerTeam($shooterPlayerId);
 				$teamOfTarget = $this->getPlayerTeam($targetPlayerId);
 
+				$gunId = $this->getGunIdHeldByPlayer($shooterPlayerId);
+				$this->setGunShotThisTurn($gunId, 1); // update the database so we know this gun was shot this turn (to know if a zombie was shot and we must reaim)
+
 				if($gunType == 'arm')
-				{ // zombie arms
+				{ // BITE
 						self::notifyAllPlayers( "executeGunShoot", clienttranslate( '${player_name} has been bitten.' ), array(
 								'player_name' => $targetName
 						) );
@@ -7280,7 +7381,7 @@ class goodcopbadcop extends Table
 						$this->rollZombieDice($shooterPlayerId, $targetPlayerId); // roll a zombie die for each infection token they have and take action for each zombie die face
 				}
 				else
-				{ // gun or equipment
+				{ // SHOT WITH GUN OR EQUIPMENT
 						self::notifyAllPlayers( "executeGunShoot", clienttranslate( '${player_name} has been shot.' ), array(
 								'player_name' => $targetName
 						) );
@@ -7477,15 +7578,24 @@ class goodcopbadcop extends Table
 						else
 						{ // not yet a zombie
 
-								$this->zombifyPlayer($playerId); // turn into a zombie and notify everyone (but do not drop guns or reveal cards)
-
 								// discard guns they were holding
 								$guns = $this->getGunsHeldByPlayer($playerId);
 								foreach( $guns as $gun )
 								{ // go through each gun (should only be 1)
 										$gunId = $gun['gun_id'];
 										$this->dropGun($gunId);
+										//throw new feException( "dropped gun $gunId");
 								}
+
+								$this->zombifyPlayer($playerId); // update DB that they are a zombie and notify everyone (but do not drop guns or reveal cards)
+
+								//$countguns = count($guns);
+								//throw new feException( "count guns:$countguns");
+
+								$this->pickUpGun($playerId, $this->getStateName()); // pick up arms
+
+								// aim arms at self if they have any
+								$this->aimGun($playerId, $playerId); // update the gun in the database for who it is now aimed at
 						}
 				}
 				else
@@ -7670,92 +7780,101 @@ class goodcopbadcop extends Table
 		{
 				$result = array();
 				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+				$buttonIdentifier = 0;
 
-				$result[0] = array(); // create a new array for this player
-				$result[0]['buttonLabel'] = clienttranslate('Investigate');
-				$result[0]['hoverOverText'] = '';
-				$result[0]['actionName'] = 'Investigate';
-				$result[0]['equipmentId'] = '';
-				$result[0]['makeRed'] = false;
+				$result[$buttonIdentifier] = array(); // create a new array for this player
+				$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Investigate');
+				$result[$buttonIdentifier]['hoverOverText'] = '';
+				$result[$buttonIdentifier]['actionName'] = 'Investigate';
+				$result[$buttonIdentifier]['equipmentId'] = '';
+				$result[$buttonIdentifier]['makeRed'] = false;
 				if($this->canPlayerInvestigate($playerWhoseTurnItIs) && !$this->isPlayerZombie($playerWhoseTurnItIs))
 				{ // this player can investigate
-						$result[0]['isDisabled'] = false;
+						$result[$buttonIdentifier]['isDisabled'] = false;
 				}
 				else
 				{ // this player is a zombie or cannot investigate
-						$result[0]['isDisabled'] = true;
+						$result[$buttonIdentifier]['isDisabled'] = true;
 				}
 
-				$result[1] = array(); // create a new array for this player
-				$result[1]['buttonLabel'] = clienttranslate('Equip');
-				$result[1]['hoverOverText'] = '';
-				$result[1]['actionName'] = 'Equip';
-				$result[1]['equipmentId'] = '';
-				$result[1]['makeRed'] = false;
-				$result[1]['isDisabled'] = false; // this is never disabled
+				$buttonIdentifier++;
 
-				$result[2] = array(); // create a new array for this player
-				$result[2]['buttonLabel'] = clienttranslate('Arm');
-				$result[2]['hoverOverText'] = '';
-				$result[2]['actionName'] = 'Arm';
-				$result[2]['equipmentId'] = '';
-				$result[2]['makeRed'] = false;
-				if($this->canPlayerArm($playerWhoseTurnItIs))
-				{ // this player can arm
-						$result[2]['isDisabled'] = false;
-				}
-				else {
-						$result[2]['isDisabled'] = true;
-				}
+				$result[$buttonIdentifier] = array(); // create a new array for this player
+				$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Equip');
+				$result[$buttonIdentifier]['hoverOverText'] = '';
+				$result[$buttonIdentifier]['actionName'] = 'Equip';
+				$result[$buttonIdentifier]['equipmentId'] = '';
+				$result[$buttonIdentifier]['makeRed'] = false;
+				$result[$buttonIdentifier]['isDisabled'] = false; // this is never disabled
+
+				$buttonIdentifier++;
 
 				if($this->isPlayerZombie($playerWhoseTurnItIs))
 				{ // this player is a zombie
-						$result[3] = array(); // create a new array for this player
-						$result[3]['buttonLabel'] = clienttranslate('Bite');
-						$result[3]['hoverOverText'] = '';
-						$result[3]['actionName'] = 'Shoot';
-						$result[3]['equipmentId'] = '';
-						$result[3]['makeRed'] = false;
+						$result[$buttonIdentifier] = array(); // create a new array for this player
+						$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Bite');
+						$result[$buttonIdentifier]['hoverOverText'] = '';
+						$result[$buttonIdentifier]['actionName'] = 'Shoot';
+						$result[$buttonIdentifier]['equipmentId'] = '';
+						$result[$buttonIdentifier]['makeRed'] = false;
 						if($this->canPlayerBite($playerWhoseTurnItIs))
 						{ // this player can bite
-								$result[3]['isDisabled'] = false;
+								$result[$buttonIdentifier]['isDisabled'] = false;
 
 								$gunId = $this->getGunIdHeldByPlayer($playerWhoseTurnItIs);
 								$gunTargetPlayerId = $this->getPlayerIdOfGunTarget($gunId);
 								$gunTargetName = $this->getPlayerNameFromPlayerId($gunTargetPlayerId);
 								//throw new feException( "Gun Target Name: $gunTargetName");
 								//$result[3]['buttonLabel'] = "Shoot $gunTargetName"; // add the name of the player you're shooting
-								$result[3]['buttonLabel'] = sprintf( self::_("Bite %s"), $gunTargetName ); // add the name of the player you're shooting
+								$result[$buttonIdentifier]['buttonLabel'] = sprintf( self::_("Bite %s"), $gunTargetName ); // add the name of the player you're shooting
 						}
 						else {
-								$result[3]['isDisabled'] = true;
+								$result[$buttonIdentifier]['isDisabled'] = true;
 						}
+						$buttonIdentifier++;
 				}
 				else
 				{ // they are NOT a zombie
-						$result[3] = array(); // create a new array for this player
-						$result[3]['buttonLabel'] = clienttranslate('Shoot');
-						$result[3]['hoverOverText'] = '';
-						$result[3]['actionName'] = 'Shoot';
-						$result[3]['equipmentId'] = '';
-						$result[3]['makeRed'] = false;
+
+						$result[$buttonIdentifier] = array(); // create a new array for this player
+						$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Arm');
+						$result[$buttonIdentifier]['hoverOverText'] = '';
+						$result[$buttonIdentifier]['actionName'] = 'Arm';
+						$result[$buttonIdentifier]['equipmentId'] = '';
+						$result[$buttonIdentifier]['makeRed'] = false;
+						if($this->canPlayerArm($playerWhoseTurnItIs))
+						{ // this player can arm
+								$result[$buttonIdentifier]['isDisabled'] = false;
+						}
+						else {
+								$result[$buttonIdentifier]['isDisabled'] = true;
+						}
+						$buttonIdentifier++;
+
+						$result[$buttonIdentifier] = array(); // create a new array for this player
+						$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Shoot');
+						$result[$buttonIdentifier]['hoverOverText'] = '';
+						$result[$buttonIdentifier]['actionName'] = 'Shoot';
+						$result[$buttonIdentifier]['equipmentId'] = '';
+						$result[$buttonIdentifier]['makeRed'] = false;
 						if($this->canPlayerShoot($playerWhoseTurnItIs))
 						{ // this player can shoot
-								$result[3]['isDisabled'] = false;
+								$result[$buttonIdentifier]['isDisabled'] = false;
 
 								$gunId = $this->getGunIdHeldByPlayer($playerWhoseTurnItIs);
 								$gunTargetPlayerId = $this->getPlayerIdOfGunTarget($gunId);
 								$gunTargetName = $this->getPlayerNameFromPlayerId($gunTargetPlayerId);
 								//throw new feException( "Gun Target Name: $gunTargetName");
 								//$result[3]['buttonLabel'] = "Shoot $gunTargetName"; // add the name of the player you're shooting
-								$result[3]['buttonLabel'] = sprintf( self::_("Shoot %s"), $gunTargetName ); // add the name of the player you're shooting
+								$result[$buttonIdentifier]['buttonLabel'] = sprintf( self::_("Shoot %s"), $gunTargetName ); // add the name of the player you're shooting
 						}
 						else {
-								$result[3]['isDisabled'] = true;
+								$result[$buttonIdentifier]['isDisabled'] = true;
 						}
+						$buttonIdentifier++;
 				}
 
-				$buttonIdentifier = 4;
+
 				$equipmentCards = $this->getEquipmentInPlayerHand($playerWhoseTurnItIs);
 				foreach( $equipmentCards as $equipmentCard )
 				{ // go through each card (should only be 1)
@@ -8513,8 +8632,30 @@ class goodcopbadcop extends Table
 						break;
 
 						case 67: // Weapon Crate
+								$armedInfectedPlayers = $this->getArmedInfectedPlayers(); // get all players holding a gun with an infection token
+
+								// unaim their guns
+								foreach($armedInfectedPlayers as $player)
+								{
+										$armedPlayerId = $player['player_id'];
+										$guns = $this->getGunsHeldByPlayer($armedPlayerId);
+
+										foreach( $guns as $gun )
+										{ // go through each gun (should only be 1)
+												$gunId = $gun['gun_id'];
+
+												// set their gun's gun_aimed_at to ''
+												$sqlUpdate = "UPDATE guns SET ";
+												$sqlUpdate .= "gun_aimed_at='' WHERE ";
+												$sqlUpdate .= "gun_id=$gunId";
+												self::DbQuery( $sqlUpdate );
+										}
+								}
+
+
 								$unarmedInfectedPlayers = $this->getUnarmedInfectedPlayers(); // get each unarmed player with an infection token
 
+								// give them a gun
 								foreach($unarmedInfectedPlayers as $player)
 								{
 										$armerPlayerId = $player['player_id'];
@@ -9396,6 +9537,7 @@ class goodcopbadcop extends Table
 						$gunId = $gun['gun_id'];
 
 						$this->setGunCanShoot($gunId, 1); // make sure it can shoot in case taser was used on it this turn
+						$this->setGunShotThisTurn($gunId, 0); // reset it so we know it did not fire this turn
 				}
 
 				if($this->isCoffeeActive())
@@ -9566,10 +9708,8 @@ class goodcopbadcop extends Table
 				else
 				{
 						$this->revealCard($playerWhoseTurnItIs, $integrityCardPositionRevealed); // reveal the integrity card from this player's perspective and notify all players
+						$gun = $this->pickUpGun($playerWhoseTurnItIs, $this->getStateName());
 				}
-
-				$gun = $this->pickUpGun($playerWhoseTurnItIs, $this->getStateName());
-
 
 				$this->gamestate->nextState( "askAim" ); // begin a new player's turn
 		}

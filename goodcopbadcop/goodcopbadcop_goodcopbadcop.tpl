@@ -448,7 +448,7 @@ var jstpl_integrityCard = '<div class="integrity_card component_rounding" id="pl
                         </div>';
 var jstpl_gun = '<div class="gun component_rounding" id="gun_${gunId}" style="background-position:-${x}px -${y}px">\
                         </div>';
-var jstpl_integrityCardToken = '<div id="integrity_token_${cardType}" style="background-position:-${x}px -${y}px">\
+var jstpl_integrityCardToken = '<div id="integrity_token_${cardType}" class="integrity_card_token" style="background-position:-${x}px -${y}px">\
                         </div>';
 
 var jstpl_largeEquipment = '<div class="large_equipment large_component_rounding" style="background-position:-${x}px -${y}px"><div class="large_equipment_name">${equipmentName}</div><div class="large_equipment_effect">${equipmentEffect}</div>\
