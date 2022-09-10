@@ -408,7 +408,7 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-            console.log("onUpdateActionButtons state " + stateName);
+//            console.log("onUpdateActionButtons state " + stateName);
 
 
             if( this.isCurrentPlayerActive() )
@@ -2136,12 +2136,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var destinationHtmlId = 'player_'+playerLetterOfInfected+'_integrity_card_'+positionOfInfectedCard;
             //dojo.addClass(movingTokenHtmlId, "remove_top_left"); // remove top and left so it can move smoothly
             dojo.addClass(movingTokenHtmlId, "infection_token"); // add the infection token class (must be done before moving)
-            this.attachToNewParent( movingTokenHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
-            var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 750, 2500);
+
+            var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 750, 2000);
             dojo.connect(anim1, 'onEnd', function(node)
             { // do the following after the animation ends
-
-              dojo.addClass( movingTokenHtmlId, 'remove_top_left'); // highlight the gun that just moved
+              this.attachToNewParent( movingTokenHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
+              //dojo.addClass( movingTokenHtmlId, 'remove_top_left'); // highlight the gun that just moved
 
             });
             anim1.play();
@@ -2177,19 +2177,23 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                         y: 0
                     } ), startingHtmlId );
 
-
             var movingTokenHtmlId = "integrity_token_"+cardType;
+
+
             var destinationHtmlId = 'player_' + woundedPlayerLetterOrder + '_integrity_card_' + leaderCardPosition;
 
+
             dojo.addClass(movingTokenHtmlId, "wounded_token"); // add the wounded token class (must be done before moving)
-            this.attachToNewParent( movingTokenHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
             var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 750, 250);
             dojo.connect(anim1, 'onEnd', function(node)
             { // do the following after the animation ends
-              dojo.style( movingTokenHtmlId, 'marginTop', '-10px' ); // move the token so it doesn't cover the name of the card and is visible when there is a infection token on it too
-              dojo.addClass( movingTokenHtmlId, 'remove_top_left'); // highlight the gun that just moved
+                this.attachToNewParent( movingTokenHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
+                //dojo.style( movingTokenHtmlId, 'marginTop', '-10px' ); // move the token so it doesn't cover the name of the card and is visible when there is a infection token on it too
+                //dojo.addClass( movingTokenHtmlId, 'remove_top_left');
             });
             anim1.play();
+
+
 
             return movingTokenHtmlId;
         },

@@ -529,21 +529,20 @@
 
 .integrity_card_token
 {
-  display: inline-block;
-  position: absolute; /* needed for a thing that slides */
+  /*display: inline-block;*/
+  position: relative; /* needed for a thing that slides */
   width: 50px;
   height: 50px;
+
+  z-index: 10;
 }
 
 .wounded_token {
-
     margin-right: -10px;
     background-image: url('img/wounded_50w.png');
-    z-index: 10;
 }
 
 .infection_token {
-
     margin-top: -15px;
     margin-left: -5px;
     background-image: url('img/wounded_50w.png');

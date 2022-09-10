@@ -27,7 +27,7 @@
 
 
 <div id="board_area">
-    <div id="die_result_holder" class="whiteblock">
+    <div id="die_result_holder">
           <div id="dice"></div>
 
           <div id="infectionDieResult">
