@@ -41,7 +41,8 @@ class goodcopbadcop extends Table
             //      ...\
 						"CURRENT_PLAYER" => 10,
 						"ROLLED_INFECTION_DIE_THIS_TURN" => 11,
-						"ZOMBIES_EXPANSION" => 100
+						"ZOMBIES_EXPANSION" => 100,
+						"USE_EXTRA_EQUIPMENT" => 101
         ) );
 
 				// create Integrity Card Deck
@@ -353,6 +354,24 @@ class goodcopbadcop extends Table
 						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 66, 'card_location' => 'deck','nbr' => 1)); // Machete
 						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 67, 'card_location' => 'deck','nbr' => 1)); // Weapon Crate
 						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 68, 'card_location' => 'deck','nbr' => 1)); // Alarm Clock
+
+						if($this->getGameStateValue('USE_EXTRA_EQUIPMENT') == 2)
+						{ // they want to use all extra equipment
+
+								// add all the expansion equipment that is not specific to other expansions
+
+						}
+				}
+				else
+				{ // no expansions are being used
+
+						if($this->getGameStateValue('USE_EXTRA_EQUIPMENT') == 2)
+						{ // they want to use all extra equipment
+
+								// add all the expansion equipment that is not specific to that expansion
+								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 64, 'card_location' => 'deck','nbr' => 1)); // Chainsaw
+								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 60, 'card_location' => 'deck','nbr' => 1)); // Crossbow
+						}
 				}
 
 				$this->equipmentCards->createCards( $equipmentCardsList, 'deck' ); // create the deck and override locations to deck
