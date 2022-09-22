@@ -2184,7 +2184,9 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
 
             dojo.addClass(movingTokenHtmlId, "wounded_token"); // add the wounded token class (must be done before moving)
-            var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 750, 250);
+            this.slideToObjectAndDestroy( movingTokenHtmlId, destinationHtmlId, 1000, 0 );
+
+            /*var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 750, 250);
             dojo.connect(anim1, 'onEnd', function(node)
             { // do the following after the animation ends
                 this.attachToNewParent( movingTokenHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
@@ -2192,7 +2194,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 //dojo.addClass( movingTokenHtmlId, 'remove_top_left');
             });
             anim1.play();
-
+            */
 
 
             return movingTokenHtmlId;
