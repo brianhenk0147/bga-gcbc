@@ -533,19 +533,23 @@
   position: relative; /* needed for a thing that slides */
   width: 50px;
   height: 50px;
-
+background-image: url('img/wounded_50w.png');
   z-index: 10;
+}
+
+#integrity_token_bite
+{
+    display: none; /* hide it because it's only here as a temporary object to support a different animation */
 }
 
 .wounded_token {
     margin-right: -10px;
-    background-image: url('img/wounded_50w.png');
+
 }
 
 .infection_token {
     margin-top: -15px;
     margin-left: -5px;
-    background-image: url('img/wounded_50w.png');
 }
 
 .center_integrity_token {

@@ -2099,23 +2099,30 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
         {
             var htmlIdOfTargetCard = 'player_' + playerLetterOfInfected + '_integrity_card_' + positionOfInfectedCard;
             var cardType = positionOfInfectedCard+''+playerLetterOfInfected;
+            var movingTokenHtmlId = "integrity_token_"+cardType;
 
-            if(positionOfInfectedCard < 4)
-            { // they don't already have 3 infection tokens
-                dojo.place(
-                        this.format_block( 'jstpl_integrityCardToken', {
-                            cardType: cardType,
-                            x: 0,
-                            y: this.woundedTokenHeight
-                        } ), htmlIdOfTargetCard );
+            if(!document.getElementById(movingTokenHtmlId))
+            { // this element doesn't already exist
 
-                dojo.addClass("integrity_token_"+cardType, "infection_token"); // add the infection token class
+                if(positionOfInfectedCard < 4)
+                { // they don't already have 3 infection tokens
+                    dojo.place(
+                            this.format_block( 'jstpl_integrityCardToken', {
+                                cardType: cardType,
+                                x: 0,
+                                y: this.woundedTokenHeight
+                            } ), htmlIdOfTargetCard );
+
+                    dojo.addClass(movingTokenHtmlId, "infection_token"); // add the infection token class
+                }
+
             }
 
-            return 'integrity_token_'+cardType;
+
+            return movingTokenHtmlId;
         },
 
-        placeAndMoveInfectionToken: function(playerLetterOfInfected, positionOfInfectedCard)
+        placeAndMoveInfectionToken: function(playerLetterOfInfected, positionOfInfectedCard, delay)
         {
             if(positionOfInfectedCard >3)
             { // they don't already have 3 infection tokens
@@ -2124,27 +2131,33 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
             var startingHtmlId = 'infection_tokens';
             var cardType = positionOfInfectedCard+''+playerLetterOfInfected;
-
-            dojo.place(
-                        this.format_block( 'jstpl_integrityCardToken', {
-                            cardType: cardType,
-                            x: 0,
-                            y: this.woundedTokenHeight
-                        } ), startingHtmlId );
-
             var movingTokenHtmlId = "integrity_token_"+cardType;
-            var destinationHtmlId = 'player_'+playerLetterOfInfected+'_integrity_card_'+positionOfInfectedCard;
-            //dojo.addClass(movingTokenHtmlId, "remove_top_left"); // remove top and left so it can move smoothly
-            dojo.addClass(movingTokenHtmlId, "infection_token"); // add the infection token class (must be done before moving)
 
-            var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 750, 2000);
-            dojo.connect(anim1, 'onEnd', function(node)
-            { // do the following after the animation ends
-              this.attachToNewParent( movingTokenHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
-              //dojo.addClass( movingTokenHtmlId, 'remove_top_left'); // highlight the gun that just moved
+            if(!document.getElementById(movingTokenHtmlId))
+            { // this element doesn't already exist
 
-            });
-            anim1.play();
+                dojo.place(
+                            this.format_block( 'jstpl_integrityCardToken', {
+                                cardType: cardType,
+                                x: 0,
+                                y: this.woundedTokenHeight
+                            } ), startingHtmlId );
+
+
+                var destinationHtmlId = 'player_'+playerLetterOfInfected+'_integrity_card_'+positionOfInfectedCard;
+                //dojo.addClass(movingTokenHtmlId, "remove_top_left"); // remove top and left so it can move smoothly
+                dojo.addClass(movingTokenHtmlId, "infection_token"); // add the infection token class (must be done before moving)
+
+                var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 750, delay);
+                dojo.connect(anim1, 'onEnd', function(node)
+                { // do the following after the animation ends
+                  this.attachToNewParent( movingTokenHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
+                  //dojo.addClass( movingTokenHtmlId, 'remove_top_left'); // highlight the gun that just moved
+
+                });
+                anim1.play();
+
+            }
 
             return movingTokenHtmlId;
         },
@@ -2153,48 +2166,61 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
         placeWoundedToken: function(woundedPlayerLetterOrder, leaderCardPosition, cardType)
         {
             var htmlIdOfLeaderCard = 'player_' + woundedPlayerLetterOrder + '_integrity_card_' + leaderCardPosition;
+            var movingTokenHtmlId = "integrity_token_"+cardType;
 
-            dojo.place(
-                    this.format_block( 'jstpl_integrityCardToken', {
-                        cardType: cardType,
-                        x: 0,
-                        y: 0
-                    } ), htmlIdOfLeaderCard );
+            if(!document.getElementById(movingTokenHtmlId))
+            { // this element doesn't already exist
 
-            dojo.addClass("integrity_token_"+cardType, "wounded_token"); // add the wounded token class
+                dojo.place(
+                        this.format_block( 'jstpl_integrityCardToken', {
+                            cardType: cardType,
+                            x: 0,
+                            y: 0
+                        } ), htmlIdOfLeaderCard );
 
-            return 'integrity_token_'+cardType;
+                dojo.addClass(movingTokenHtmlId, "wounded_token"); // add the wounded token class
+
+            }
+
+            return movingTokenHtmlId;
         },
 
         placeAndMoveWoundedToken: function(woundedPlayerLetterOrder, leaderCardPosition, cardType)
         {
+            cardType = cardType+"_sliding";
             var startingHtmlId = 'wounded_tokens';
-
-            dojo.place(
-                    this.format_block( 'jstpl_integrityCardToken', {
-                        cardType: cardType,
-                        x: 0,
-                        y: 0
-                    } ), startingHtmlId );
-
             var movingTokenHtmlId = "integrity_token_"+cardType;
 
+            if(!document.getElementById(movingTokenHtmlId))
+            { // this element doesn't already exist
 
-            var destinationHtmlId = 'player_' + woundedPlayerLetterOrder + '_integrity_card_' + leaderCardPosition;
+                dojo.place(
+                        this.format_block( 'jstpl_integrityCardToken', {
+                            cardType: cardType,
+                            x: 0,
+                            y: 0
+                        } ), startingHtmlId );
 
 
-            dojo.addClass(movingTokenHtmlId, "wounded_token"); // add the wounded token class (must be done before moving)
-            this.slideToObjectAndDestroy( movingTokenHtmlId, destinationHtmlId, 1000, 0 );
 
-            /*var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 750, 250);
-            dojo.connect(anim1, 'onEnd', function(node)
-            { // do the following after the animation ends
-                this.attachToNewParent( movingTokenHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
-                //dojo.style( movingTokenHtmlId, 'marginTop', '-10px' ); // move the token so it doesn't cover the name of the card and is visible when there is a infection token on it too
-                //dojo.addClass( movingTokenHtmlId, 'remove_top_left');
-            });
-            anim1.play();
-            */
+
+                var destinationHtmlId = 'player_' + woundedPlayerLetterOrder + '_integrity_card_' + leaderCardPosition;
+
+
+                dojo.addClass(movingTokenHtmlId, "wounded_token"); // add the wounded token class (must be done before moving)
+                this.slideToObjectAndDestroy( movingTokenHtmlId, destinationHtmlId, 1000, 0 );
+
+    /*
+                var anim1 = this.slideToObject(movingTokenHtmlId, destinationHtmlId, 750, 250);
+                dojo.connect(anim1, 'onEnd', function(node)
+                { // do the following after the animation ends
+                    this.attachToNewParent( movingTokenHtmlId, destinationHtmlId ); // move this in the DOM to the new player's integrity card holder (must be done BEFORE sliding because it breaks all connections to it)
+                    //dojo.style( movingTokenHtmlId, 'marginTop', '-10px' ); // move the token so it doesn't cover the name of the card and is visible when there is a infection token on it too
+                    //dojo.addClass( movingTokenHtmlId, 'remove_top_left');
+                });
+                anim1.play();
+    */
+            }
 
 
             return movingTokenHtmlId;
@@ -3594,7 +3620,11 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
             if(hasInfection)
             { // this integrity card has an infection on it
+                var htmlOfInfectedToken1 = this.placeInfectionToken(playerLetter, cardPosition); // place a new infection token so it has the correct id
+              /*
                 var infectionCardType = cardPosition+''+playerLetter;
+
+
                 dojo.place(
                             this.format_block( 'jstpl_integrityCardToken', {
                                 cardType: infectionCardType,
@@ -3603,7 +3633,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                             } ), idOfCard );
 
                             dojo.addClass("integrity_token_"+infectionCardType, "infection_token"); // add the infection token class
-
+              */
             }
 
             if(hasWound)
@@ -3735,8 +3765,17 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var positionOfInfectedCard = notif.args.card_position;
             var playerIdOfInfected = notif.args.player_id_of_infected;
             var playerLetterOfInfected = this.gamedatas.playerLetters[playerIdOfInfected].player_letter;
+            var fromBite = notif.args.from_bite;
+            var delay = 0; // the number of milliseconds to wait from when the infection token appears before it slides to the card
 
-            var tokenHtmlId = this.placeAndMoveInfectionToken(playerLetterOfInfected, positionOfInfectedCard); // put the token on the integrity card
+            if(fromBite)
+            {
+                  delay = 2000;
+            }
+
+            delay = 0; // this delay isn't worth it because sometimes you pause after the roll and sometimes you don't
+
+            var tokenHtmlId = this.placeAndMoveInfectionToken(playerLetterOfInfected, positionOfInfectedCard, delay); // put the token on the integrity card
         },
 
         notif_removeInfectionToken: function( notif )

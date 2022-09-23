@@ -2432,6 +2432,11 @@ class goodcopbadcop extends Table
 
 		function isIntegrityCardInfected($cardId)
 		{
+				if(is_null($cardId) || $cardId == '')
+				{
+						return false;
+				}
+
 				$value = self::getUniqueValueFromDb("SELECT has_infection FROM integrityCards WHERE card_id=$cardId LIMIT 1");
 				if($value == 0)
 				{ // this card is not infected
@@ -3211,12 +3216,20 @@ class goodcopbadcop extends Table
 
 				$integrityCards = self::getCollectionFromDb( $sql );
 
+				$cardPositionToInfect = 4; // default to the invalid card position 4
+
 				foreach($integrityCards as $card)
-				{ // go through each of this player's integrity cards
-						return $card['card_location_arg']; // return the first one we come to
+				{ // go through each of this player's uninfected integrity cards in random order
+						$cardPosition = $card['card_location_arg']; // 1, 2, 3
+						$isRevealed = $card['card_type_arg']; // 1 if revealed, 0 otherwise
+
+						if($cardPositionToInfect == 4 || $isRevealed == 1)
+						{ // this is the first infected card we're going through OR this card is revealed
+								$cardPositionToInfect = $cardPosition; // set the one we return to this one
+						}
 				}
 
-				return 4; // if there are none, return 4, otherwise return the card position
+				return $cardPositionToInfect; // if there are none, return 4, otherwise return the card position
 		}
 
 		function getCardListAsText($playerId)
@@ -3604,7 +3617,7 @@ class goodcopbadcop extends Table
 								return clienttranslate( 'All zombies are shot.' );
 
 						case 62: // Zombie Serum
-								return clienttranslate( 'Re-roll any Infection or Zombie Dice result.' );
+								return clienttranslate( 'Re-roll any Zombie Dice result.' );
 
 						case 61: // Transfusion Tube
 								return clienttranslate( 'Move up to 3 Infection Tokens to different Integrity cards.' );
@@ -3710,8 +3723,8 @@ class goodcopbadcop extends Table
 				$seenListCard2 = $this->getArrayOfPlayersWhoHaveSeenCard($cardId1);
 				$card1Wounded = $this->isCardWounded($cardId2); // true if this has a wounded token on it
 				$card2Wounded = $this->isCardWounded($cardId1); // true if this has a wounded token on it
-				$card1Infected = $this->isCardInfected($cardId2); // true if this has a wounded token on it
-				$card2Infected = $this->isCardInfected($cardId1); // true if this has a wounded token on it
+				$card1Infected = $this->isCardInfected($cardId2); // true if this has a infection token on it
+				$card2Infected = $this->isCardInfected($cardId1); // true if this has a infection token on it
 
 
 				self::notifyAllPlayers( "integrityCardsExchanged", clienttranslate( '${player_name} ${card1PositionText} card has been exchanged with ${player_name_2} ${card2PositionText} card.' ), array(
@@ -5859,15 +5872,14 @@ class goodcopbadcop extends Table
 			}
 			else
 			{ // this player is NOT holding a gun
-						if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-						{ // we are using the zombies expansion and the Infector is hidden
-								$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-						}
-						else
-						{
+						//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+						//{ // we are using the zombies expansion and the Infector is hidden
+						//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+						//}
+						//else
+						//{
 								$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-								//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
-						}
+						//}
 			}
 		}
 
@@ -6670,6 +6682,11 @@ class goodcopbadcop extends Table
 
 		function isCardInfected($cardId)
 		{
+						if(is_null($cardId) || $cardId == '')
+						{
+								return false;
+						}
+
 						$hasInfection = self::getUniqueValueFromDb("SELECT has_infection FROM integrityCards WHERE card_id=$cardId LIMIT 1");
 
 						if($hasInfection == 1)
@@ -6873,10 +6890,18 @@ class goodcopbadcop extends Table
 								}
 
 								$infectorCardId = $this->getInfectorCardId();
-								if($viewOnly == false && $infectorCardId == $cardId)
-								{ // the infector was investigated
-//throw new feException( "infectorCardId: $infectorCardId cardId:$cardId" );
-										$this->infectorFound($investigatedPlayerId, $cardPosition, $playerInvestigating);
+								if($viewOnly == false && $this->getGameStateValue('ZOMBIES_EXPANSION') == 2)
+								{ // we are using the ZOMBIES expansion and this was a real investigation (not just a view)
+
+										if($infectorCardId == $cardId)
+										{ // the infector was investigated
+		//throw new feException( "infectorCardId: $infectorCardId cardId:$cardId" );
+												$this->infectorFound($investigatedPlayerId, $cardPosition, $playerInvestigating);
+										}
+										else
+										{ // a card other than the infector card was investigated
+												$this->addInfectionToken($investigatedPlayerId, true, $cardPosition, false);
+										}
 								}
 						}
 				}
@@ -7067,6 +7092,18 @@ class goodcopbadcop extends Table
 						{ // this card is hidden
 								$this->rePlaceIntegrityCard($cardId);
 						}
+				}
+		}
+
+		// Reset ALL of a player's cards.
+		function rePlacePlayerCards($playerId)
+		{
+				$playerCards = $this->getIntegrityCardsForPlayer($playerId);
+				foreach($playerCards as $card)
+				{ // go through each of this player's cards
+						$cardId = $card['card_id'];
+						//$this->reverseHonestCrooked($cardId);
+						$this->rePlaceIntegrityCard($cardId);
 				}
 		}
 
@@ -7396,7 +7433,7 @@ class goodcopbadcop extends Table
 						self::incStat( 1, 'bites_taken', $targetPlayerId ); // increase end game player stat
 
 
-						$this->addInfectionToken($targetPlayerId, true); // add a infection token (if they don't already have 3)
+						$this->addInfectionToken($targetPlayerId, true, '', false); // add a infection token (if they don't already have 3)
 						$this->rollZombieDice($shooterPlayerId, $targetPlayerId); // roll a zombie die for each infection token they have and take action for each zombie die face
 				}
 				else
@@ -7442,8 +7479,6 @@ class goodcopbadcop extends Table
 
 										// give the target a wounded token
 										$this->woundPlayer($targetPlayerId); // wound the player
-
-										$this->setAllPlayerIntegrityCardsToRevealed($targetPlayerId); // reveal all of the target's cards in the database
 
 										$this->drawEquipmentCard($targetPlayerId, 1); // getting wounded gives you a free equipment card
 								}
@@ -7533,6 +7568,9 @@ class goodcopbadcop extends Table
 						  'player_id_of_leader_holder' => $playerId,
 						  'card_type' => $cardType
 				) );
+
+				$this->setAllPlayerIntegrityCardsToRevealed($playerId); // reveal all of the target's cards in the database
+				$this->rePlacePlayerCards($playerId); // re-place ALL integrity cards at the end to correctly show their status, including Planted Evidence and Surveillance Camera and Disguise
 		}
 
 		// Turn into a zombie and notify all players (but do not drop guns or reveal cards).
@@ -7665,14 +7703,7 @@ class goodcopbadcop extends Table
 
 				$this->setAllPlayerIntegrityCardsToRevealed($playerId); // reveal all of the target's cards in the database
 
-				// re-place integrity cards at the end to correctly show their status, including Planted Evidence and Surveillance Camera and Disguise
-				$playerCards = $this->getIntegrityCardsForPlayer($playerId);
-				foreach($playerCards as $card)
-				{ // go through each of this player's cards
-						$cardId = $card['card_id'];
-						//$this->reverseHonestCrooked($cardId);
-						$this->rePlaceIntegrityCard($cardId);
-				}
+				$this->rePlacePlayerCards($playerId); // re-place ALL integrity cards at the end to correctly show their status, including Planted Evidence and Surveillance Camera and Disguise
 		}
 
 		function revivePlayer($playerId)
@@ -8690,7 +8721,7 @@ class goodcopbadcop extends Table
 										throw new BgaUserException( self::_("We do not have a valid target for this Equipment.") );
 								}
 
-								$this->addInfectionToken($target1, true); // give them an infection token
+								$this->addInfectionToken($target1, true, '', false); // give them an infection token
 
 								$armedZombies = $this->getAllArmedZombies(); // get all zombies who are armed
 								foreach($armedZombies as $zombie)
@@ -8859,8 +8890,10 @@ class goodcopbadcop extends Table
 						$isSeen = $this->isSeen($playerAsking, $integrityCardOwner, $cardPosition);
 						$isRevealed = $this->getCardRevealedStatus($integrityCardId); //1 if it is revealed
 
-						if($isSeen != 0 || $isRevealed == 1)
-						{ // hey... this card has already been seen or is revealed
+						//if($isSeen != 0 || $isRevealed == 1)
+						//{ // hey... this card has already been seen or is revealed
+						if($isRevealed == 1)
+						{ // hey... this card has already been revealed
 								throw new BgaUserException( self::_("You can only investigate hidden cards.") );
 						}
 
@@ -9021,17 +9054,14 @@ class goodcopbadcop extends Table
 						}
 						else
 						{ // the usual case
-								if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-								{ // we are using the zombies expansion and the Infector is hidden
-
-									//throw new feException( "rolling infection" );
-										$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-								}
-								else
-								{
+								//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+								//{ // we are using the zombies expansion and the Infector is hidden
+								//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+								//}
+								//else
+								//{
 										$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-										//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
-								}
+								//}
 						}
 				}
 				elseif($stateName == "choosePlayer" || $stateName == "chooseAnotherPlayer" || $stateName == "choosePlayerNoCancel")
@@ -9273,15 +9303,14 @@ class goodcopbadcop extends Table
 		{
 				self::checkAction( 'clickEndTurnButton' ); // make sure we can take this action from this state
 
-				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-				{ // we are using the zombies expansion and the Infector is hidden
-						$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-				}
-				else
-				{
+				//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+				//{ // we are using the zombies expansion and the Infector is hidden
+				//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+				//}
+				//else
+				//{
 						$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-						//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
-				}
+				//}
 		}
 
 		function clickedSkipButton()
@@ -9292,15 +9321,14 @@ class goodcopbadcop extends Table
 						'player_name' => self::getActivePlayerName()
 				) );
 
-				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-				{ // we are using the zombies expansion and the Infector is hidden
-						$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-				}
-				else
-				{
+				//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+				//{ // we are using the zombies expansion and the Infector is hidden
+				//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+				//}
+				//else
+				//{
 						$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-						//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
-				}
+				//}
 		}
 
 		// This is called in a "game" state after someone picks up a gun from an Equipment card and then they aim it. We need to figure out which state we need
@@ -9357,27 +9385,25 @@ class goodcopbadcop extends Table
 						}
 						elseif($equipmentUsedInState == "chooseEquipmentToPlayReactEndOfTurn")
 						{
-								if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-								{ // we are using the zombies expansion and the Infector is hidden
-										$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-								}
-								else
-								{
+								//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+								//{ // we are using the zombies expansion and the Infector is hidden
+								//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+								//}
+								//else
+								//{
 										$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-										//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
-								}
+								//}
 						}
 						else
 						{ // we shouldn't get here
-								if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-								{ // we are using the zombies expansion and the Infector is hidden
-										$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-								}
-								else
-								{
+								//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+								//{ // we are using the zombies expansion and the Infector is hidden
+								//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+								//}
+								//else
+								//{
 										$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-										//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
-								}
+								//}
 						}
 
 						$this->discardCardsBeingPlayed(); // discard any cards in play (like Weapon Crate after everyone has aimed or Taser after they have aimed)
@@ -9418,27 +9444,25 @@ class goodcopbadcop extends Table
 				}
 				elseif($playedInState == "chooseEquipmentToPlayReactEndOfTurn")
 				{
-						if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-						{ // we are using the zombies expansion and the Infector is hidden
-								$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-						}
-						else
-						{
+						//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+						//{ // we are using the zombies expansion and the Infector is hidden
+						//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+						//}
+						//else
+						//{
 								$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-								//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
-						}
+						//}
 				}
 				else
 				{ // we shouldn't get here
-						if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-						{ // we are using the zombies expansion and the Infector is hidden
-								$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-						}
-						else
-						{
+						//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+						//{ // we are using the zombies expansion and the Infector is hidden
+						//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+						//}
+						//else
+						//{
 								$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-								//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
-						}
+						//}
 				}
 		}
 
@@ -9770,7 +9794,7 @@ class goodcopbadcop extends Table
 
 								case 10: // add extra infection token
 								case 11: // add extra infection token
-										$this->addInfectionToken($playerBeingBitten, true); // give them an extra Infection Token and notify them
+										$this->addInfectionToken($playerBeingBitten, true, '', true); // give them an extra Infection Token and notify them
 								break;
 						}
 				}
@@ -9876,23 +9900,35 @@ class goodcopbadcop extends Table
 				}
 		}
 
-		function addInfectionToken($playerId, $shouldWeNotify)
+		function addInfectionToken($playerId, $shouldWeNotify, $integrityCardPositionGettingToken, $fromBiteRoll)
 		{
+				if($integrityCardPositionGettingToken == null || $integrityCardPositionGettingToken == '')
+				{ // the integrity card position was not given
 						$integrityCardPositionGettingToken = $this->getIntegrityCardPositionForNextInfectionToken($playerId); // find the next card position (1,2,3) to get an Infection Token
-						$this->addInfectionTokenToCard($playerId, $integrityCardPositionGettingToken); // set the database to show this card now has an infection token
+				}
 
-						if($shouldWeNotify)
-						{
-								$playerBittenName = $this->getPlayerNameFromPlayerId($playerId); // the name of the player being bitten
+				$cardId = $this->getIntegrityCardId($playerId, $integrityCardPositionGettingToken);
+				$isCardInfected = $this->isCardInfected($cardId); // true if this has a infection token on it
+				if($isCardInfected)
+				{ // this card is already infected
+						return; // we do not want to infect twice
+				}
 
-								self::notifyAllPlayers( "addInfectionToken", clienttranslate( '${player_name} has been infected.' ), array(
+				$this->addInfectionTokenToCard($playerId, $integrityCardPositionGettingToken); // set the database to show this card now has an infection token
+
+				if($shouldWeNotify)
+				{
+						$playerBittenName = $this->getPlayerNameFromPlayerId($playerId); // the name of the player being bitten
+
+						self::notifyAllPlayers( "addInfectionToken", clienttranslate( '${player_name} has been infected.' ), array(
 														'player_id_of_infected' => $playerId,
 														'card_position' => $integrityCardPositionGettingToken,
-														'player_name' => $playerBittenName
-								) );
-						}
+														'player_name' => $playerBittenName,
+														'from_bite' => $fromBiteRoll
+						) );
+				}
 
-						return $integrityCardPositionGettingToken;
+				return $integrityCardPositionGettingToken;
 		}
 
 		function moveInfectionToken($cardIdSource, $cardIdDestination)
@@ -9984,7 +10020,7 @@ class goodcopbadcop extends Table
 						if($randomValue < 2)
 						{	// we rolled an infection symbol and we aren't maxed out on infection tokens yet
 
-								$infectedCardPosition = $this->addInfectionToken($playerWhoseTurnItIs, true);
+								$infectedCardPosition = $this->addInfectionToken($playerWhoseTurnItIs, true, '', false);
 						}
 						else
 						{ // we are NOT adding an infection token
@@ -10011,15 +10047,14 @@ class goodcopbadcop extends Table
 					$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 					$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
 
-						if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-						{ // we are using the zombies expansion and the Infector is hidden and we haven't rolled it yet this turn
-								$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-						}
-						else
-						{
+						//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+						//{ // we are using the zombies expansion and the Infector is hidden and we haven't rolled it yet this turn
+						//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+						//}
+						//else
+						//{
 								$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-								//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
-						}
+						//}
 				}
 
 				$collectorNumber = $this->getCollectorNumberFromId($equipmentId);
@@ -10074,15 +10109,14 @@ class goodcopbadcop extends Table
 						}
 						elseif($stateName == "askEndTurnReaction" || $stateName == "chooseEquipmentToPlayReactEndOfTurn")
 						{
-								if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-								{ // we are using the zombies expansion and the Infector is hidden
-										$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-								}
-								else
-								{
+								//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+								//{ // we are using the zombies expansion and the Infector is hidden
+								//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+								//}
+								//else
+								//{
 										$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-										//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
-								}
+								//}
 						}
 						elseif($stateName == "chooseEquipmentToPlayReactInvestigate")
 						{
@@ -10219,28 +10253,26 @@ class goodcopbadcop extends Table
 								break;
 
 								case "discardEquipment":
-										if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-										{ // we are using the zombies expansion and the Infector is hidden
-												$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-										}
-										else
-										{
+										//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+										//{ // we are using the zombies expansion and the Infector is hidden
+										//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+										//}
+										//else
+										//{
 												$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-												//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
-										}
+										//}
 								break;
 
 								case "askAimMustReaim":
 								case "askAim":
-										if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-										{ // we are using the zombies expansion and the Infector is hidden
-												$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-										}
-										else
-										{
+										//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+										//{ // we are using the zombies expansion and the Infector is hidden
+										//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+										//}
+										//else
+										//{
 												$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-												//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
-										}
+										//}
 								break;
 
 								case "aimAtPlayer":
@@ -10276,15 +10308,14 @@ class goodcopbadcop extends Table
 								break;
 
                 default:
-										if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-										{ // we are using the zombies expansion and the Infector is hidden
-												$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-										}
-										else
-										{
+										//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+										//{ // we are using the zombies expansion and the Infector is hidden
+										//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+										//}
+										//else
+										//{
 												$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-												//$this->gamestate->nextState( "endTurnReaction" ); // allow end of turn equipment reactions
-										}
+										//}
                 	break;
             }
 
