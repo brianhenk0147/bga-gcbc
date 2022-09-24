@@ -5374,6 +5374,11 @@ class goodcopbadcop extends Table
 												throw new BgaUserException( self::_("Please target the same zombie as you did with your first card ($nameOfOriginalZombie).") );
 										}
 
+										if($integrityCardId == $target1)
+										{
+												throw new BgaUserException( self::_("Please target a card that you have not previously targeted.") );
+										}
+
 										// notify player: "Now choose where the Infection Token will move." Also highlight the selection.
 										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now choose an HONEST or CROOKED card of a non-Zombie.' ), array(
 																				 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
@@ -5406,6 +5411,11 @@ class goodcopbadcop extends Table
 											throw new BgaUserException( self::_("Please target an HONEST or CROOKED card.") );
 									}
 
+									if($integrityCardId == $target2)
+									{
+											throw new BgaUserException( self::_("Please target a card that you have not previously targeted.") );
+									}
+
 									// notify player: "Please select the next Infection Token you want to move." Also highlight the selection.
 									self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now you may choose another card from a Zombie.' ), array(
 																			 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
@@ -5432,6 +5442,12 @@ class goodcopbadcop extends Table
 										{ // we're targeting an integrity card of a different zombie than when we started targeting
 												$nameOfOriginalZombie = $this->getPlayerNameFromPlayerId($this->getIntegrityCardOwner($target1));
 												throw new BgaUserException( self::_("Please target the same zombie as you did with your first card ($nameOfOriginalZombie).") );
+										}
+
+										if($integrityCardId == $target1 ||
+										$integrityCardId == $target3)
+										{
+												throw new BgaUserException( self::_("Please target a card that you have not previously targeted.") );
 										}
 
 										// notify player: "Now choose where the Infection Token will move." Also highlight the selection.
@@ -5466,6 +5482,12 @@ class goodcopbadcop extends Table
 									$this->getCardTypeFromCardId($integrityCardId) != 'crooked')
 									{ // they are trying to target a Leader or Infector card
 											throw new BgaUserException( self::_("Please target an HONEST or CROOKED card.") );
+									}
+
+									if($integrityCardId == $target2 ||
+									$integrityCardId == $target4)
+									{
+											throw new BgaUserException( self::_("Please target a card that you have not previously targeted.") );
 									}
 
 									// notify player: "Please select the next Infection Token you want to move." Also highlight the selection.

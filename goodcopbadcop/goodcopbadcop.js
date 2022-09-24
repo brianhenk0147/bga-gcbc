@@ -4147,7 +4147,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
                 if(document.getElementById(htmlOfInfectedToken1))
                 { // our data exists
-                    this.destroy(htmlOfInfectedToken1);
+                    dojo.destroy(htmlOfInfectedToken1);
                 }
             }
 
@@ -4167,7 +4167,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
                 if(document.getElementById(htmlOfInfectedToken2))
                 { // the previous card had an infection token
-                    this.destroy(htmlOfInfectedToken2); // destroy it so we don't have duplicate tokens out there
+                    dojo.destroy(htmlOfInfectedToken2); // destroy it so we don't have duplicate tokens out there
                 }
             }
 
