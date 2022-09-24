@@ -475,7 +475,7 @@ var jstpl_currentPlayerToken = '<div id="current_player_token" style="background
 
 var jstpl_toggle = '<div id="toggle_container">\
                         <label class="switch">\
-                            <input id="toggle_EquipmentReactions" type="checkbox" checked>\
+                            <input id="toggle_EquipmentReactions" type="checkbox" ${isChecked}>\
                             <span class="slider round"></span>\
                         </label>\
                         <span class="toggle_label">Skip Equipment Reactions</span>\

@@ -152,8 +152,10 @@ class goodcopbadcop extends Table
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $sql = "SELECT player_id id, player_score score FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
+
 				$result['playerLetters'] = $this->getPlayerLetterList($currentPlayerId, $result['players']);
 				$result['equipmentDetails'] = $this->getEquipmentDetails();
+				$result['skipEquipmentReactions'] = $this->shouldWeSkipEquipmentReactions($currentPlayerId);
 
 
 				$result['zombieExpansion'] = $this->getGameStateValue('ZOMBIES_EXPANSION'); // send whether we have the zombies expansion activated
@@ -2990,7 +2992,6 @@ class goodcopbadcop extends Table
 
 		function didNonZombiePlayerJustShootAZombie($playerId)
 		{
-			return false;
 				// get all guns held by this player
 				$sql = "SELECT * FROM `guns` ";
 				$sql .= "WHERE gun_held_by=$playerId ";
@@ -3049,7 +3050,7 @@ class goodcopbadcop extends Table
 				}
 		}
 
-		function isPlayerHoldingPlayableEquipment($playerId)
+		function isPlayerHoldingPlayableEquipment($playerId, $nextGameState)
 		{
 				$hasPlayableEquipment = false;
 				$equipmentInHand = $this->getEquipmentInPlayerHand($playerId);
@@ -3059,7 +3060,7 @@ class goodcopbadcop extends Table
 						$equipmentId = $equipmentCard['card_id'];
 						$equipmentName = $equipmentCard['equipment_name'];
 
-						if($this->validateEquipmentUsage($equipmentId, $playerId, false))
+						if($this->validateEquipmentUsage($equipmentId, $playerId, false, $nextGameState))
 						{ // we CAN use this now
 								$hasPlayableEquipment = true;
 						}
@@ -3639,7 +3640,7 @@ class goodcopbadcop extends Table
 			switch($collectorNumber)
 			{
 					case 61: // Transfusion Tube
-							return clienttranslate( 'Choose an Infection Token you want to move.' );
+							return clienttranslate( 'Choose an infected Integrity Card.' );
 
 					case 66: // Machete
 							return clienttranslate( 'Choose an Integrity Card of a Zombie.' );
@@ -3780,7 +3781,6 @@ class goodcopbadcop extends Table
 
 				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2)
 				{ // we are using the zombies expansion
-
 
 						// UNZOMBIFY NEW LEADERS
 						if($this->isPlayerZombie($oldOwnerOfCardId1) && $this->isPlayerALeader($oldOwnerOfCardId1))
@@ -3984,7 +3984,7 @@ class goodcopbadcop extends Table
 						$isHoldingEquipment = $this->isPlayerHoldingEquipment($playerId); // true if the player is holding equipment
 						if($this->skipUnplayableReactions())
 						{ // only make them active if they have an equipment that is usable now
-								$isHoldingEquipment = $this->isPlayerHoldingPlayableEquipment($playerId); // true if the player is holding playable equipment
+								$isHoldingEquipment = $this->isPlayerHoldingPlayableEquipment($playerId, ''); // true if the player is holding playable equipment
 						}
 
 						if(!$isHoldingEquipment || $isEliminated)
@@ -4014,15 +4014,17 @@ class goodcopbadcop extends Table
 				foreach( $players as $player )
 				{ // go through each player
 						$playerId = $player['player_id'];
+
+						$wantsToSkipReactions = $this->shouldWeSkipEquipmentReactions($playerId); // this player enabled the toggle that skips equipment reactions
 						$isEliminated = $this->isPlayerEliminated($playerId); // true if this player is eliminated (might not be needed)
 						$isHoldingEquipment = $this->isPlayerHoldingEquipment($playerId); // true if the player is holding equipment
 						if($this->skipUnplayableReactions())
 						{ // only make them active if they have an equipment that is usable now
-								$isHoldingEquipment = $this->isPlayerHoldingPlayableEquipment($playerId); // true if the player is holding playable equipment
+								$isHoldingEquipment = $this->isPlayerHoldingPlayableEquipment($playerId, $nextGameState); // true if the player is holding playable equipment
 						}
 
-						if(!$isHoldingEquipment || $isEliminated)
-						{ // this player is not holding equipment or they are eliminated
+						if(!$isHoldingEquipment || $isEliminated || $wantsToSkipReactions)
+						{ // this player is not holding equipment or they are eliminated or they don't want to be asked to react with equipment
 								if($activePlayers == 0 && $checkedPlayers == (count($players) - 1))
 								{ // we are checking the last player and no one has been active yet
 
@@ -4034,7 +4036,7 @@ class goodcopbadcop extends Table
 								}
 						}
 						else
-						{ // this player is alive and holding equipment
+						{ // this player is alive and holding equipment and wants to react if they can
 								$activePlayers++; // just add to the count so we know how many players are active
 						}
 
@@ -4134,7 +4136,7 @@ class goodcopbadcop extends Table
 		}
 
 		// Return true if it is valid to play this equipment right now. Throw an error otherwise to explain why it can't be used.
-		function validateEquipmentUsage($equipmentCardId, $playerIdUsing, $checkStateToo)
+		function validateEquipmentUsage($equipmentCardId, $playerIdUsing, $checkStateToo, $nextGameState)
 		{
 				$cardLocation = $this->getEquipmentCardLocation($equipmentCardId);
 				if($cardLocation != 'hand')
@@ -4402,16 +4404,16 @@ class goodcopbadcop extends Table
 							$numberInfectionDiceRolled = count($this->getInfectionDiceRolled());
 							$numberZombieDiceRolled = count($this->getZombieDiceRolled());
 
-							if($checkStateToo && (($stateName == "chooseEquipmentToPlayReactEndOfTurn" && $numberInfectionDiceRolled > 0) ||
-								 ($stateName == "chooseEquipmentToPlayReactShoot" && $numberZombieDiceRolled > 0) ||
-								 ($stateName == "chooseEquipmentToPlayReactBite" && $numberZombieDiceRolled > 0) ||
-								 ($stateName == "askBiteReaction" && $numberZombieDiceRolled > 0)) ||
-								 !$checkStateToo)
-							{ // we're checking the state and the infection or zombie dice were just rolled OR we're not checking state
+
+
+							if($numberZombieDiceRolled > 0)
+							{ // zombie dice were rolled this turn
+
 									return true;
 							}
 							else
 							{ // we are checking the state but we are not in the correct state
+								//throw new feException( "State Name:$stateName and Next State: $nextGameState and numberZombieDiceRolled:$numberZombieDiceRolled");
 									return false;
 							}
 
@@ -5193,6 +5195,11 @@ class goodcopbadcop extends Table
 												throw new BgaUserException( self::_("Please target an infected card.") );
 										}
 
+										if($integrityCardId == $target1)
+										{ // they are trying to move the same token twice
+												throw new BgaUserException( self::_("Please select a different infected card than you previously selected.") );
+										}
+
 										// notify player: "Now choose where the Infection Token will move." Also highlight the selection.
 										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now choose where the Infection Token should move.' ), array(
 																				 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
@@ -5209,6 +5216,11 @@ class goodcopbadcop extends Table
 										if($this->isIntegrityCardInfected($integrityCardId))
 										{ // they are trying to target an Integrity Card that doesn't have an infection token
 												throw new BgaUserException( self::_("Please target a card that is NOT infected where your previous selection will move.") );
+										}
+
+										if($integrityCardId == $target2)
+										{ // they are trying to move two tokens to one card
+												throw new BgaUserException( self::_("Please select a different target card than you have already selected.") );
 										}
 
 										// notify player: "Please select the next Infection Token you want to move." Also highlight the selection.
@@ -5229,6 +5241,11 @@ class goodcopbadcop extends Table
 												throw new BgaUserException( self::_("Please target an infected card.") );
 										}
 
+										if($integrityCardId == $target1 || $integrityCardId == $target3)
+										{ // they are trying to move the same token twice
+												throw new BgaUserException( self::_("Please select a different infected card than you previously selected.") );
+										}
+
 										// notify player: "Now choose where the Infection Token will move." Also highlight the selection.
 										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now choose where the Infection Token should move.' ), array(
 																				 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
@@ -5245,6 +5262,11 @@ class goodcopbadcop extends Table
 										if($this->isIntegrityCardInfected($integrityCardId))
 										{ // they are trying to target an Integrity Card that doesn't have an infection token
 												throw new BgaUserException( self::_("Please target a card that is NOT infected where your previous selection will move.") );
+										}
+
+										if($integrityCardId == $target2 || $integrityCardId == $target4)
+										{ // they are trying to move two tokens to one card
+												throw new BgaUserException( self::_("Please select a different target card than you have already selected.") );
 										}
 
 										return true;
@@ -5327,11 +5349,11 @@ class goodcopbadcop extends Table
 										}
 
 										// notify player: "Please select the next Infection Token you want to move." Also highlight the selection.
-										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now you may choose another HONEST or CROOKED card of a Zombie.' ), array(
+										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now you may choose another card from a Zombie.' ), array(
 																				 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
 																				 'cardPositionTargeted' => $cardPositionTargeted,
 																				 'cardIdTargeted' => $integrityCardId,
-																				 'descriptionText' => clienttranslate( 'Now you may choose another HONEST or CROOKED card of a Zombie.' )
+																				 'descriptionText' => clienttranslate( 'Now you may choose another card from a Zombie.' )
 										) );
 
 										return true;
@@ -5385,11 +5407,11 @@ class goodcopbadcop extends Table
 									}
 
 									// notify player: "Please select the next Infection Token you want to move." Also highlight the selection.
-									self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now you may choose another HONEST or CROOKED card of a Zombie.' ), array(
+									self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now you may choose another card from a Zombie.' ), array(
 																			 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
 																			 'cardPositionTargeted' => $cardPositionTargeted,
 																			 'cardIdTargeted' => $integrityCardId,
-																			 'descriptionText' => clienttranslate( 'Now you may choose another HONEST or CROOKED card of a Zombie.' )
+																			 'descriptionText' => clienttranslate( 'Now you may choose another card from a Zombie.' )
 									) );
 
 									return true;
@@ -5447,11 +5469,11 @@ class goodcopbadcop extends Table
 									}
 
 									// notify player: "Please select the next Infection Token you want to move." Also highlight the selection.
-									self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now you may choose another HONEST or CROOKED card of a Zombie.' ), array(
+									self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Now you may choose another card from a Zombie.' ), array(
 																			 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
 																			 'cardPositionTargeted' => $cardPositionTargeted,
 																			 'cardIdTargeted' => $integrityCardId,
-																			 'descriptionText' => clienttranslate( 'Now you may choose another HONEST or CROOKED card of a Zombie.' )
+																			 'descriptionText' => clienttranslate( 'Now you may choose another card from a Zombie.' )
 									) );
 
 									return true;
@@ -6565,8 +6587,6 @@ class goodcopbadcop extends Table
 
 		function setGunShotThisTurn($gunId, $value)
 		{
-			return;
-
 				$sqlUpdate = "UPDATE guns SET ";
 				$sqlUpdate .= "gun_fired_this_turn=$value WHERE ";
 				$sqlUpdate .= "gun_id=$gunId";
@@ -7933,7 +7953,7 @@ class goodcopbadcop extends Table
 
 						//$buttonLabel = "Use $equipmentName";
 						$buttonLabel = sprintf( self::_("Use %s"), $equipmentName );
-						if($this->validateEquipmentUsage($equipmentId, $playerWhoseTurnItIs, true))
+						if($this->validateEquipmentUsage($equipmentId, $playerWhoseTurnItIs, true, ''))
 						{ // we CAN use this now
 								$isDisabled = false;
 						}
@@ -9230,7 +9250,7 @@ class goodcopbadcop extends Table
 				else
 				{ // we have clicked on this equipment to use it
 
-						if(!$this->validateEquipmentUsage($equipmentIdClicked, $activePlayerId, true))
+						if(!$this->validateEquipmentUsage($equipmentIdClicked, $activePlayerId, true, ''))
 						{ // we cannot use this equipment right now
 								throw new BgaUserException( self::_("You cannot use this Equipment right now.") );
 						}
@@ -9605,6 +9625,7 @@ class goodcopbadcop extends Table
 				}
 
 				$this->discardSingleActiveTurnCards(); // discard any cards that are active for a turn (coffee, restraining order, riot shield, etc.)
+				$this->clearDieValues(); // reset the die values
 
 				$newActivePlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 				$this->setGameStateValue("CURRENT_PLAYER", $newActivePlayer);

@@ -84,7 +84,7 @@ function (dojo, declare) {
             this.initializeActiveEquipment(this.gamedatas.playerLetters);
             this.initializeEquipmentList(this.gamedatas.equipmentList);
             this.initializeZombieDice();
-            this.initializePreferenceToggles();
+            this.initializePreferenceToggles(this.gamedatas.skipEquipmentReactions);
 
             // Setting up player boards
             var numberOfPlayers = 0;
@@ -408,7 +408,7 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-//            console.log("onUpdateActionButtons state " + stateName);
+            console.log("onUpdateActionButtons state " + stateName);
 
 
             if( this.isCurrentPlayerActive() )
@@ -1508,19 +1508,24 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             }
         },
 
-        initializePreferenceToggles : function()
+        initializePreferenceToggles : function(skipEquipmentReactions)
         {
             // insert toggle into right-side-first-part
             //var htmlIdOfDestination = "maintitlebar_content";
             var htmlIdOfDestination = "player_board_"+this.player_id;
 
-            //if(this.gamedatas.playerLetters[this.player_id])
-            if(false)
+            var isChecked = 'checked';
+            if(!skipEquipmentReactions)
+            {
+                isChecked = ''; // do NOT skip equipment reactions
+            }
+
+            if(this.gamedatas.playerLetters[this.player_id])
             { // not a spectator
 
                 dojo.place(
                         this.format_block( 'jstpl_toggle', {
-
+                          isChecked: isChecked
                         } ), htmlIdOfDestination );
 
                         //var htmlHandEquipmentPlacing = "<div id=player_board_hand_equipment_"+playerLetter+" class=player_board_hand_equipment><div>";
@@ -4119,15 +4124,16 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 // place the wounded token
                 var htmlOfWoundedToken2 = this.placeWoundedToken(playerLetter2, card2Position, card2Type); // put the token on the integrity card
 
-                if(document.getElementById(htmlOfWoundedToken2) && card1Rotation)
+                if(document.getElementById(htmlOfWoundedToken2) && card2Rotation)
                 { // our data exists
-                    dojo.style(htmlOfWoundedToken2, 'transform', 'rotate('+card1Rotation+'deg)'); // rotate wounded token
+                    dojo.style(htmlOfWoundedToken2, 'transform', 'rotate('+card2Rotation+'deg)'); // rotate wounded token
                 }
             }
 
             // INFECTED TOKENS
             if(card1Infected)
-            {
+            { // this card is infected
+
                 // place a wounded token
                 var htmlOfInfectedToken1 = this.placeInfectionToken(playerLetter1, card1Position); // place a new infection token so it has the correct id
 
@@ -4136,15 +4142,32 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                     dojo.style(htmlOfInfectedToken1, 'transform', 'rotate('+card1Rotation+'deg)'); // rotate wounded token
                 }
             }
+            else
+            { // this card is NOT infected
+
+                if(document.getElementById(htmlOfInfectedToken1))
+                { // our data exists
+                    this.destroy(htmlOfInfectedToken1);
+                }
+            }
 
             if(card2Infected)
             {
+
                 // place the wounded token
                 var htmlOfInfectedToken2 = this.placeInfectionToken(playerLetter2, card2Position); // place a new infection token so it has the correct id
 
-                if(document.getElementById(htmlOfInfectedToken2) && card1Rotation)
-                { // our data exists
-                    dojo.style(htmlOfInfectedToken2, 'transform', 'rotate('+card1Rotation+'deg)'); // rotate wounded token
+                if(document.getElementById(htmlOfInfectedToken2) && card2Rotation)
+                {  // the previous card had an infection token
+                    dojo.style(htmlOfInfectedToken2, 'transform', 'rotate('+card2Rotation+'deg)'); // destroy it so we don't have duplicate tokens out there
+                }
+            }
+            else
+            { // this card is NOT infected
+
+                if(document.getElementById(htmlOfInfectedToken2))
+                { // the previous card had an infection token
+                    this.destroy(htmlOfInfectedToken2); // destroy it so we don't have duplicate tokens out there
                 }
             }
 
