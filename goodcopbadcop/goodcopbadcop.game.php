@@ -6609,6 +6609,11 @@ class goodcopbadcop extends Table
 
 		function setGunShotThisTurn($gunId, $value)
 		{
+				if(is_null($gunId) || $gunId == '')
+				{
+						return; // do nothing if there is an invalid gun id
+				}
+
 				$sqlUpdate = "UPDATE guns SET ";
 				$sqlUpdate .= "gun_fired_this_turn=$value WHERE ";
 				$sqlUpdate .= "gun_id=$gunId";
