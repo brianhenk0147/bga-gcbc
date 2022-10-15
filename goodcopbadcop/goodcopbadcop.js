@@ -48,6 +48,14 @@ function (dojo, declare) {
             this.dieHeight = 63;
 
             this.EXTRA_DESCRIPTION_TEXT = ''; // this is only set when playing equipment to give specific direction to the player
+
+            this.honestTranslated = _("HONEST");
+            this.crookedTranslated = _("CROOKED");
+            this.agentTranslated = _("AGENT");
+            this.kingpinTranslated = _("KINGPIN");
+            this.infectorTranslated = _("INFECTOR");
+            this.skipEquipmentTranslated = _("Skip Equipment Reactions");
+            this.skipEquipmentTranslated = _("Equipment Reference");
         },
 
         /*
@@ -1523,15 +1531,18 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             if(this.gamedatas.playerLetters[this.player_id])
             { // not a spectator
 
+                var equipmentReactionsLabel = _('Skip Equipment Reactions');
+
                 dojo.place(
                         this.format_block( 'jstpl_toggle', {
-                          isChecked: isChecked
+                          isChecked: isChecked,
+                          label: equipmentReactionsLabel
                         } ), htmlIdOfDestination );
 
                         //var htmlHandEquipmentPlacing = "<div id=player_board_hand_equipment_"+playerLetter+" class=player_board_hand_equipment><div>";
                         //dojo.place( htmlHandEquipmentPlacing, htmlBoardDestination );
 
-                var tooltipHtml = '<div>If this is enabled, you will not be asked if you want to react to opponent actions with your Equipment.</div>';
+                var tooltipHtml = '<div>' + _('If this is enabled, you will not be asked if you want to react to opponent actions with your Equipment.') + '</div>';
                 this.addTooltipHtml( 'toggle_container', tooltipHtml, 0 );
 
                 dojo.connect( $(toggle_EquipmentReactions), 'onclick', this, 'clickToggle_EquipmentReactions' ); // re-add the onclick connection
@@ -1746,21 +1757,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
         placeIntegrityCard: function(playerLetter, cardPosition, visibilityToYou, cardType, rotation, isHidden, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera)
         {
             var visibilityOffset = this.getVisibilityOffset(visibilityToYou); // get sprite X value for this card type
-
-            var modifiedCardType = cardType;
-            if(affectedByPlantedEvidence)
-            {
-                if(modifiedCardType == 'honest')
-                {
-                    modifiedCardType = 'crooked';
-                }
-                else if(modifiedCardType == 'crooked')
-                {
-                    modifiedCardType = 'honest';
-                }
-            }
-
-            var cardTypeOffset = this.getCardTypeOffset(modifiedCardType); // get sprite Y value for this card type
+            var cardTypeOffset = this.getCardTypeOffset(cardType, affectedByPlantedEvidence); // get sprite Y value for this card type
 
             var cardHolderDiv = 'player_'+playerLetter+'_integrity_card_'+cardPosition+'_holder'; // html ID of the card's container
             var cardDiv = 'player_'+playerLetter+'_integrity_card_'+cardPosition; // HTML ID of the new card
@@ -1824,8 +1821,9 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var isHiddenText = this.convertIsHiddenToText(isHidden, affectedByDisguise, affectedBySurveillanceCamera); // convert whether it is hidden to a translated text
             var cardTypeText = this.convertCardTypeToText(cardType, affectedByPlantedEvidence); // convert the type of card to a translated version
             var positionText = this.convertCardPositionToText(cardPositionInt); // convert card position (1,2,3) to text (LEFT,MIDDLE,RIGHT)
+            var playersSeenText = this.convertPlayersSeenToText(playersSeen);
 
-            var html = '<div><div><b>'+ typeLabel + '</b> '+ cardTypeText +'</div><div><b>'+ stateLabel +'</b> '+ isHiddenText +'</div><div><b>'+ positionLabel + '</b> '+ positionText +'</div><div><b>'+ playersSeenLabel + '</b> '+ playersSeen + '</div></div>';
+            var html = '<div><div><b>'+ typeLabel + '</b> '+ cardTypeText +'</div><div><b>'+ stateLabel +'</b> '+ isHiddenText +'</div><div><b>'+ positionLabel + '</b> '+ positionText +'</div><div><b>'+ playersSeenLabel + '</b> '+ playersSeenText + '</div></div>';
             var delay = 0; // any delay before it appears
             this.addTooltipHtml( htmlId, html, delay ); // add the tooltip with the above configuration
         },
@@ -1868,22 +1866,35 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
           }
         },
 
-        getCardTypeOffset: function( cardType )
+        getCardTypeOffset: function( cardType, affectedByPlantedEvidence )
         {
+            var modifiedCardType = cardType;
+            if(affectedByPlantedEvidence)
+            {
+                if(modifiedCardType == 'honest')
+                {
+                    modifiedCardType = 'crooked';
+                }
+                else if(modifiedCardType == 'crooked')
+                {
+                    modifiedCardType = 'honest';
+                }
+            }
+
             cardTypeOffset = 0;
-            if(cardType == 'crooked')
+            if(modifiedCardType == 'crooked')
             {
                 cardTypeOffset = 1;
             }
-            else if(cardType == 'honest')
+            else if(modifiedCardType == 'honest')
             {
                 cardTypeOffset = 2;
             }
-            else if(cardType == 'kingpin')
+            else if(modifiedCardType == 'kingpin')
             {
                 cardTypeOffset = 3;
             }
-            else if(cardType == 'infector')
+            else if(modifiedCardType == 'infector')
             {
                 cardTypeOffset = 4;
             }
@@ -2584,9 +2595,21 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             return positionText;
         },
 
+        convertPlayersSeenToText: function(playersSeenListUntranslated)
+        {
+            if(playersSeenListUntranslated == "All")
+            {
+                return _("All"); // just translate it
+            }
+            else
+            {
+                return playersSeenListUntranslated; // just return the raw list since it's just a bunch of usernames
+            }
+        },
+
         convertCardTypeToText: function(cardType, affectedByPlantedEvidence)
         {
-
+console.log("cardType in method:"+cardType);
             var cardTypeText = _("Unknown");
             if(cardType == "crooked")
             {
@@ -4224,7 +4247,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
             // figure out how many cards to the left and down this is within the sprite based on the card type and its current state
             visibilityOffset = this.getVisibilityOffset(visibilityText); // get sprite X value for this card type
-            cardTypeOffset = this.getCardTypeOffset(cardType); // get sprite Y value for this card type
+            cardTypeOffset = this.getCardTypeOffset(cardType, affectedByPlantedEvidence); // get sprite Y value for this card type
 
             // multiply by the card size to get the X and Y coordinate within the sprite
             spriteX = this.integrityCardWidth*(visibilityOffset);
@@ -4270,8 +4293,6 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var htmlId = "player_" + investigateePlayerLetter + "_integrity_card_" + cardPosition;
 
             this.highlightComponent(htmlId); // highlight the card
-
-            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // add tooltip to show who has seen this card
         },
 
         notif_endTurn: function( notif )

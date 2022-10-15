@@ -425,7 +425,7 @@
 
     <div id="player_a_equipment_hand_holder"></div>
 
-    <h2 id="equipment_reference_header">Equipment Reference</h2>
+    <h2 id="equipment_reference_header">{EQUIPMENT_REFERENCE_LABEL}</h2>
     <div id="equipment_list">
 
     </div>
@@ -478,7 +478,7 @@ var jstpl_toggle = '<div id="toggle_container">\
                             <input id="toggle_EquipmentReactions" type="checkbox" ${isChecked}>\
                             <span class="slider round"></span>\
                         </label>\
-                        <span class="toggle_label">Skip Equipment Reactions</span>\
+                        <span class="toggle_label">${label}</span>\
                     </div>';
 
 </script>

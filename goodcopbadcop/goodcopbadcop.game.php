@@ -5178,7 +5178,7 @@ class goodcopbadcop extends Table
 										}
 
 										// notify player: "Please select the next Infection Token you want to move." Also highlight the selection.
-										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Please select the next Infection Token you want to move.' ), array(
+										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Please select the next infected Integrity Card whose token you want to move.' ), array(
 																				 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
 																				 'cardPositionTargeted' => $cardPositionTargeted,
 																				 'cardIdTargeted' => $integrityCardId,
@@ -5224,7 +5224,7 @@ class goodcopbadcop extends Table
 										}
 
 										// notify player: "Please select the next Infection Token you want to move." Also highlight the selection.
-										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Please select the next Infection Token you want to move.' ), array(
+										self::notifyPlayer( $equipmentCardOwner, 'targetIntegrityCard', clienttranslate( 'Please select the next infected Integrity Card whose token you want to move.' ), array(
 																				 'playerIdWhoIsTargetingCard' => $equipmentCardOwner,
 																				 'cardPositionTargeted' => $cardPositionTargeted,
 																				 'cardIdTargeted' => $integrityCardId,
@@ -7073,6 +7073,7 @@ class goodcopbadcop extends Table
 
 					// notify all players (mainly any spectators)
 					self::notifyAllPlayers( 'revealIntegrityCard', clienttranslate( 'A ${card_type} card of ${player_name} has been revealed.' ), array(
+									 'i18n' => array( 'card_type' ),
 									 'player_name' => $playerName,
 									 'card_type' => strtoupper($cardType),
 									 'card_position' => $cardPosition,
@@ -7849,10 +7850,13 @@ class goodcopbadcop extends Table
 				foreach( $equipmentCards as $equipmentCard )
 				{ // go through each card (should only be 1)
 						$equipmentId = $equipmentCard['card_id'];
-						$equipmentName = $equipmentCard['equipment_name'];
+						$untranslatedEquipmentName = $equipmentCard['equipment_name'];
+
+						$collectorNumber = $equipmentCard['card_type_arg'];
+						$translatedEquipmentName = $this->getTranslatedEquipmentName($collectorNumber);
 
 						//$buttonLabel = "Discard $equipmentName";
-						$buttonLabel = sprintf( self::_("Discard %s"), $equipmentName );
+						//$buttonLabel = sprintf( self::_("Discard %s"), $translatedEquipmentName );
 						$isDisabled = false;
 
 						$hoverOverText = ''; // hover over text or '' if we don't want a hover over
@@ -7860,7 +7864,7 @@ class goodcopbadcop extends Table
 						$equipmentId = $equipmentId;  // only used for equipment to specify which equipment in case of more than one in hand
 
 						$result[$buttonIdentifier] = array(); // create a new array for this player
-						$result[$buttonIdentifier]['buttonLabel'] = $buttonLabel;
+						$result[$buttonIdentifier]['buttonLabel'] = $translatedEquipmentName;
 						$result[$buttonIdentifier]['hoverOverText'] = $hoverOverText;
 						$result[$buttonIdentifier]['actionName'] = $actionName;
 						$result[$buttonIdentifier]['equipmentId'] = $equipmentId;
@@ -7976,10 +7980,14 @@ class goodcopbadcop extends Table
 				foreach( $equipmentCards as $equipmentCard )
 				{ // go through each card (should only be 1)
 						$equipmentId = $equipmentCard['card_id'];
-						$equipmentName = $equipmentCard['equipment_name'];
+						$untranslatedEquipmentName = $equipmentCard['equipment_name'];
 
-						//$buttonLabel = "Use $equipmentName";
-						$buttonLabel = sprintf( self::_("Use %s"), $equipmentName );
+						$collectorNumber = $equipmentCard['card_type_arg'];
+						$translatedEquipmentName = $this->getTranslatedEquipmentName($collectorNumber);
+
+						//$buttonLabel = clienttranslate("Use ") . $translatedEquipmentName;
+						//$buttonLabel = sprintf( self::_("Use %s"), $translatedEquipmentName );
+
 						if($this->validateEquipmentUsage($equipmentId, $playerWhoseTurnItIs, true, ''))
 						{ // we CAN use this now
 								$isDisabled = false;
@@ -7993,7 +8001,7 @@ class goodcopbadcop extends Table
 						$equipmentId = $equipmentId;  // only used for equipment to specify which equipment in case of more than one in hand
 
 						$result[$buttonIdentifier] = array(); // create a new array for this player
-						$result[$buttonIdentifier]['buttonLabel'] = $buttonLabel;
+						$result[$buttonIdentifier]['buttonLabel'] = $translatedEquipmentName;
 						$result[$buttonIdentifier]['hoverOverText'] = $hoverOverText;
 						$result[$buttonIdentifier]['actionName'] = $actionName;
 						$result[$buttonIdentifier]['equipmentId'] = $equipmentId;

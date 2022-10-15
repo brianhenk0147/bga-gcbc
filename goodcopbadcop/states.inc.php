@@ -157,7 +157,7 @@ $machinestates = array(
     12 => array(
     		"name" => "discardEquipment",
     		"description" => clienttranslate('${actplayer} is discarding Equipment.'),
-    		"descriptionmyturn" => clienttranslate('${you} must select an Equipment in your hand to discard.'),
+    		"descriptionmyturn" => clienttranslate('${you} must discard. Which Equipment will you discard?'),
     		"type" => "activeplayer",
         'args' => 'argGetPlayerTurnDiscardToDiscardButtonList',
     		"possibleactions" => array( "clickEquipmentCard" ),
@@ -262,7 +262,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeEquipmentPlay",
         "updateGameProgression" => true,
-        "transitions" => array( "playerTurn" => 2, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "askAimOutOfTurn" => 33, "askDiscardOutOfTurn" => 35, "endGame" => 99, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "executeActionBite" => 52, "askBiteReaction" => 51, "askDiscardOutOfTurn" => 35 )
+        "transitions" => array( "playerTurn" => 2, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "askAimOutOfTurn" => 33, "askDiscardOutOfTurn" => 35, "endGame" => 99, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "executeActionBite" => 52, "askBiteReaction" => 51 )
     ),
 
     32 => array(
@@ -296,7 +296,7 @@ $machinestates = array(
     35 => array(
     		"name" => "discardOutOfTurn",
     		"description" => clienttranslate('${actplayer} is discarding an Equipment.'),
-    		"descriptionmyturn" => clienttranslate('${you} must discard an Equipment in your hand.'),
+    		"descriptionmyturn" => clienttranslate('${you} must discard. Which Equipment will you discard?'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickEquipmentCard"),
     		"transitions" => array( "afterDiscardedOutOfTurn" => 36 )
@@ -375,7 +375,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} may use Equipment in reaction to the Bite.'),
     		"type" => "multipleactiveplayer",
     		"possibleactions" => array( "clickUseEquipmentButton", "clickPassOnUseEquipmentButton", "clickEquipmentCard" ),
-    		"transitions" => array( "useEquipment" => 19, "allPassedOnReactions" => 52 )
+    		"transitions" => array( "useEquipment" => 19, "allPassedOnReactions" => 52, "askShootReaction" => 8, "askBiteReaction" => 51 )
     ),
 
     52 => array(

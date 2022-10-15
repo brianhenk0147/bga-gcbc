@@ -85,6 +85,8 @@ class view_goodcopbadcop_goodcopbadcop extends game_view
 						$current_player_id = $this->game->getPlayerIdFromPlayerNo(1); // pretend they are player 1
 				}
 
+        $this->tpl['EQUIPMENT_REFERENCE_LABEL'] = self::_("Equipment Reference");
+
         // default the names to nothing so players who are not playing do not show a name
         $this->tpl['PLAYER_a_NAME'] = "";
         $this->tpl['PLAYER_b_NAME'] = "";
