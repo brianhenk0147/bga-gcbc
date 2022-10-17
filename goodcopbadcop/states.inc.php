@@ -244,7 +244,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('${you} may use Equipment at the end of this player turn.'),
         "type" => "multipleactiveplayer",
         "possibleactions" => array( "clickPassOnUseEquipmentButton", "clickUseEquipmentButton", "clickEquipmentCard" ),
-        "transitions" => array( "allPassedOnReactions" => 30, "endTurnReaction" => 29, "useEquipment" => 16 )
+        "transitions" => array( "allPassedOnReactions" => 30, "endTurnReaction" => 29, "useEquipment" => 16, "askShootReaction" => 8 )
     ),
 
     30 => array(

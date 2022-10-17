@@ -416,7 +416,7 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-            console.log("onUpdateActionButtons state " + stateName);
+//            console.log("onUpdateActionButtons state " + stateName);
 
 
             if( this.isCurrentPlayerActive() )
@@ -2609,7 +2609,6 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
         convertCardTypeToText: function(cardType, affectedByPlantedEvidence)
         {
-console.log("cardType in method:"+cardType);
             var cardTypeText = _("Unknown");
             if(cardType == "crooked")
             {

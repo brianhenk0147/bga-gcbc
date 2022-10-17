@@ -5891,6 +5891,8 @@ class goodcopbadcop extends Table
 			$playersOverEquipmentCardLimit = $this->getPlayersOverEquipmentHandLimit(); // get any players over the equipment card hand limit
 			if ($this->doesPlayerNeedToDiscard($playerWhoseTurnItIs))
 			{ // too many cards in hand
+//throw new feException( "the player whose turn it is is $playerWhoseTurnItIs" );
+$this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player active so they can aim it (there is a weird case where we actually need to change the person whose turn it should be to the active player)
 						$this->gamestate->nextState( "discardEquipment" );
 			}
 			elseif(count($playersOverEquipmentCardLimit) > 0)
