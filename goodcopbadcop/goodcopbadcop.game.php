@@ -3603,7 +3603,7 @@ class goodcopbadcop extends Table
 								return clienttranslate( 'Choose a player to drop their Gun.' );
 
 						case 67: // Weapon Crate
-								return clienttranslate( 'Each player with at least one Infection Token may Arm and/or change their aim.' );
+								return clienttranslate( 'Each player with at least one Infection Token may Arm and/or change their aim. Guns acquired from Weapon Crate cannot shoot this turn.' );
 
 						case 66: // Machete
 								return clienttranslate( 'Choose a zombie. Exchange any number of their Integrity cards for the same number of revealed Honest or Crooked cards.' );
@@ -8767,6 +8767,9 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 								{
 										$armerPlayerId = $player['player_id'];
 										$gun = $this->pickUpGun($armerPlayerId, $this->getStateName());
+
+										$newGunId = $gun['gun_id'];
+										$this->setGunCanShoot($newGunId, 0); // make sure player cannot shoot the gun this turn
 								}
 
 						break;
