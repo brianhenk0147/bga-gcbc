@@ -6927,8 +6927,16 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 										self::notifyPlayer( $investigatedPlayerId, 'iWasInvestigated', clienttranslate( '${player_name} saw your ${position_text} ${cardType} card.' ), array(
 																				 'i18n' => array('position_text', 'cardType'),
 																				 'cardType' => strtoupper($cardType),
+																				 'cardTypeCamel' => $cardType,
 																				 'player_name' => $investigatingPlayerName,
-																				 'position_text' => $cardPositionText
+																				 'position_text' => $cardPositionText,
+																				 'investigated_player_id' => $investigatedPlayerId,
+																				 'cardPosition' => $cardPosition,
+									 											 'playersSeen' => $listOfPlayersSeen,
+									 											 'isHidden' => $isHidden,
+									 											 'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
+									 											 'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
+									 											 'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId)
 										) );
 
 
@@ -7924,12 +7932,11 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 						{ // this player can bite
 								$result[$buttonIdentifier]['isDisabled'] = false;
 
-								$gunId = $this->getGunIdHeldByPlayer($playerWhoseTurnItIs);
-								$gunTargetPlayerId = $this->getPlayerIdOfGunTarget($gunId);
-								$gunTargetName = $this->getPlayerNameFromPlayerId($gunTargetPlayerId);
+								//$gunId = $this->getGunIdHeldByPlayer($playerWhoseTurnItIs);
+								//$gunTargetPlayerId = $this->getPlayerIdOfGunTarget($gunId);
+								//$gunTargetName = $this->getPlayerNameFromPlayerId($gunTargetPlayerId);
 								//throw new feException( "Gun Target Name: $gunTargetName");
-								//$result[3]['buttonLabel'] = "Shoot $gunTargetName"; // add the name of the player you're shooting
-								$result[$buttonIdentifier]['buttonLabel'] = sprintf( self::_("Bite %s"), $gunTargetName ); // add the name of the player you're shooting
+								//$result[$buttonIdentifier]['buttonLabel'] = sprintf( self::_("Bite %s"), $gunTargetName ); // add the name of the player you're shooting (COMMENTED OUT BECAUSE THIS TRANSLATES BITE INTO THE LANGUAGE A DIFFERENT PLAYER IS USING THAN THE ONE SEEING THE BUTTON)
 						}
 						else {
 								$result[$buttonIdentifier]['isDisabled'] = true;
@@ -7964,12 +7971,11 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 						{ // this player can shoot
 								$result[$buttonIdentifier]['isDisabled'] = false;
 
-								$gunId = $this->getGunIdHeldByPlayer($playerWhoseTurnItIs);
-								$gunTargetPlayerId = $this->getPlayerIdOfGunTarget($gunId);
-								$gunTargetName = $this->getPlayerNameFromPlayerId($gunTargetPlayerId);
+								//$gunId = $this->getGunIdHeldByPlayer($playerWhoseTurnItIs);
+								//$gunTargetPlayerId = $this->getPlayerIdOfGunTarget($gunId);
+								//$gunTargetName = $this->getPlayerNameFromPlayerId($gunTargetPlayerId);
 								//throw new feException( "Gun Target Name: $gunTargetName");
-								//$result[3]['buttonLabel'] = "Shoot $gunTargetName"; // add the name of the player you're shooting
-								$result[$buttonIdentifier]['buttonLabel'] = sprintf( self::_("Shoot %s"), $gunTargetName ); // add the name of the player you're shooting
+								//$result[$buttonIdentifier]['buttonLabel'] = sprintf( self::_("Shoot %s"), $gunTargetName ); // add the name of the player you're shooting (COMMENTED OUT BECAUSE THIS TRANSLATES SHOOT INTO THE LANGUAGE A DIFFERENT PLAYER IS USING THAN THE ONE SEEING THE BUTTON)
 						}
 						else {
 								$result[$buttonIdentifier]['isDisabled'] = true;
@@ -9381,13 +9387,16 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 						'player_name' => self::getActivePlayerName()
 				) );
 
+				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+				$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+
 				//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
 				//{ // we are using the zombies expansion and the Infector is hidden
 				//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
 				//}
 				//else
 				//{
-						$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
+				//$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
 				//}
 		}
 

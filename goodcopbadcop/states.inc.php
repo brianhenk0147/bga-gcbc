@@ -70,7 +70,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetPlayerTurnButtonList',
     		"possibleactions" => array( "clickInvestigateButton", "clickArmButton", "clickShootButton", "clickEquipButton", "clickEquipmentCard", "clickSkipButton", "clickUseEquipmentButton" ),
-    		"transitions" => array( "investigateChooseCard" => 3, "armChooseCard" => 6, "askShootReaction" => 8, "equipChooseCard" => 10, "useEquipment" => 15, "executeEquip" => 11, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "executeArm" => 7, "executeEquipment" => 31, "rollInfectionDie" => 50 )
+    		"transitions" => array( "investigateChooseCard" => 3, "armChooseCard" => 6, "askShootReaction" => 8, "equipChooseCard" => 10, "useEquipment" => 15, "executeEquip" => 11, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "executeArm" => 7, "executeEquipment" => 31, "rollInfectionDie" => 50, "askAim" => 27, "discardEquipment" => 12, "askDiscardOutOfTurn" => 35 )
     ),
 
     3 => array(

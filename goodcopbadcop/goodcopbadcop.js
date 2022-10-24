@@ -2609,6 +2609,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
         convertCardTypeToText: function(cardType, affectedByPlantedEvidence)
         {
+            cardType = cardType.toLowerCase();
             var cardTypeText = _("Unknown");
             if(cardType == "crooked")
             {
@@ -3326,6 +3327,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             dojo.subscribe( 'startTurn', this, "notif_startTurn" );
             dojo.subscribe( 'updateTurnMarker', this, "notif_updateTurnMarker" );
             dojo.subscribe( 'investigationComplete', this, "notif_investigationComplete" );
+            dojo.subscribe( 'iWasInvestigated', this, "notif_iWasInvestigated" );
             dojo.subscribe( 'playEquipment', this, "notif_playEquipment" );
             dojo.subscribe( 'playerDrawsEquipmentCard', this, "notif_playerDrawsEquipmentCard" );
             dojo.subscribe( 'iDrawEquipmentCard', this, "notif_iDrawEquipmentCard" );
@@ -4292,6 +4294,32 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var htmlId = "player_" + investigateePlayerLetter + "_integrity_card_" + cardPosition;
 
             this.highlightComponent(htmlId); // highlight the card
+
+            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // add tooltip to show who has seen this card
+        },
+
+        notif_iWasInvestigated: function( notif )
+        {
+            var investigatedPlayerId = notif.args.investigated_player_id;
+            var investigateePlayerLetter = this.gamedatas.playerLetters[investigatedPlayerId].player_letter;
+            var cardPosition = notif.args.cardPosition;
+            var cardType = notif.args.cardTypeCamel;
+
+            var playersSeen = notif.args.playersSeen;
+            var affectedByPlantedEvidence = notif.args.affectedByPlantedEvidence;
+            var affectedByDisguise = notif.args.affectedByDisguise;
+            var affectedBySurveillanceCamera = notif.args.affectedBySurveillanceCamera;
+
+            var isHidden = notif.args.isHidden;
+            var isHiddenInt = 0;
+            if(isHidden)
+            {
+                isHiddenInt = 1;
+            }
+
+            var htmlId = "player_" + investigateePlayerLetter + "_integrity_card_" + cardPosition;
+
+            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // add tooltip to show who has seen this card
         },
 
         notif_endTurn: function( notif )
