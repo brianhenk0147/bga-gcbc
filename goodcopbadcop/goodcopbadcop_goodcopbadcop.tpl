@@ -458,7 +458,7 @@ var jstpl_activeEquipment = '<div class="active_equipment_card component_roundin
 var jstpl_listEquipment = '<div class="list_equipment_card component_rounding" id="list_equipment_${collectorNumber}" style="background-position:-${x}px -${y}px"><div class="large_equipment_name">${equipmentName}</div><div class="large_equipment_effect">${equipmentEffect}</div>\
                         </div>';
 
-var jstpl_integrityDetails = '<div id="integrity_details"><div>${type}</div><div>${state}</div><div>${position}</div><div>${seenBy}</div>\
+var jstpl_integrityDetails = '<div id="integrity_details"><div>${type}</div><div>${state}</div><div>${position}</div><div>${seenBy}</div><div>${woundedLine}</div><div>${infectedLine}</div>\
                         </div>';
 
 var jstpl_equipmentInHand = '<div class="hand_equipment_card component_rounding" id="player_${playerLetter}_hand_equipment_${equipmentId}" style="background-position:-${x}px -${y}px">\

@@ -98,7 +98,13 @@ function (dojo, declare) {
             var numberOfPlayers = 0;
             for( var player_id in gamedatas.players )
             {
-                var player = gamedatas.players[player_id];
+                var playerInstance = gamedatas.players[player_id];
+                var score = playerInstance['score'];
+
+                if(score > 0)
+                {
+                    this.displayWinnerBorders(player_id);
+                }
 
                 numberOfPlayers++;
             }
@@ -134,11 +140,14 @@ function (dojo, declare) {
                 var cardType = card['card_type']; // kingpin, agent, honest, crooked
                 var playersSeen = card['player_list']; // the list of players who have seen this card
 
+                var isWounded = card['has_wound'];
+                var isInfected = card['has_infection'];
+
                 var affectedByPlantedEvidence = card['affectedByPlantedEvidence'];
                 var affectedByDisguise = card['affectedByDisguise'];
                 var affectedBySurveillanceCamera = card['affectedBySurveillanceCamera'];
 
-                this.placeIntegrityCard(playerLetter, cardPosition, 'REVEALED', cardType, rotation, 0, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // put a revealed card face-up
+                this.placeIntegrityCard(playerLetter, cardPosition, 'REVEALED', cardType, rotation, 0, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected); // put a revealed card face-up
             }
 
             //hiddenCardsIHaveSeen
@@ -154,11 +163,14 @@ function (dojo, declare) {
                 var cardType = card['card_type']; // kingpin, agent, honest, crooked
                 var playersSeen = card['player_list']; // the list of players who have seen this card
 
+                var isWounded = card['has_wound'];
+                var isInfected = card['has_infection'];
+
                 var affectedByPlantedEvidence = card['affectedByPlantedEvidence'];
                 var affectedByDisguise = card['affectedByDisguise'];
                 var affectedBySurveillanceCamera = card['affectedBySurveillanceCamera'];
 
-                this.placeIntegrityCard(playerLetter, cardPosition, 'HIDDEN_SEEN', cardType, rotation, 1, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // put a hidden card out so i can see what it is but it is clear it is not visible to everyone
+                this.placeIntegrityCard(playerLetter, cardPosition, 'HIDDEN_SEEN', cardType, rotation, 1, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected); // put a hidden card out so i can see what it is but it is clear it is not visible to everyone
             }
 
             //hiddenCardsIHaveNotSeen
@@ -173,11 +185,14 @@ function (dojo, declare) {
                 var cardType = _("Unknown");
                 var playersSeen = card['player_list']; // the list of players who have seen this card
 
+                var isWounded = card['has_wound'];
+                var isInfected = card['has_infection'];
+
                 var affectedByPlantedEvidence = card['affectedByPlantedEvidence'];
                 var affectedByDisguise = card['affectedByDisguise'];
                 var affectedBySurveillanceCamera = card['affectedBySurveillanceCamera'];
 
-                this.placeIntegrityCard(playerLetter, cardPosition, 'HIDDEN_NOT_SEEN', cardType, rotation, 1, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // put a face-down integrity card out
+                this.placeIntegrityCard(playerLetter, cardPosition, 'HIDDEN_NOT_SEEN', cardType, rotation, 1, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected); // put a face-down integrity card out
             }
 
             for( var gun_id in gamedatas.guns )
@@ -1542,7 +1557,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                         //var htmlHandEquipmentPlacing = "<div id=player_board_hand_equipment_"+playerLetter+" class=player_board_hand_equipment><div>";
                         //dojo.place( htmlHandEquipmentPlacing, htmlBoardDestination );
 
-                var tooltipHtml = '<div>' + _('If this is enabled, you will not be asked if you want to react to opponent actions with your Equipment.') + '</div>';
+                var tooltipHtml = '<div>' + _('If this is enabled, you will NOT be asked if you want to respond to actions using Equipment.') + '</div>';
                 this.addTooltipHtml( 'toggle_container', tooltipHtml, 0 );
 
                 dojo.connect( $(toggle_EquipmentReactions), 'onclick', this, 'clickToggle_EquipmentReactions' ); // re-add the onclick connection
@@ -1754,7 +1769,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             dojo.connect( $(htmlIdForCardInStock), 'onclick', this, 'onClickPlayerBoardEquipmentCard' );
         },
 
-        placeIntegrityCard: function(playerLetter, cardPosition, visibilityToYou, cardType, rotation, isHidden, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera)
+        placeIntegrityCard: function(playerLetter, cardPosition, visibilityToYou, cardType, rotation, isHidden, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected)
         {
             var visibilityOffset = this.getVisibilityOffset(visibilityToYou); // get sprite X value for this card type
             var cardTypeOffset = this.getCardTypeOffset(cardType, affectedByPlantedEvidence); // get sprite Y value for this card type
@@ -1787,8 +1802,10 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 cardType = "Unknown"; // do not show it in the tooltip
             }
 
+
+
             // add tooltip
-            this.addIntegrityCardTooltip(cardDiv, cardType, isHidden, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera);
+            this.addIntegrityCardTooltip(cardDiv, cardType, isHidden, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected);
 
 
             //this.rotateTo( cardDiv, rotation );
@@ -1811,19 +1828,39 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             return cardDiv;
         },
 
-        addIntegrityCardTooltip: function(htmlId, cardType, isHidden, playersSeen, cardPositionInt, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera)
+        addIntegrityCardTooltip: function(htmlId, cardType, isHidden, playersSeen, cardPositionInt, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected)
         {
             var typeLabel = _("Type:"); // separate out labels for translation
             var stateLabel = _("State:"); // separate out labels for translation
             var positionLabel = _("Position:"); // separate out labels for translation
             var playersSeenLabel = _("Seen By:"); // separate out labels for translation
+            var woundedLabel = _("Wounded:"); // separate out labels for translation
+            var infectedLabel = _("Infected:"); // separate out labels for translation
 
             var isHiddenText = this.convertIsHiddenToText(isHidden, affectedByDisguise, affectedBySurveillanceCamera); // convert whether it is hidden to a translated text
             var cardTypeText = this.convertCardTypeToText(cardType, affectedByPlantedEvidence); // convert the type of card to a translated version
             var positionText = this.convertCardPositionToText(cardPositionInt); // convert card position (1,2,3) to text (LEFT,MIDDLE,RIGHT)
             var playersSeenText = this.convertPlayersSeenToText(playersSeen);
+            var woundedText = this.convertWoundedToText(isWounded);
+            var infectedText = this.convertInfectedToText(isInfected);
 
-            var html = '<div><div><b>'+ typeLabel + '</b> '+ cardTypeText +'</div><div><b>'+ stateLabel +'</b> '+ isHiddenText +'</div><div><b>'+ positionLabel + '</b> '+ positionText +'</div><div><b>'+ playersSeenLabel + '</b> '+ playersSeenText + '</div></div>';
+            var html = '<div>';
+            html += '<div><b>'+ typeLabel + '</b> '+ cardTypeText +'</div>';
+            html += '<div><b>'+ stateLabel +'</b> '+ isHiddenText +'</div>';
+            html += '<div><b>'+ positionLabel + '</b> '+ positionText +'</div>';
+            html += '<div><b>'+ playersSeenLabel + '</b> '+ playersSeenText + '</div>';
+
+            if(cardTypeText == 'Agent' || cardTypeText == 'Kingpin')
+            { // this is a leader
+                html += '<div><b>'+ woundedLabel + '</b> '+ woundedText +'</div>';
+            }
+
+            if(this.gamedatas.zombieExpansion == 2)
+            { // we are using the zombies expansion
+                html += '<div><b>'+ infectedLabel + '</b> '+ infectedText +'</div>';
+            }
+
+            html += '</div>';
             var delay = 0; // any delay before it appears
             this.addTooltipHtml( htmlId, html, delay ); // add the tooltip with the above configuration
         },
@@ -2203,6 +2240,8 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
         placeAndMoveWoundedToken: function(woundedPlayerLetterOrder, leaderCardPosition, cardType)
         {
+
+            var cardTypeOriginal = cardType;
             cardType = cardType+"_sliding";
             var startingHtmlId = 'wounded_tokens';
             var movingTokenHtmlId = "integrity_token_"+cardType;
@@ -2237,6 +2276,8 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 anim1.play();
     */
             }
+
+            this.placeWoundedToken(woundedPlayerLetterOrder, leaderCardPosition, cardTypeOriginal); // gotta put this here for spectators to see it because rePlaceIntegrityCard doesn't notify all players
 
 
             return movingTokenHtmlId;
@@ -2352,6 +2393,19 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             dojo.removeClass( htmlIdOfRightPlayerBoardId, eliminatedClass ); // remove style to show this player is eliminated on the right player board
             dojo.removeClass( htmlIdOfPlayerEliminatedArea, zombieClass ); // remove style to show this player is a zombie on the player's mat
             dojo.removeClass( htmlIdOfRightPlayerBoardId, zombieClass ); // remove style to show this player is eliminated on the right player board
+        },
+
+        displayWinnerBorders: function(winnerPlayerId)
+        {
+          var letterOfPlayer = this.gamedatas.playerLetters[winnerPlayerId].player_letter;
+
+//            var htmlIdOfPlayerArea = 'player_' + letterOfPlayer + '_area';
+          var htmlIdOfPlayerName = 'player_' + letterOfPlayer + '_name_holder';
+          var htmlIdOfRightPlayerBoardId = 'overall_player_board_' + winnerPlayerId;
+          var winnerClass = 'game_winner_player_name';
+
+          dojo.addClass( htmlIdOfPlayerName, winnerClass ); // add style to show this player is the winner on the player's mat
+          dojo.addClass( htmlIdOfRightPlayerBoardId, winnerClass ); // add style to show this player is the winner on the player's mat
         },
 
         revealEquipmentInHand: function( playerLetter, equipmentId, collectorNumber, equipName, equipEffect )
@@ -2604,6 +2658,30 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             else
             {
                 return playersSeenListUntranslated; // just return the raw list since it's just a bunch of usernames
+            }
+        },
+
+        convertWoundedToText: function(isWounded)
+        {
+            if(isWounded == null || isWounded == '' || isWounded == false || isWounded == 'false' || isWounded == 0 || isWounded == '0')
+            {
+              return _("No");
+            }
+            else
+            {
+                return _("Yes");
+            }
+        },
+
+        convertInfectedToText: function(isInfected)
+        {
+            if(isInfected == null || isInfected == '' || isInfected == false || isInfected == 'false' || isInfected == 0 || isInfected == '0')
+            {
+                return _("No");
+            }
+            else
+            {
+                return _("Yes");
             }
         },
 
@@ -3310,6 +3388,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             dojo.subscribe( 'dropGun', this, "notif_dropGun" );
             dojo.subscribe( 'revealIntegrityCard', this, "notif_revealIntegrityCard" );
             dojo.subscribe( 'eliminatePlayer', this, "notif_eliminatePlayer" );
+            dojo.subscribe( 'playerWinsGame', this, "notif_playerWinsGame" );
             dojo.subscribe( 'revivePlayer', this, "notif_revivePlayer" );
             dojo.subscribe( 'woundPlayer', this, "notif_woundPlayer" );
             dojo.subscribe( 'removeWoundedToken', this, "notif_removeWoundedToken" );
@@ -3395,6 +3474,9 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var affectedByDisguise = notif.args.affectedByDisguise;
             var affectedBySurveillanceCamera = notif.args.affectedBySurveillanceCamera;
 
+            var isWounded = notif.args.isWounded;
+            var isInfected = notif.args.isInfected;
+
             // update the integrity card for this player to the seen version of it... should be in format -${x}px -${y}px
             var visibilityOffset = this.getVisibilityOffset('REVEALED'); // get sprite X value for this card type
             var cardTypeOffset = this.getCardTypeOffset(cardTypeRevealed); // get sprite Y value for this card type
@@ -3406,7 +3488,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
             this.highlightComponent(integrityCardHtmlId); // highlight the card just investigated
 
-            this.addIntegrityCardTooltip(integrityCardHtmlId, cardTypeRevealed, 0, playersSeen, integrityCardPositionRevealed, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera);
+            this.addIntegrityCardTooltip(integrityCardHtmlId, cardTypeRevealed, 0, playersSeen, integrityCardPositionRevealed, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected);
         },
 
         notif_targetIntegrityCard: function( notif )
@@ -3531,6 +3613,14 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             this.revivePlayer(eliminatedPlayerId, letterOfPlayerWhoWasEliminated);
         },
 
+        notif_playerWinsGame: function( notif )
+        {
+            var winnerPlayerId = notif.args.winner_player_id;
+
+
+            this.displayWinnerBorders(winnerPlayerId);
+        },
+
         notif_woundPlayer: function( notif )
         {
 
@@ -3570,6 +3660,9 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var affectedByDisguise = notif.args.affectedByDisguise;
             var affectedBySurveillanceCamera = notif.args.affectedBySurveillanceCamera;
 
+            var isInfected = notif.args.isInfected;
+            var isWounded = notif.args.isWounded;
+
             // Create the new dialog over the play zone. You should store the handler in a member variable to access it later
             this.myDlg = new ebg.popindialog();
             this.myDlg.create( 'integrityDialog' );
@@ -3580,10 +3673,26 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var stateLabel = _("State:"); // separate out labels for translation
             var positionLabel = _("Position:"); // separate out labels for translation
             var seenByLabel = _("Seen By:"); // separate out labels for translation
+            var woundedLabel = _("Wounded:");
+            var infectedLabel = _("Infected:");
 
             var isHiddenText = this.convertIsHiddenToText(isHiddenInt, affectedByDisguise, affectedBySurveillanceCamera); // convert whether it is hidden to a translated text
             var cardTypeText = this.convertCardTypeToText(cardType, affectedByPlantedEvidence); // convert the type of card to a translated version
             var positionText = this.convertCardPositionToText(cardPosition); // convert card position (1,2,3) to text (LEFT,MIDDLE,RIGHT)
+            var woundedText = this.convertWoundedToText(isWounded);
+            var infectedText = this.convertInfectedToText(isInfected);
+
+            var woundedLine = '';
+            if(cardTypeText == 'Agent' || cardTypeText == 'Kingpin')
+            { // this is a leader
+                woundedLine = '<b>'+ woundedLabel + '</b> '+ woundedText;
+            }
+
+            var infectedLine = '';
+            if(this.gamedatas.zombieExpansion == 2)
+            { // we are using the zombies expansion
+                infectedLine = '<b>'+ infectedLabel + '</b> '+ infectedText;
+            }
 
             // Create the HTML of my dialog.
             // The best practice here is to use Javascript templates
@@ -3591,7 +3700,9 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                           type: '<b>'+typeLabel+'</b> '+cardTypeText,
                           state: '<b>'+stateLabel+'</b> '+isHiddenText,
                           position: '<b>'+positionLabel+'</b> '+positionText,
-                          seenBy: '<b>'+seenByLabel+'</b> '+seenByList
+                          seenBy: '<b>'+seenByLabel+'</b> '+seenByList,
+                          woundedLine: woundedLine,
+                          infectedLine: infectedLine
                       } );
 
             // Show the dialog
@@ -3604,7 +3715,6 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var playerId = notif.args.player_id;
             var cardPosition = notif.args.card_position;
             var cardType = notif.args.cardType;
-
 
             var playersSeenArray = notif.args.playersSeenArray;
             var playersSeenList = notif.args.playersSeenList;
@@ -3645,7 +3755,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 dojo.destroy(cardHtmlId);
             }
 
-            var idOfCard = this.placeIntegrityCard(playerLetter, cardPosition, cardVisibility, cardType, rotation, isHiddenInt, playersSeenList, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // place a new one with correct hover over and such
+            var idOfCard = this.placeIntegrityCard(playerLetter, cardPosition, cardVisibility, cardType, rotation, isHiddenInt, playersSeenList, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, hasWound, hasInfection); // place a new one with correct hover over and such
 
             if(hasInfection)
             { // this integrity card has an infection on it
@@ -4125,8 +4235,8 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
 
             // PLACE NEW INTEGRITY CARDS
-            this.placeIntegrityCard(playerLetter1, card1Position, card1Visibility, card1Type, card1Rotation, card1IsHiddenInt, card1PlayersSeen, card1affectedByPlantedEvidence, card1affectedByDisguise, card1affectedBySurveillanceCamera); // put a revealed card face-up
-            this.placeIntegrityCard(playerLetter2, card2Position, card2Visibility, card2Type, card2Rotation, card2IsHiddenInt, card2PlayersSeen, card2affectedByPlantedEvidence, card2affectedByDisguise, card2affectedBySurveillanceCamera); // put a revealed card face-up
+            this.placeIntegrityCard(playerLetter1, card1Position, card1Visibility, card1Type, card1Rotation, card1IsHiddenInt, card1PlayersSeen, card1affectedByPlantedEvidence, card1affectedByDisguise, card1affectedBySurveillanceCamera, card1Wounded, card1Infected); // put a revealed card face-up
+            this.placeIntegrityCard(playerLetter2, card2Position, card2Visibility, card2Type, card2Rotation, card2IsHiddenInt, card2PlayersSeen, card2affectedByPlantedEvidence, card2affectedByDisguise, card2affectedBySurveillanceCamera, card2Wounded, card2Infected); // put a revealed card face-up
 
             dojo.style(card1HtmlId, 'transform', 'rotate('+card1Rotation+'deg)');
             dojo.style(card2HtmlId, 'transform', 'rotate('+card2Rotation+'deg)');
@@ -4234,6 +4344,9 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var affectedByDisguise = notif.args.affectedByDisguise;
             var affectedBySurveillanceCamera = notif.args.affectedBySurveillanceCamera;
 
+            var isWounded = notif.args.isWounded;
+            var isInfected = notif.args.isInfected;
+
             var isHidden = notif.args.isHidden;
             var isHiddenInt = 0;
             var visibilityText = 'REVEALED'; // default it to being revealed
@@ -4259,7 +4372,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
             this.highlightComponent(htmlId); // highlight the card just investigated
 
-            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // add tooltip to show who has seen this card
+            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected); // add tooltip to show who has seen this card
         },
 
         notif_investigationAttempt: function( notif )
@@ -4279,6 +4392,9 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var cardPosition = notif.args.cardPosition;
             var cardType = notif.args.cardType;
 
+            var isWounded = notif.args.isWounded;
+            var isInfected = notif.args.isInfected;
+
             var playersSeen = notif.args.playersSeen;
             var affectedByPlantedEvidence = notif.args.affectedByPlantedEvidence;
             var affectedByDisguise = notif.args.affectedByDisguise;
@@ -4295,7 +4411,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
             this.highlightComponent(htmlId); // highlight the card
 
-            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // add tooltip to show who has seen this card
+            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected); // add tooltip to show who has seen this card
         },
 
         notif_iWasInvestigated: function( notif )
@@ -4304,6 +4420,9 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var investigateePlayerLetter = this.gamedatas.playerLetters[investigatedPlayerId].player_letter;
             var cardPosition = notif.args.cardPosition;
             var cardType = notif.args.cardTypeCamel;
+
+            var isWounded = notif.args.isWounded;
+            var isInfected = notif.args.isInfected;
 
             var playersSeen = notif.args.playersSeen;
             var affectedByPlantedEvidence = notif.args.affectedByPlantedEvidence;
@@ -4319,7 +4438,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
             var htmlId = "player_" + investigateePlayerLetter + "_integrity_card_" + cardPosition;
 
-            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera); // add tooltip to show who has seen this card
+            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected); // add tooltip to show who has seen this card
         },
 
         notif_endTurn: function( notif )

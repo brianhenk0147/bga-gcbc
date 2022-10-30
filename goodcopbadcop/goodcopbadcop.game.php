@@ -216,6 +216,11 @@ class goodcopbadcop extends Table
     */
     function getGameProgression()
     {
+				if($this->getStateName() == "gameEnd")
+				{ // game is over
+						return 100;
+				}
+
 				$gameProgression = 0; // we will add to this as we go to determine the total game progression
 
 				$integrityCards = $this->getAllIntegrityCards(); // get all the integrity cards in this game
@@ -970,7 +975,7 @@ class goodcopbadcop extends Table
 				{ // this is a spectator
 						$playerId = $this->getPlayerIdFromPlayerNo(1);
 
-						$sql = "SELECT ic.card_id, ic.card_type, ic.card_type_arg, ic.card_location, ic.card_location_arg, pp.player_position FROM `integrityCards` ic ";
+						$sql = "SELECT ic.card_id, ic.card_type, ic.card_type_arg, ic.card_location, ic.card_location_arg, ic.has_wound, ic.has_infection, pp.player_position FROM `integrityCards` ic ";
 						$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
 						$sql .= "JOIN `playerPositioning` pp ON (ic.card_location=pp.player_id AND pp.player_asking=$playerId) ";
 						$sql .= "WHERE card_type_arg=1 ";
@@ -978,7 +983,7 @@ class goodcopbadcop extends Table
 				}
 				else
 				{ // this is NOT a spectator
-						$sql = "SELECT ic.card_id, ic.card_type, ic.card_type_arg, ic.card_location, ic.card_location_arg, pp.player_position FROM `integrityCards` ic ";
+						$sql = "SELECT ic.card_id, ic.card_type, ic.card_type_arg, ic.card_location, ic.card_location_arg, ic.has_wound, ic.has_infection, pp.player_position FROM `integrityCards` ic ";
 						$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
 						$sql .= "JOIN `playerPositioning` pp ON (ic.card_location=pp.player_id AND pp.player_asking=$playerId) ";
 						$sql .= "WHERE card_type_arg=1 ";
@@ -1060,7 +1065,7 @@ class goodcopbadcop extends Table
 				{ // this is a spectator
 						$playerId = $this->getPlayerIdFromPlayerNo(1);
 
-						$sql = "SELECT ic.card_id, ic.card_location, ic.card_location_arg, pp.player_position FROM `integrityCards` ic ";
+						$sql = "SELECT ic.card_id, ic.card_location, ic.card_location_arg, ic.has_wound, ic.has_infection, pp.player_position FROM `integrityCards` ic ";
 						$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
 						$sql .= "JOIN `playerPositioning` pp ON (ic.card_location=pp.player_id AND pp.player_asking=$playerId) ";
 						$sql .= "WHERE ic.card_type_arg=0 ";
@@ -1070,7 +1075,7 @@ class goodcopbadcop extends Table
 				else
 				{ // this is NOT a spectator
 						// only give basic information... not the card values (since this player has not seen these yet)
-						$sql = "SELECT ic.card_id, ic.card_location, ic.card_location_arg, pp.player_position FROM `integrityCards` ic ";
+						$sql = "SELECT ic.card_id, ic.card_location, ic.card_location_arg, ic.has_wound, ic.has_infection, pp.player_position FROM `integrityCards` ic ";
 						$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
 						$sql .= "JOIN `playerPositioning` pp ON (ic.card_location=pp.player_id AND pp.player_asking=$playerId) ";
 						$sql .= "WHERE pcv.player_id=$playerId AND pcv.is_seen=0 and ic.card_type_arg=0 ";
@@ -1967,7 +1972,7 @@ class goodcopbadcop extends Table
 						$rotationArray['e'] = array( 'a' => 90, 'b' => 160, 'c' => 150, 'd' => -15, 'e' => -90, 'f' => 25, 'g' => -160, 'h' => 50); // 5 plus
 						$rotationArray['f'] = array( 'a' => -30, 'b' => 0, 'c' => 60, 'd' => -115, 'e' => 30, 'f' => 0, 'g' => 180, 'h' => -75); // 4 plus
 						$rotationArray['g'] = array( 'a' => 90, 'b' => -110, 'c' => -60, 'd' => -15, 'e' => -90, 'f' => -45, 'g' => 0, 'h' => 15); // 7 plus
-						$rotationArray['h'] = array( 'a' => -30, 'b' => 20, 'c' => 90, 'd' => -15, 'e' => 50, 'f' => -45, 'g' => -160, 'h' => 15); // 6 plus
+						$rotationArray['h'] = array( 'a' => -30, 'b' => 20, 'c' => 90, 'd' => -15, 'e' => 50, 'f' => -45, 'g' => -160, 'h' => -90); // 6 plus
 				}
 				else
 				{ // larger board layout
@@ -2036,7 +2041,7 @@ class goodcopbadcop extends Table
 						$rotationArray['e'] = array( 'a' => 90, 'b' => 160, 'c' => 150, 'd' => -15, 'e' => -90, 'f' => 25, 'g' => -160, 'h' => 50); // 5 plus
 						$rotationArray['f'] = array( 'a' => -30, 'b' => 0, 'c' => 60, 'd' => -115, 'e' => 30, 'f' => 0, 'g' => 180, 'h' => -75); // 4 plus
 						$rotationArray['g'] = array( 'a' => 90, 'b' => -110, 'c' => -60, 'd' => -15, 'e' => -90, 'f' => -45, 'g' => -160, 'h' => 15); // 7 plus
-						$rotationArray['h'] = array( 'a' => -30, 'b' => 20, 'c' => 90, 'd' => -15, 'e' => 50, 'f' => -45, 'g' => -160, 'h' => 15); // 6 plus
+						$rotationArray['h'] = array( 'a' => -30, 'b' => 20, 'c' => 90, 'd' => -15, 'e' => 50, 'f' => -45, 'g' => -160, 'h' => -90); // 6 plus
 				}
 				else
 				{ // larger board layout
@@ -4052,7 +4057,10 @@ class goodcopbadcop extends Table
 						//$this->gamestate->setAllPlayersMultiactive(); // set all players to active otherwise it puts them in a bad state where no one can do anything
 
 						$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-						$this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make player whose turn it is the only active player
+						if(!$this->weAreInActivePlayerState())
+						{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+							$this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make player whose turn it is the only active player
+						}
 //throw new feException("setEquipmentHoldersToActive sending to $nextGameState");
 						switch($nextGameState)
 						{
@@ -5892,7 +5900,10 @@ class goodcopbadcop extends Table
 			if ($this->doesPlayerNeedToDiscard($playerWhoseTurnItIs))
 			{ // too many cards in hand
 //throw new feException( "the player whose turn it is is $playerWhoseTurnItIs" );
-$this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player active so they can aim it (there is a weird case where we actually need to change the person whose turn it should be to the active player)
+						if(!$this->weAreInActivePlayerState())
+						{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+								$this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player active so they can aim it (there is a weird case where we actually need to change the person whose turn it should be to the active player)
+						}
 						$this->gamestate->nextState( "discardEquipment" );
 			}
 			elseif(count($playersOverEquipmentCardLimit) > 0)
@@ -5901,7 +5912,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 					$firstPlayerNeedingToDiscard = array_values($playersOverEquipmentCardLimit)[0]; // get the first one
 					$playerIdOverLimit = $firstPlayerNeedingToDiscard['player_id'];
 
-					$this->gamestate->changeActivePlayer($playerIdOverLimit); // make that player active so they can aim it
+					if(!$this->weAreInActivePlayerState())
+					{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+							$this->gamestate->changeActivePlayer($playerIdOverLimit); // make that player active so they can aim it
+					}
 					$this->gamestate->nextState( "askDiscardOutOfTurn" );
 			}
 			elseif($this->isPlayerHoldingGun($playerWhoseTurnItIs))
@@ -6864,6 +6878,8 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 						$investigatedPlayerId = $seenCard['card_owner_id']; // the player ID of the player who was investigated
 						$investigateePlayerName = $this->getPlayerNameFromPlayerId($investigatedPlayerId); // name of the player being investigated
 
+
+
 						// notify the player who investigated of their new card
 						$isHidden = $this->isIntegrityCardHidden($cardId); // true if this card is hidden
 						$listOfPlayersSeen = $this->getListOfPlayersWhoHaveSeenCard($cardId); // get the list of players who have seen this card or "all" if all have seen it or "none" if none have seen it
@@ -6885,61 +6901,6 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 
 								$cardPositionText = $this->convertCardPositionToText($cardPosition);
 
-								if($viewOnly == false)
-								{ // this is a real investigation
-
-										self::incStat( 1, 'investigations_completed', $playerInvestigating ); // increase end game player stat
-
-										// send notification with public information that this card has been investigated
-										self::notifyAllPlayers( 'investigationComplete', clienttranslate( '${player_name} investigated the ${position_text} card of ${player_name_2}.' ), array(
-											'i18n' => array('position_text'),
-											'player_name' => $investigatingPlayerName,
-											'player_name_2' => $investigateePlayerName,
-											'investigated_player_id' => $investigatedPlayerId,
-											'cardPosition' => $cardPosition,
-											'cardType' => $cardTypePublic,
-											'playersSeen' => $listOfPlayersSeen,
-											'isHidden' => $isHidden,
-											'position_text' => $cardPositionText,
-											'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
-											'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
-											'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId)
-										) );
-								}
-
-										// send notification with private information to the player who investigated
-										self::notifyPlayer( $playerInvestigating, 'viewCard', clienttranslate( 'You saw their ${position_text} ${cardTypeTranslated} card.' ), array(
-																				 'i18n' => array('position_text', 'cardTypeTranslated'),
-																				 'investigated_player_id' => $investigatedPlayerId,
-																				 'cardPosition' => $cardPosition,
-																				 'cardTypeTranslated' => strtoupper($cardType),
-																				 'cardType' => strtoupper($cardType),
-																				 'player_name' => $investigateePlayerName,
-																				 'isHidden' => $isHidden,
-																				 'playersSeen' => $listOfPlayersSeen,
-																				 'position_text' => $cardPositionText,
-																				 'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
-																				 'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
-																				 'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId)
-										) );
-
-										// notify the player being investigated exactly what they saw
-										self::notifyPlayer( $investigatedPlayerId, 'iWasInvestigated', clienttranslate( '${player_name} saw your ${position_text} ${cardType} card.' ), array(
-																				 'i18n' => array('position_text', 'cardType'),
-																				 'cardType' => strtoupper($cardType),
-																				 'cardTypeCamel' => $cardType,
-																				 'player_name' => $investigatingPlayerName,
-																				 'position_text' => $cardPositionText,
-																				 'investigated_player_id' => $investigatedPlayerId,
-																				 'cardPosition' => $cardPosition,
-									 											 'playersSeen' => $listOfPlayersSeen,
-									 											 'isHidden' => $isHidden,
-									 											 'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
-									 											 'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
-									 											 'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId)
-										) );
-
-
 								// if the investigated player has Surveillance camera active, reveal the card
 								if($viewOnly == false && $this->hasSurveillanceCamera($investigatedPlayerId))
 								{ // this is a real investigation (not just a card view) and the player investigated has survillance camera active in front of them
@@ -6960,6 +6921,72 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 												$this->addInfectionToken($investigatedPlayerId, true, $cardPosition, false);
 										}
 								}
+
+								$isWounded = $this->isCardWounded($cardId);
+								$isInfected = $this->isCardInfected($cardId);
+
+								if($viewOnly == false)
+								{ // this is a real investigation
+
+										self::incStat( 1, 'investigations_completed', $playerInvestigating ); // increase end game player stat
+
+										// send notification with public information that this card has been investigated
+										self::notifyAllPlayers( 'investigationComplete', clienttranslate( '${player_name} investigated the ${position_text} card of ${player_name_2}.' ), array(
+											'i18n' => array('position_text'),
+											'player_name' => $investigatingPlayerName,
+											'player_name_2' => $investigateePlayerName,
+											'investigated_player_id' => $investigatedPlayerId,
+											'cardPosition' => $cardPosition,
+											'cardType' => $cardTypePublic,
+											'playersSeen' => $listOfPlayersSeen,
+											'isHidden' => $isHidden,
+											'position_text' => $cardPositionText,
+											'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
+											'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
+											'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId),
+											'isWounded' => $isWounded,
+											'isInfected' => $isInfected
+										) );
+								}
+
+										// send notification with private information to the player who investigated
+										self::notifyPlayer( $playerInvestigating, 'viewCard', clienttranslate( 'You saw their ${position_text} ${cardTypeTranslated} card.' ), array(
+																				 'i18n' => array('position_text', 'cardTypeTranslated'),
+																				 'investigated_player_id' => $investigatedPlayerId,
+																				 'cardPosition' => $cardPosition,
+																				 'cardTypeTranslated' => strtoupper($cardType),
+																				 'cardType' => strtoupper($cardType),
+																				 'player_name' => $investigateePlayerName,
+																				 'isHidden' => $isHidden,
+																				 'playersSeen' => $listOfPlayersSeen,
+																				 'position_text' => $cardPositionText,
+																				 'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
+																				 'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
+																				 'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId),
+																				 'isWounded' => $isWounded,
+																				 'isInfected' => $isInfected
+										) );
+
+										// notify the player being investigated exactly what they saw
+										self::notifyPlayer( $investigatedPlayerId, 'iWasInvestigated', clienttranslate( '${player_name} saw your ${position_text} ${cardType} card.' ), array(
+																				 'i18n' => array('position_text', 'cardType'),
+																				 'cardType' => strtoupper($cardType),
+																				 'cardTypeCamel' => $cardType,
+																				 'player_name' => $investigatingPlayerName,
+																				 'position_text' => $cardPositionText,
+																				 'investigated_player_id' => $investigatedPlayerId,
+																				 'cardPosition' => $cardPosition,
+									 											 'playersSeen' => $listOfPlayersSeen,
+									 											 'isHidden' => $isHidden,
+									 											 'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
+									 											 'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
+									 											 'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId),
+																				 'isWounded' => $isWounded,
+																				 'isInfected' => $isInfected
+										) );
+
+
+
 						}
 				}
 		}
@@ -7080,6 +7107,8 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 					$playerName = $this->getPlayerNameFromPlayerId($playerRevealingId); // get the player's name who is revealing the card
 					$cardId = $this->getCardIdFromPlayerAndPosition($playerRevealingId, $cardPosition);
 					$cardType = $this->getCardTypeFromCardId($cardId);
+					$isWounded = $this->isCardWounded($cardId);
+					$isInfected = $this->isCardInfected($cardId);
 
 					// notify all players (mainly any spectators)
 					self::notifyAllPlayers( 'revealIntegrityCard', clienttranslate( 'A ${card_type} card of ${player_name} has been revealed.' ), array(
@@ -7087,7 +7116,9 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 									 'player_name' => $playerName,
 									 'card_type' => strtoupper($cardType),
 									 'card_position' => $cardPosition,
-									 'revealer_player_id' => $playerRevealingId
+									 'revealer_player_id' => $playerRevealingId,
+									 'isWounded' => $isWounded,
+									 'isInfected' => $isInfected
 					) );
 
 					$this->rePlaceIntegrityCard($cardId);
@@ -7525,6 +7556,8 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 										$winningTeam = 'honest'; // honest wins
 								}
 
+								$this->eliminatePlayer($targetPlayerId); // mark them as eliminated
+
 								$this->endGameCleanup('team_win', $winningTeam);
 
 								$this->gamestate->nextState( "endGame" );
@@ -7578,6 +7611,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 				{
 						$sqlAll = "UPDATE player SET player_score='1' WHERE player_id=$winningTeam"; // update score in the database
 						self::DbQuery( $sqlAll );
+
+						self::notifyAllPlayers( 'playerWinsGame', clienttranslate( 'You WIN!' ), array(
+																 'winner_player_id' => $winningTeam
+						) );
 				}
 				elseif($endType == 'team_win')
 				{
@@ -7593,6 +7630,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 									{ // this player WON
 											$sqlAll = "UPDATE player SET player_score='1' WHERE player_id=$thisPlayerId"; // update score in the database
 											self::DbQuery( $sqlAll );
+
+											self::notifyAllPlayers( 'playerWinsGame', clienttranslate( 'You WIN!' ), array(
+																					 'winner_player_id' => $thisPlayerId
+											) );
 									}
 									else
 									{ // this player LOST
@@ -7651,11 +7692,11 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 		function toggleSkipEquipmentReactions($playerId, $isChecked)
 		{
 				$newValue = "0"; // stop skipping them
-				$message = clienttranslate("When opponents play Equipment, you WILL now be asked if you want to react with your Equipment, as long as your Equipment can legally be played.");
+				$message = clienttranslate("Toggle Changed: You will now be asked if you want to respond to actions using Equipment in situations where your Equipment can be used.");
 				if($isChecked)
 				{ // we are currently skipping them
 						$newValue = "1"; // default to start skipping
-						$message = clienttranslate("When opponents play Equipment, you will NOT be asked if you want to react with Equipment.");
+						$message = clienttranslate("Toggle Changed: You will NOT be asked if you want to respond to actions using Equipment.");
 				}
 
 				if(!self::isSpectator())
@@ -8183,8 +8224,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 							) );
 
 							$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-							$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
-
+							if(!$this->weAreInActivePlayerState())
+							{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+							}
 						break;
 						case 12: // smoke grenade
 							//throw new feException( "Resolve Smoke Grenade" );
@@ -8205,7 +8248,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 									'next_player_name' => $this->getNextPlayerName()
 							) );
 
-							$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+							if(!$this->weAreInActivePlayerState())
+							{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+							}
 
 						break;
 						case 15: // truth serum
@@ -8230,7 +8276,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+									$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								}
 						break;
 						case 16: // wiretap
 								//throw new feException( "Resolve Wiretap" );
@@ -8276,8 +8325,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 						case 11: // restraining order
 								$target2 = $this->getPlayerTarget2($equipmentId); // get player target 2
 								$playerShooting = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-								$this->gamestate->changeActivePlayer( $playerShooting ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was when the equipment was played
-
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+										$this->gamestate->changeActivePlayer( $playerShooting ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was when the equipment was played
+								}
 								$this->aimGun($playerShooting, $target2); // update the gun in the database for who it is now aimed at
 
 								$this->makePlayerEquipmentActive($equipmentId, $target2); // activate this card
@@ -8294,7 +8345,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+									$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								}
 						break;
 
 						case 4: // evidence bag
@@ -8308,7 +8362,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+									$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								}
 						break;
 
 						case 35: // med kit
@@ -8318,7 +8375,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+									$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								}
 						break;
 
 						case 14: // taser
@@ -8364,7 +8424,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+									$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								}
 						break;
 						case 30: // Disguise
 								$target1 = $this->getPlayerTarget1($equipmentId);
@@ -8376,7 +8439,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 								$this->rePlacePlayerHiddenCards($target1); // make this player's hidden cards glow
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+									$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								}
 						break;
 						case 45: // Walkie Talkie
 								$target1 = $this->getPlayerTarget1($equipmentId);
@@ -8423,7 +8489,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+									$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								}
 						break;
 						case 13: // Surveillance Camera
 								$target1 = $this->getPlayerTarget1($equipmentId);
@@ -8435,7 +8504,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 								$this->rePlacePlayerHiddenCards($target1); // make this player's hidden cards glow
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+										$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+							  }
 						break;
 						case 7: // Metal Detector
 								$target1 = $this->getEquipmentTarget1($equipmentId);
@@ -8674,7 +8746,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-								$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+										$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								}
 						break;
 
 						case 66: // Machete
@@ -8920,6 +8995,9 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 						$cardType = $this->getCardTypeFromCardId($cardId);
 						$listOfPlayersSeen = $this->getListOfPlayersWhoHaveSeenCard($cardId); // get the list of players who have seen this card or "all" if all have seen it or "none" if none have seen it
 
+						$isWounded = $this->isCardWounded($cardId);
+						$isInfected = $this->isCardInfected($cardId);
+
 						if($isSeen != 1 && $isHidden)
 						{
 								$cardType = clienttranslate("Unknown");
@@ -8934,7 +9012,9 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 							'seen_by_list' => $listOfPlayersSeen,
 							'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
 							'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
-							'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId)
+							'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId),
+							'isWounded' => $isWounded,
+							'isInfected' => $isInfected
 						) );
 				}
 		}
@@ -9227,7 +9307,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 				{ // multiactive state
 						$currentPlayerId = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 						//throw new feException( "state is $stateName and current player is $currentPlayerId" );
-						$this->gamestate->changeActivePlayer( $currentPlayerId ); // set the player using the equipment to the active player (this cannot be done in an activeplayer game state)
+						if(!$this->weAreInActivePlayerState())
+						{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+							$this->gamestate->changeActivePlayer( $currentPlayerId ); // set the player using the equipment to the active player (this cannot be done in an activeplayer game state)
+						}
 //throw new feException( "player $currentPlayerId is now the active player." );
 						$this->gamestate->nextState( "useEquipment" ); // they are already active so just go to the state where they will use their equipment
 				}
@@ -9400,6 +9483,40 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 				//}
 		}
 
+		// True if we are in an activeplayer state.
+		function weAreInActivePlayerState()
+		{
+				$stateName = $this->getStateName(); // get the name of the current state
+
+				if($stateName == "playerTurn" ||
+				   $stateName == "chooseCardToInvestigate" ||
+					 $stateName == "chooseCardToRevealForArm" ||
+					 $stateName == "chooseCardToRevealForEquip" ||
+					 $stateName == "discardEquipment" ||
+					 $stateName == "chooseEquipmentToPlayOnYourTurn" ||
+					 $stateName == "chooseEquipmentToPlayReactEndOfTurn" ||
+					 $stateName == "chooseEquipmentToPlayReactInvestigate" ||
+					 $stateName == "chooseEquipmentToPlayReactShoot" ||
+					 $stateName == "chooseEquipmentToPlayReactBite" ||
+					 $stateName == "askAimMustReaim" ||
+					 $stateName == "askAim" ||
+					 $stateName == "aimAtPlayer" ||
+					 $stateName == "askAimOutOfTurn" ||
+					 $stateName == "discardOutOfTurn" ||
+					 $stateName == "chooseIntegrityCards" ||
+					 $stateName == "choosePlayer" ||
+					 $stateName == "chooseActiveOrHandEquipmentCard" ||
+					 $stateName == "chooseAnotherPlayer" ||
+					 $stateName == "choosePlayerNoCancel")
+				{ // activeplayer state
+						return true;
+				}
+				else
+				{
+						return false;
+				}
+		}
+
 		// This is called in a "game" state after someone picks up a gun from an Equipment card and then they aim it. We need to figure out which state we need
 		// to go back to and which player is active.
 		function afterAimedOutOfTurn()
@@ -9415,7 +9532,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 
 						$gunHolder = $this->getPlayerIdOfGunHolder($gunId); // get the player holding the unaimed gun
 
-						$this->gamestate->changeActivePlayer($gunHolder); // make that player active so they can aim it
+						if(!$this->weAreInActivePlayerState())
+						{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+								$this->gamestate->changeActivePlayer($gunHolder); // make that player active so they can aim it
+						}
 
 						$this->gamestate->nextState( "askAimOutOfTurn" );
 				}
@@ -9427,8 +9547,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 						$gunId = $this->getGunIdHeldByPlayer($activePlayerId); // get the gun that was just aimed
 
 						$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active because someone might be aiming after picking up a gun off-turn)
-						$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // change to the player it's turn it's supposed to be
-
+						if(!$this->weAreInActivePlayerState())
+						{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+								$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // change to the player it's turn it's supposed to be
+						}
 //						$gunAcquiredInState = $this->getGunAcquiredInState($gunId); // see which state the gun was acquired in
 						$equipmentIdInUse = $this->getEquipmentCardIdInUse(); // this will only be used from an equipment so get the state that equipment was used in to know where to put us into afterwards
 						$equipmentUsedInState = $this->getEquipmentPlayedInState($equipmentIdInUse);
@@ -9490,7 +9612,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 
 				// figure out who the next player should be
 				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active because someone might be aiming after picking up a gun off-turn)
-				$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // change to the player it's turn it's supposed to be
+				if(!$this->weAreInActivePlayerState())
+				{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+					$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // change to the player it's turn it's supposed to be
+				}
 
 				if($playedInState == "chooseEquipmentToPlayOnYourTurn")
 				{
@@ -9631,17 +9756,22 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 		{
 				//$this->setAllPlayersInactive();
 
+				$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+				$nameOfPlayerWhoseTurnItWas = $this->getPlayerNameFromPlayerId($playerWhoseTurnItWas);
+
 				// notify all players the turn has ended to they can remove highlights
 				self::notifyAllPlayers( "endTurn", clienttranslate( '${player_name} has ended their turn.' ), array(
-						'player_name' => self::getActivePlayerName()
+						'player_name' => $nameOfPlayerWhoseTurnItWas
 				) );
 
 				$this->setGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN", 0); // reset whether we rolled the infection die this turn
 
-				// set the current active player to the one whose turn it should be right now
-				$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 				//throw new feException( "currentPlayer:$playerWhoseTurnItWas" );
-				$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+				// set the current active player to the one whose turn it should be right now
+				if(!$this->weAreInActivePlayerState())
+				{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+					$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+				}
 
 				$guns = $this->getAllGuns(); // get the guns that are currently shooting (should just be 1)
 				foreach( $guns as $gun )
@@ -9657,7 +9787,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 						$coffeeId = $this->getEquipmentIdFromCollectorNumber(2);
 						$coffeeOwnerId = $this->getEquipmentCardOwner($coffeeId);
 						//throw new feException( "coffeeOwnerId:$coffeeId coffeeOwnerId:$coffeeOwnerId" );
-						$this->gamestate->changeActivePlayer( $coffeeOwnerId ); // make coffee owner go next
+						if(!$this->weAreInActivePlayerState())
+						{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+							$this->gamestate->changeActivePlayer( $coffeeOwnerId ); // make coffee owner go next
+						}
 						//throw new feException( "player $coffeeOwnerId is now the active player." );
 				}
 				else
@@ -9695,7 +9828,11 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 
 						self::giveExtraTime( $newActivePlayer ); // give the player some extra time to make their decision
 
-						$this->gamestate->changeActivePlayer( $newActivePlayer );
+						if(!$this->weAreInActivePlayerState())
+						{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+								$this->gamestate->changeActivePlayer( $newActivePlayer );
+						}
+
 						$this->gamestate->nextState( "startNewPlayerTurn" ); // begin a new player's turn
 
 						self::notifyAllPlayers( "startTurn", clienttranslate( '${player_name} has started their turn.' ), array(
@@ -9783,7 +9920,6 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 		function executeActionEquip()
 		{
 				$playerWhoseTurnItIs = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
-
 
 				// draw an equipment card
 				$this->drawEquipmentCard($playerWhoseTurnItIs, 1); // draw 1 equipment card
@@ -9884,8 +10020,11 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 				}
 				elseif($biterReaimsRolled)
 				{ // the biter must re-aim
+					if(!$this->weAreInActivePlayerState())
+					{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
 						$this->gamestate->changeActivePlayer( $playerBiting ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
-						$this->gamestate->nextState( "askAimMustReaim" ); // ask the player to aim their arms
+					}
+					$this->gamestate->nextState( "askAimMustReaim" ); // ask the player to aim their arms
 				}
 				else
 				{ // the game is NOT ending and the zombie does NOT need to reaim
@@ -10052,7 +10191,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 		function rollInfectionDie()
 		{
 				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-				$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+				if(!$this->weAreInActivePlayerState())
+				{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+					$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+				}
 
 				$this->setGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN", 1); // save that we have rolled the infection die this round so we don't do it again
 
@@ -10115,7 +10257,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 				if(!$equipmentId)
 				{ // there is no equipment in use (could be possible if a player drops from the game while they're using equipment)
 					$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-					$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+					if(!$this->weAreInActivePlayerState())
+					{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+						$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+					}
 
 						//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
 						//{ // we are using the zombies expansion and the Infector is hidden and we haven't rolled it yet this turn
@@ -10146,7 +10291,11 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 						{ // go through each player over the hand limit
 								$playerIdOverLimit = $player['player_id'];
 
-								$this->gamestate->changeActivePlayer($playerIdOverLimit); // make that player active so they can aim it
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+										$this->gamestate->changeActivePlayer($playerIdOverLimit); // make that player active so they can aim it
+								}
+
 								$this->gamestate->nextState( "askDiscardOutOfTurn" );
 						}
 				}
@@ -10158,8 +10307,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 									$gunId = $unaimedGun['gun_id'];
 
 									$gunHolder = $this->getPlayerIdOfGunHolder($gunId); // get the player holding the unaimed gun
-
-									$this->gamestate->changeActivePlayer($gunHolder); // make that player active so they can aim it
+									if(!$this->weAreInActivePlayerState())
+									{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+										$this->gamestate->changeActivePlayer($gunHolder); // make that player active so they can aim it
+									}
 
 									$this->gamestate->nextState( "askAimOutOfTurn" );
 
@@ -10207,8 +10358,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 								{ // the player will be allowed to choose a new action after the equipment is resolved
 
 										$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-
-										$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+										if(!$this->weAreInActivePlayerState())
+										{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+											$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+										}
 //throw new feException( "yes you can re-choose action $playerWhoseTurnItIs" );
 										$this->gamestate->nextState( "playerTurn" ); // go back to player action state
 								}
@@ -10264,7 +10417,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 								}
 
 								$this->setEquipmentPlayerTarget($equipmentId, $playerIdGettingShot); // set the player getting shot to the target 1
-								$this->gamestate->changeActivePlayer($playerIdGettingShot); // make the player getting shot the active player so they can choose who gets shot
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+									$this->gamestate->changeActivePlayer($playerIdGettingShot); // make the player getting shot the active player so they can choose who gets shot
+								}
 								//throw new feException( "player $playerIdGettingShot is now the active player." );
 								$this->gamestate->nextState( "choosePlayerNoCancel" ); // choose player but do not give them a cancel button, otherwise the target gets to cancel the equipment
 						break;
@@ -10277,7 +10433,10 @@ $this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player 
 								}
 
 								$this->setEquipmentPlayerTarget($equipmentId, $playerIdShooting); // set the player getting shot to the target 1
-								$this->gamestate->changeActivePlayer($playerIdShooting); // make the player getting shot the active player so they can choose who gets shot
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+									$this->gamestate->changeActivePlayer($playerIdShooting); // make the player getting shot the active player so they can choose who gets shot
+								}
 								//throw new feException( "player $playerIdGettingShot is now the active player." );
 								$this->gamestate->nextState( "choosePlayerNoCancel" ); // choose player but do not give them a cancel button, otherwise the target gets to cancel the equipment
 						break;
