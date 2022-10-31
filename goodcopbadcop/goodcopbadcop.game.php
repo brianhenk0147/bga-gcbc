@@ -7612,7 +7612,7 @@ class goodcopbadcop extends Table
 						$sqlAll = "UPDATE player SET player_score='1' WHERE player_id=$winningTeam"; // update score in the database
 						self::DbQuery( $sqlAll );
 
-						self::notifyAllPlayers( 'playerWinsGame', clienttranslate( 'You WIN!' ), array(
+						self::notifyAllPlayers( 'playerWinsGame', '', array(
 																 'winner_player_id' => $winningTeam
 						) );
 				}
@@ -7631,7 +7631,7 @@ class goodcopbadcop extends Table
 											$sqlAll = "UPDATE player SET player_score='1' WHERE player_id=$thisPlayerId"; // update score in the database
 											self::DbQuery( $sqlAll );
 
-											self::notifyAllPlayers( 'playerWinsGame', clienttranslate( 'You WIN!' ), array(
+											self::notifyAllPlayers( 'playerWinsGame', '', array(
 																					 'winner_player_id' => $thisPlayerId
 											) );
 									}
