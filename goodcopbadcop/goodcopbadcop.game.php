@@ -6907,19 +6907,10 @@ class goodcopbadcop extends Table
 										$this->revealCard($investigatedPlayerId, $cardPosition);
 								}
 
-								$infectorCardId = $this->getInfectorCardId();
 								if($viewOnly == false && $this->getGameStateValue('ZOMBIES_EXPANSION') == 2)
 								{ // we are using the ZOMBIES expansion and this was a real investigation (not just a view)
 
-										if($infectorCardId == $cardId)
-										{ // the infector was investigated
-		//throw new feException( "infectorCardId: $infectorCardId cardId:$cardId" );
-												$this->infectorFound($investigatedPlayerId, $cardPosition, $playerInvestigating);
-										}
-										else
-										{ // a card other than the infector card was investigated
-												$this->addInfectionToken($investigatedPlayerId, true, $cardPosition, false);
-										}
+										$this->addInfectionToken($investigatedPlayerId, true, $cardPosition, false);
 								}
 
 								$isWounded = $this->isCardWounded($cardId);
@@ -7002,11 +6993,6 @@ class goodcopbadcop extends Table
 						self::notifyAllPlayers( 'infectorFound', clienttranslate( '${player_name} is the Infector!' ), array(
 						 'player_name' => $infectorPlayerName
 						) );
-
-						if($finderOfInfectorPlayerId != $infectorPlayerId)
-						{ // the infector did not reveal themself
-								$this->drawEquipmentCard($finderOfInfectorPlayerId, 1); // the player investigating draws an equipment card as a reward
-						}
 
 						if($this->isPlayerZombie($infectorPlayerId))
 						{ // if already a zombie
