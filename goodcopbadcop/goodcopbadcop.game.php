@@ -1846,9 +1846,9 @@ class goodcopbadcop extends Table
 										return clienttranslate( 'Zombie Re-Aims' );
 								break;
 								case 9: // blank
+								case 10: // blank
 										return clienttranslate( 'No Effect' );
 								break;
-								case 10: // add extra infection token
 								case 11: // add extra infection token
 										return clienttranslate( 'Add Extra Infection Token' );
 								break;
@@ -7522,7 +7522,7 @@ class goodcopbadcop extends Table
 						self::incStat( 1, 'bites_taken', $targetPlayerId ); // increase end game player stat
 
 
-						$this->addInfectionToken($targetPlayerId, true, '', false); // add a infection token (if they don't already have 3)
+						//$this->addInfectionToken($targetPlayerId, true, '', false); // add a infection token (if they don't already have 3)
 						$this->rollZombieDice($shooterPlayerId, $targetPlayerId); // roll a zombie die for each infection token they have and take action for each zombie die face
 				}
 				else
@@ -7720,38 +7720,60 @@ class goodcopbadcop extends Table
 				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2)
 				{ // we are using the zombies expansion
 
-						if($this->isPlayerZombie($playerId))
-						{ // if already a zombie
+						$isTargetALeader = $this->isPlayerALeader($playerId); // see if the player turning into a zombie was a LEADER
+						if($isTargetALeader)
+						{ // a Leader is turning into a zombie (losing the game)
 
-								// notify everyone
-								self::notifyAllPlayers( "executeGunShootsZombie", clienttranslate( '${player_name} was already a zombie.' ), array(
-										'player_name' => $targetName
+								// mark them as eliminated in the database
+								$sqlUpdate = "UPDATE player SET ";
+								$sqlUpdate .= "is_eliminated=1 WHERE ";
+								$sqlUpdate .= "player_id=$playerId";
+
+								self::DbQuery( $sqlUpdate );
+
+								// NOTIFY ALL PLAYERS
+								$playerName = $this->getPlayerNameFromPlayerId($playerId);
+								self::notifyAllPlayers( 'eliminatePlayer', clienttranslate( '${player_name} has been eliminated.' ), array(
+													 'player_name' => $playerName,
+													 'eliminated_player_id' => $playerId
 								) );
-
-								// aim arms at self if they have any
-								$this->aimGun($playerId, $playerId); // update the gun in the database for who it is now aimed at
 						}
 						else
-						{ // not yet a zombie
+						{ // a non-Leader is turning into a zombie
 
-								// discard guns they were holding
-								$guns = $this->getGunsHeldByPlayer($playerId);
-								foreach( $guns as $gun )
-								{ // go through each gun (should only be 1)
-										$gunId = $gun['gun_id'];
-										$this->dropGun($gunId);
-										//throw new feException( "dropped gun $gunId");
+								if($this->isPlayerZombie($playerId))
+								{ // if already a zombie
+
+										// notify everyone
+										self::notifyAllPlayers( "executeGunShootsZombie", clienttranslate( '${player_name} was already a zombie.' ), array(
+												'player_name' => $targetName
+										) );
+
+										// aim arms at self if they have any
+										$this->aimGun($playerId, $playerId); // update the gun in the database for who it is now aimed at
 								}
+								else
+								{ // not yet a zombie
 
-								$this->zombifyPlayer($playerId); // update DB that they are a zombie and notify everyone (but do not drop guns or reveal cards)
+										// discard guns they were holding
+										$guns = $this->getGunsHeldByPlayer($playerId);
+										foreach( $guns as $gun )
+										{ // go through each gun (should only be 1)
+												$gunId = $gun['gun_id'];
+												$this->dropGun($gunId);
+												//throw new feException( "dropped gun $gunId");
+										}
 
-								//$countguns = count($guns);
-								//throw new feException( "count guns:$countguns");
+										$this->zombifyPlayer($playerId); // update DB that they are a zombie and notify everyone (but do not drop guns or reveal cards)
 
-								$this->pickUpGun($playerId, $this->getStateName()); // pick up arms
+										//$countguns = count($guns);
+										//throw new feException( "count guns:$countguns");
 
-								// aim arms at self if they have any
-								$this->aimGun($playerId, $playerId); // update the gun in the database for who it is now aimed at
+										$this->pickUpGun($playerId, $this->getStateName()); // pick up arms
+
+										// aim arms at self if they have any
+										$this->aimGun($playerId, $playerId); // update the gun in the database for who it is now aimed at
+								}
 						}
 				}
 				else
@@ -9995,10 +10017,10 @@ class goodcopbadcop extends Table
 								break;
 
 								case 9: // blank
+								case 10: // blank
 										// do nothing
 								break;
 
-								case 10: // add extra infection token
 								case 11: // add extra infection token
 										$this->addInfectionToken($playerBeingBitten, true, '', true); // give them an extra Infection Token and notify them
 								break;
@@ -10006,7 +10028,8 @@ class goodcopbadcop extends Table
 				}
 
 				// ELIMINATE A NON-ZOMBIE IF THEY WERE BITTEN
-				if($zombieFaceRolled && !$isTargetALeader)
+//				if($zombieFaceRolled && !$isTargetALeader)
+				if($zombieFaceRolled)
 				{ // we are zombifying a NON-leader
 
 						$this->eliminatePlayer($playerBeingBitten); // turn into a zombie, notify everyone, reveal all cards, drop guns

@@ -3861,7 +3861,64 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             dojo.style( 'zombieDie1', 'display', 'none' ); // hide the die
             dojo.style( 'zombieDie2', 'display', 'none' ); // hide the die
             dojo.style( 'zombieDie3', 'display', 'none' ); // hide the die
-            this.tableDice.addToStock( param );
+
+            var randomNumber = Math.floor(Math.random() * 1000); // random number between 0-999
+
+            console.log('randomNumber:'+randomNumber);
+
+            //this.tableDice.addToStock( param );
+            this.tableDice.addToStockWithId( param, randomNumber );
+            console.log("param:"+param);
+
+            var htmlId = 'dice_item_'+randomNumber;
+
+            if(param == 6)
+            { // zombie face was rolled
+                if(document.getElementById(htmlId))
+                {
+                    this.addTooltip( htmlId, _('Causes the victim to turn into a zombie.'), '' ); // add a tooltip to explain
+                }
+            }
+
+            if(param == 7)
+            { // re-aim face was rolled
+                if(document.getElementById(htmlId))
+                {
+                    this.addTooltip( htmlId, _('Causes the zombie to aim at someone else.'), '' ); // add a tooltip to explain
+                }
+            }
+
+            if(param == 8)
+            { // re-aim face was rolled
+                if(document.getElementById(htmlId))
+                {
+                    this.addTooltip( htmlId, _('Causes the zombie to aim at someone else.'), '' ); // add a tooltip to explain
+                }
+            }
+
+            if(param == 9)
+            { // blank face was rolled
+                if(document.getElementById(htmlId))
+                {
+                    this.addTooltip( htmlId, _('This has no effect.'), '' ); // add a tooltip to explain
+                }
+            }
+
+            if(param == 10)
+            { // blank face was rolled
+                if(document.getElementById(htmlId))
+                {
+                    this.addTooltip( htmlId, _('This has no effect.'), '' ); // add a tooltip to explain
+                }
+            }
+
+            if(param == 11)
+            { // infection token face was rolled
+                if(document.getElementById(htmlId))
+                {
+                    this.addTooltip( htmlId, _('Adds an Infection Token to an Integrity Card of the victim, if possible.'), '' ); // add a tooltip to explain
+                }
+            }
 
         },
 
