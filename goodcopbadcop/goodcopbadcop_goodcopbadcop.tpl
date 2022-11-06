@@ -481,6 +481,9 @@ var jstpl_toggle = '<div id="toggle_container">\
                         <span class="toggle_label">${label}</span>\
                     </div>';
 
+var jstpl_medalToken = '<div id="medal_${playerId}" class="medal_token">\
+                                </div>';
+
 </script>
 
 {OVERALL_GAME_FOOTER}

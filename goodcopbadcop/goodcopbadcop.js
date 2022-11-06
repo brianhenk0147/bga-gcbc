@@ -103,7 +103,8 @@ function (dojo, declare) {
 
                 if(score > 0)
                 {
-                    this.displayWinnerBorders(player_id);
+                    //this.displayWinnerBorders(player_id);
+                    this.giveWinnerMedal(player_id);
                 }
 
                 numberOfPlayers++;
@@ -431,7 +432,7 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-//            console.log("onUpdateActionButtons state " + stateName);
+            //console.log("onUpdateActionButtons state " + stateName);
 
 
             if( this.isCurrentPlayerActive() )
@@ -490,15 +491,27 @@ function (dojo, declare) {
 
                     break;
 
+                    case 'chooseCardToInfect1':
+                        this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
+                    break;
+                    case 'chooseCardToInfect2':
+                        this.addActionButton( 'button_done', _('Done Selecting'), 'onClick_DoneSelectingButton' );
+                        this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
+                    break;
+
+                    case 'chooseTokenToDiscardForZombieEquip':
+                        this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
+                    break;
+
                     case 'chooseActiveOrHandEquipmentCard':
                     case 'chooseEquipmentCardInAnyHand':
                     case 'chooseCardToInvestigate':
-                        this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton' );
+                        this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
                     break;
 
                     case 'chooseCardToRevealForArm':
                     case 'chooseCardToRevealForEquip':
-                        this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton' );
+                        this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
                     break;
 
                     case 'chooseAnotherPlayer':
@@ -1939,16 +1952,24 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             return cardTypeOffset;
         },
 
-        getVisibilityOffset: function( visibilityToYou )
+        getVisibilityOffset: function( visibilityToYou, affectedBySurveillanceCamera )
         {
-            var visibilityOffset = 0;
-            if(visibilityToYou == 'HIDDEN_NOT_SEEN')
+            if(affectedBySurveillanceCamera)
             {
-                visibilityOffset = 2;
+                return 0; // revealed
             }
-            else if (visibilityToYou == 'HIDDEN_SEEN')
-            {
-                visibilityOffset = 1;
+            else
+            { // NOT affected by surveillance camera
+
+                var visibilityOffset = 0;
+                if(visibilityToYou == 'HIDDEN_NOT_SEEN')
+                {
+                    visibilityOffset = 2;
+                }
+                else if (visibilityToYou == 'HIDDEN_SEEN')
+                {
+                    visibilityOffset = 1;
+                }
             }
 
             return visibilityOffset;
@@ -2408,6 +2429,26 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
           dojo.addClass( htmlIdOfRightPlayerBoardId, winnerClass ); // add style to show this player is the winner on the player's mat
         },
 
+        giveWinnerMedal: function(winnerPlayerId)
+        {
+          var letterOfPlayer = this.gamedatas.playerLetters[winnerPlayerId].player_letter;
+
+          var htmlIdOfPlayerName = 'player_' + letterOfPlayer + '_name_holder'; // div holding the player's name in the player area
+          dojo.place(
+                  this.format_block( 'jstpl_medalToken', {
+                      playerId: winnerPlayerId
+                  } ), htmlIdOfPlayerName );
+
+
+
+          var htmlIdOfRightPlayerBoardId = 'player_board_hand_equipment_' + letterOfPlayer; // div holding the player's equipment in hand on right side
+          dojo.place(
+                  this.format_block( 'jstpl_medalToken', {
+                      playerId: winnerPlayerId
+                  } ), htmlIdOfRightPlayerBoardId );
+
+        },
+
         revealEquipmentInHand: function( playerLetter, equipmentId, collectorNumber, equipName, equipEffect )
         {
             //var playerAHandHtmlId = "player_a_equipment_hand_holder_item_" + equipmentId; // the html ID of the big card in the player A hand
@@ -2800,6 +2841,31 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             {   return; }
 
             this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedInvestigateButton.html", {
+                                                                    lock: true
+                                                                 },
+                         this, function( result ) {
+
+                            // What to do after the server call if it succeeded
+                            // (most of the time: nothing)
+
+                         }, function( is_error) {
+
+                            // What to do after the server call in anyway (success or failure)
+                            // (most of the time: nothing)
+
+                         } );
+        },
+
+        onClick_Infect: function( evt )
+        {
+
+            dojo.stopEvent( evt ); // Preventing default browser reaction
+
+            // Check that this action is possible (see "possibleactions" in states.inc.php)
+            if( ! this.checkAction( 'clickInfectButton' ) )
+            {   return; }
+
+            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedInfectButton.html", {
                                                                     lock: true
                                                                  },
                          this, function( result ) {
@@ -3618,7 +3684,8 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var winnerPlayerId = notif.args.winner_player_id;
 
 
-            this.displayWinnerBorders(winnerPlayerId);
+            //this.displayWinnerBorders(winnerPlayerId);
+            this.giveWinnerMedal(winnerPlayerId);
         },
 
         notif_woundPlayer: function( notif )
@@ -3864,11 +3931,8 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
             var randomNumber = Math.floor(Math.random() * 1000); // random number between 0-999
 
-            console.log('randomNumber:'+randomNumber);
-
             //this.tableDice.addToStock( param );
             this.tableDice.addToStockWithId( param, randomNumber );
-            console.log("param:"+param);
 
             var htmlId = 'dice_item_'+randomNumber;
 
@@ -4417,7 +4481,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var htmlId = "player_" + playerLetter + "_integrity_card_" + cardPosition;
 
             // figure out how many cards to the left and down this is within the sprite based on the card type and its current state
-            visibilityOffset = this.getVisibilityOffset(visibilityText); // get sprite X value for this card type
+            visibilityOffset = this.getVisibilityOffset(visibilityText, affectedBySurveillanceCamera); // get sprite X value for this card type
             cardTypeOffset = this.getCardTypeOffset(cardType, affectedByPlantedEvidence); // get sprite Y value for this card type
 
             // multiply by the card size to get the X and Y coordinate within the sprite

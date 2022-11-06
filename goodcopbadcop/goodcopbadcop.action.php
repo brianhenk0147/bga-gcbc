@@ -71,6 +71,15 @@ class action_goodcopbadcop extends APP_GameAction
         self::ajaxResponse( );
     }
 
+    public function clickedInfectButton()
+    {
+        self::setAjaxMode();
+
+        $this->game->clickedInfectButton(); // tell the server that the current player is choosing a card to investigate
+
+        self::ajaxResponse( );
+    }
+
     public function clickedOpponentIntegrityCard()
     {
         self::setAjaxMode();

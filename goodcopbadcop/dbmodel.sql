@@ -35,6 +35,9 @@
 ALTER TABLE `player` ADD `last_player_investigated` varchar(30) NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `last_card_position_investigated` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `last_card_position_revealed` INT UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `last_card_id_targeted_1` INT UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `last_card_id_targeted_2` INT UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `done_selecting` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `is_eliminated` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `is_zombie` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `aiming_at` varchar(30) NOT NULL DEFAULT '';

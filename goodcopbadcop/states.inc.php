@@ -69,8 +69,8 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must select which action you will take.'),
     		"type" => "activeplayer",
         'args' => 'argGetPlayerTurnButtonList',
-    		"possibleactions" => array( "clickInvestigateButton", "clickArmButton", "clickShootButton", "clickEquipButton", "clickEquipmentCard", "clickSkipButton", "clickUseEquipmentButton" ),
-    		"transitions" => array( "investigateChooseCard" => 3, "armChooseCard" => 6, "askShootReaction" => 8, "equipChooseCard" => 10, "useEquipment" => 15, "executeEquip" => 11, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "executeArm" => 7, "executeEquipment" => 31, "rollInfectionDie" => 50, "askAim" => 27, "discardEquipment" => 12, "askDiscardOutOfTurn" => 35 )
+    		"possibleactions" => array( "clickInvestigateButton", "clickArmButton", "clickShootButton", "clickEquipButton", "clickEquipmentCard", "clickSkipButton", "clickUseEquipmentButton", "clickInfectButton" ),
+    		"transitions" => array( "investigateChooseCard" => 3, "armChooseCard" => 6, "askShootReaction" => 8, "equipChooseCard" => 10, "useEquipment" => 15, "executeEquip" => 11, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "executeArm" => 7, "executeEquipment" => 31, "chooseTokenToDiscardForZombieEquip" => 13, "rollInfectionDie" => 50, "askAim" => 27, "discardEquipment" => 12, "askDiscardOutOfTurn" => 35, "chooseCardToInfect1" => 45 )
     ),
 
     3 => array(
@@ -161,7 +161,16 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetPlayerTurnDiscardToDiscardButtonList',
     		"possibleactions" => array( "clickEquipmentCard" ),
-    		"transitions" => array( "askAim" => 27, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50 )
+    		"transitions" => array( "askAim" => 27, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askDiscardOutOfTurn" => 35 )
+    ),
+
+    13 => array(
+    		"name" => "chooseTokenToDiscardForZombieEquip",
+    		"description" => clienttranslate('${actplayer} is choosing an Infection Token to discard.'),
+    		"descriptionmyturn" => clienttranslate('${you} must discard a non-Zombie Infection Token.'),
+    		"type" => "activeplayer",
+    		"possibleactions" => array( "clickOpponentIntegrityCard", "clickCancelButton" ),
+    		"transitions" => array( "executeEquip" => 11, "cancelAction" => 2, "playerAction" => 2 )
     ),
 
     15 => array(
@@ -299,7 +308,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must discard. Which Equipment will you discard?'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickEquipmentCard"),
-    		"transitions" => array( "afterDiscardedOutOfTurn" => 36 )
+    		"transitions" => array( "afterDiscardedOutOfTurn" => 36,  "askDiscardOutOfTurn" => 35 )
     ),
 
     36 => array(
@@ -358,6 +367,33 @@ $machinestates = array(
         'args' => 'argGetPlayerButtonTargets',
     		"possibleactions" => array( "clickPlayer" ),
     		"transitions" => array( "executeEquipment" => 31, "choosePlayer" => 41, "chooseActiveOrHandEquipmentCard" => 42, "playerTurn" => 2, "chooseEquipmentToPlayReactEndOfTurn" => 16, "chooseEquipmentToPlayReactInvestigate" => 17, "chooseEquipmentToPlayReactShoot" => 18, "chooseEquipmentToPlayOnYourTurn" => 15, "chooseEquipmentToPlayReactBite" => 19 )
+    ),
+
+    45 => array(
+    		"name" => "chooseCardToInfect1",
+    		"description" => clienttranslate('${actplayer} is infecting others.'),
+    		"descriptionmyturn" => clienttranslate('${you} may choose an Integrity Card to infect.'),
+    		"type" => "activeplayer",
+    		"possibleactions" => array( "clickMyIntegrityCard", "clickCancelButton", "clickOpponentIntegrityCard", "clickDoneSelectingButton" ),
+    		"transitions" => array( "executeInfect" => 47, "playerAction" => 2, "chooseCardToInfect1" => 45, "chooseCardToInfect2" => 46, "askAim" => 27, "endTurnReaction" => 29, "allPassedOnReactions" => 30 )
+    ),
+
+    46 => array(
+    		"name" => "chooseCardToInfect2",
+    		"description" => clienttranslate('${actplayer} is infecting others.'),
+    		"descriptionmyturn" => clienttranslate('${you} may choose a second Integrity Card to infect.'),
+    		"type" => "activeplayer",
+    		"possibleactions" => array( "clickMyIntegrityCard", "clickCancelButton", "clickOpponentIntegrityCard", "clickDoneSelectingButton" ),
+    		"transitions" => array( "executeInfect" => 47, "playerAction" => 2, "chooseCardToInfect1" => 45, "chooseCardToInfect2" => 46, "askAim" => 27, "endTurnReaction" => 29, "allPassedOnReactions" => 30 )
+    ),
+
+    47 => array(
+        "name" => "executeActionInfect",
+        "description" => "",
+        "type" => "game",
+        "action" => "executeActionInfect",
+        "updateGameProgression" => false,
+        "transitions" => array( "askAim" => 27, "endTurnReaction" => 29, "allPassedOnReactions" => 30 )
     ),
 
     50 => array(

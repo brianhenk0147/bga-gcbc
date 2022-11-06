@@ -378,6 +378,7 @@ class goodcopbadcop extends Table
 								// add all the expansion equipment that is not specific to that expansion
 								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 64, 'card_location' => 'deck','nbr' => 1)); // Chainsaw
 								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 60, 'card_location' => 'deck','nbr' => 1)); // Crossbow
+								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 67, 'card_location' => 'deck','nbr' => 1)); // Weapon Crate
 						}
 				}
 
@@ -611,6 +612,26 @@ class goodcopbadcop extends Table
 						$cardPosition = $integrityCard['card_location_arg']; // 1, 2, 3
 						$this->revealCard($playerRevealingId, $cardPosition);
 				}
+		}
+
+		function countPlayersWithNoHiddenCards()
+		{
+				$numberOfPlayers = 0;
+
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				foreach( $players as $player )
+				{ // go through each player
+
+						$playerId = $player['player_id'];
+						$countHiddenCardsForThisPlayer = count($this->getHiddenCardsFromPlayer($playerId));
+
+						if($countHiddenCardsForThisPlayer == 0)
+						{ // found a player with no hidden cards
+								$numberOfPlayers++;
+						}
+				}
+
+				return $numberOfPlayers;
 		}
 
 		function getHonestCardQuantity($players)
@@ -2995,6 +3016,44 @@ class goodcopbadcop extends Table
 				return $unarmedInfectedPlayers;
 		}
 
+		function getArmedPlayersWithNoHiddenCards()
+		{
+				$armedRevealedPlayers = array();
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				foreach( $players as $player )
+				{ // go through each player
+						$playerId = $player['player_id']; // the ID of this player
+
+						$countHiddenCardsForThisPlayer = count($this->getHiddenCardsFromPlayer($playerId));
+
+						if($this->isPlayerHoldingGun($playerId) && $countHiddenCardsForThisPlayer == 0)
+						{ // found an armed player with no hidden cards
+								array_push($armedRevealedPlayers, $player); // add this player to the array we are returning
+						}
+				}
+
+				return $armedRevealedPlayers;
+		}
+
+		function getUnarmedPlayersWithNoHiddenCards()
+		{
+				$armedRevealedPlayers = array();
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				foreach( $players as $player )
+				{ // go through each player
+						$playerId = $player['player_id']; // the ID of this player
+
+						$countHiddenCardsForThisPlayer = count($this->getHiddenCardsFromPlayer($playerId));
+
+						if(!$this->isPlayerHoldingGun($playerId) && $countHiddenCardsForThisPlayer == 0)
+						{ // found an unarmed player with no hidden cards
+								array_push($armedRevealedPlayers, $player); // add this player to the array we are returning
+						}
+				}
+
+				return $armedRevealedPlayers;
+		}
+
 		function didNonZombiePlayerJustShootAZombie($playerId)
 		{
 				// get all guns held by this player
@@ -3206,6 +3265,7 @@ class goodcopbadcop extends Table
 
 		function getLastCardPositionRevealed($playerId)
 		{
+			//throw new feException( "playerId: $playerId");
 				return self::getUniqueValueFromDb("SELECT last_card_position_revealed FROM player WHERE player_id=$playerId LIMIT 1");
 		}
 
@@ -3608,7 +3668,7 @@ class goodcopbadcop extends Table
 								return clienttranslate( 'Choose a player to drop their Gun.' );
 
 						case 67: // Weapon Crate
-								return clienttranslate( 'Each player with at least one Infection Token may Arm and/or change their aim. Guns acquired from Weapon Crate cannot shoot this turn.' );
+								return clienttranslate( 'Each player without any hidden Integrity Cards may Arm and/or change their aim. Any player who does so cannot shoot this turn.' );
 
 						case 66: // Machete
 								return clienttranslate( 'Choose a zombie. Exchange any number of their Integrity cards for the same number of revealed Honest or Crooked cards.' );
@@ -3932,6 +3992,7 @@ class goodcopbadcop extends Table
 				self::DbQuery( $sqlUpdate );
 		}
 
+		// set done selecting for the EQUIPMENT
 		function setDoneSelecting($equipmentId, $newValue)
 		{
 				$sqlUpdate = "UPDATE equipmentCards SET ";
@@ -3940,6 +4001,25 @@ class goodcopbadcop extends Table
 
 				self::DbQuery( $sqlUpdate );
 		}
+
+		// set done selecting for the PLAYER
+		function setDoneSelectingPlayer($playerId, $newValue)
+		{
+				$sqlUpdate = "UPDATE player SET ";
+//				$sqlUpdate .= "done_selecting=$newValue WHERE ";
+				$sqlUpdate .= "last_player_investigated=$newValue WHERE ";
+				$sqlUpdate .= "player_id=$playerId";
+
+				self::DbQuery( $sqlUpdate );
+		}
+
+		// get the done selecting for the PLAYER
+		function getDoneSelectingPlayer($playerId)
+		{
+				//return self::getUniqueValueFromDb("SELECT done_selecting FROM player WHERE player_id=$playerId LIMIT 1");
+				return self::getUniqueValueFromDb("SELECT last_player_investigated FROM player WHERE player_id=$playerId LIMIT 1"); // using last_player_investigated until schema is updated in all games
+		}
+
 
 		function resetEquipmentDeckAfterReshuffle()
 		{
@@ -4490,10 +4570,11 @@ class goodcopbadcop extends Table
 						break;
 
 						case 67: // Weapon Crate
-							$unarmedInfectedPlayers = $this->getUnarmedInfectedPlayers();
-							$armedInfectedPlayers = $this->getArmedInfectedPlayers();
-							if(count($unarmedInfectedPlayers) > 0 || count($armedInfectedPlayers) > 0 )
-							{ // there is at least one infected player
+
+							// count how many players have 0 hidden cards
+							$numberOfPlayersWithNoHiddenCards = $this->countPlayersWithNoHiddenCards();
+							if($numberOfPlayersWithNoHiddenCards > 0 )
+							{ // there is at least one player with no hidden cards
 									return true;
 							}
 							else
@@ -6657,6 +6738,41 @@ class goodcopbadcop extends Table
 				return self::getUniqueValueFromDb("SELECT gun_can_shoot FROM guns WHERE gun_id=$gunId LIMIT 1");
 		}
 
+		function setInfectTarget($playerId, $index, $cardId)
+		{
+				$sqlUpdate = "UPDATE player SET ";
+				if($index == 1)
+				{ // set the first card we are infecting
+//						$sqlUpdate .= "last_card_id_targeted_1=$cardId WHERE ";
+						$sqlUpdate .= "last_card_position_investigated=$cardId WHERE "; // re-use other field until enough games have the new schema
+						$sqlUpdate .= "player_id=$playerId";
+				}
+				else
+				{ // set the second card we are infecting
+						//$sqlUpdate .= "last_card_id_targeted_2=$cardId WHERE "; // re-use other field until enough games have the new schema
+						$sqlUpdate .= "last_card_position_revealed=$cardId WHERE "; // re-use other field until enough games have the new schema
+						$sqlUpdate .= "player_id=$playerId";
+				}
+
+				self::DbQuery( $sqlUpdate );
+		}
+
+		function getInfectTarget($playerId, $index)
+		{
+				if($index == 1)
+				{ // get the first card we are infecting
+	//				return self::getUniqueValueFromDb("SELECT last_card_id_targeted_1 FROM player WHERE player_id=$playerId LIMIT 1");
+						return self::getUniqueValueFromDb("SELECT last_card_position_investigated FROM player WHERE player_id=$playerId LIMIT 1");
+				}
+				else
+				{ // get the second card we are infecting
+	//					return self::getUniqueValueFromDb("SELECT last_card_id_targeted_2 FROM player WHERE player_id=$playerId LIMIT 1");
+						return self::getUniqueValueFromDb("SELECT last_card_position_revealed FROM player WHERE player_id=$playerId LIMIT 1");
+				}
+
+
+		}
+
 		function setGunAcquiredInState($gunId, $value)
 		{
 				$sqlUpdate = "UPDATE guns SET ";
@@ -6793,7 +6909,7 @@ class goodcopbadcop extends Table
 
 				if(count($guns) < 1)
 				{ // no guns available
-						throw new feException( "There are none available." );
+						// this shouldn't happen, but if it does, just don't pick up a gun
 				}
 
 				self::incStat( 1, 'guns_acquired', $playerWhoArmed ); // increase end game player stat
@@ -7942,24 +8058,39 @@ class goodcopbadcop extends Table
 				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 				$buttonIdentifier = 0;
 
-				$result[$buttonIdentifier] = array(); // create a new array for this player
-				$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Investigate');
-				$result[$buttonIdentifier]['hoverOverText'] = '';
-				$result[$buttonIdentifier]['actionName'] = 'Investigate';
-				$result[$buttonIdentifier]['equipmentId'] = '';
-				$result[$buttonIdentifier]['makeRed'] = false;
-				if($this->canPlayerInvestigate($playerWhoseTurnItIs) && !$this->isPlayerZombie($playerWhoseTurnItIs))
-				{ // this player can investigate
+				if($this->isPlayerZombie($playerWhoseTurnItIs))
+				{ // this player is a zombie
+
+						$result[$buttonIdentifier] = array(); // create a new array for this action
+						$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Infect');
+						$result[$buttonIdentifier]['hoverOverText'] = '';
+						$result[$buttonIdentifier]['actionName'] = 'Infect';
+						$result[$buttonIdentifier]['equipmentId'] = '';
+						$result[$buttonIdentifier]['makeRed'] = false;
 						$result[$buttonIdentifier]['isDisabled'] = false;
 				}
 				else
-				{ // this player is a zombie or cannot investigate
-						$result[$buttonIdentifier]['isDisabled'] = true;
+				{ // this player is NOT a zombie
+
+						$result[$buttonIdentifier] = array(); // create a new array for this action
+						$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Investigate');
+						$result[$buttonIdentifier]['hoverOverText'] = '';
+						$result[$buttonIdentifier]['actionName'] = 'Investigate';
+						$result[$buttonIdentifier]['equipmentId'] = '';
+						$result[$buttonIdentifier]['makeRed'] = false;
+						if($this->canPlayerInvestigate($playerWhoseTurnItIs) && !$this->isPlayerZombie($playerWhoseTurnItIs))
+						{ // this player can investigate
+								$result[$buttonIdentifier]['isDisabled'] = false;
+						}
+						else
+						{ // this player is a zombie or cannot investigate
+								$result[$buttonIdentifier]['isDisabled'] = true;
+						}
 				}
 
 				$buttonIdentifier++;
 
-				$result[$buttonIdentifier] = array(); // create a new array for this player
+				$result[$buttonIdentifier] = array(); // create a new array for this action
 				$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Equip');
 				$result[$buttonIdentifier]['hoverOverText'] = '';
 				$result[$buttonIdentifier]['actionName'] = 'Equip';
@@ -7971,7 +8102,7 @@ class goodcopbadcop extends Table
 
 				if($this->isPlayerZombie($playerWhoseTurnItIs))
 				{ // this player is a zombie
-						$result[$buttonIdentifier] = array(); // create a new array for this player
+						$result[$buttonIdentifier] = array(); // create a new array for this action
 						$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Bite');
 						$result[$buttonIdentifier]['hoverOverText'] = '';
 						$result[$buttonIdentifier]['actionName'] = 'Shoot';
@@ -7995,7 +8126,7 @@ class goodcopbadcop extends Table
 				else
 				{ // they are NOT a zombie
 
-						$result[$buttonIdentifier] = array(); // create a new array for this player
+						$result[$buttonIdentifier] = array(); // create a new array for this action
 						$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Arm');
 						$result[$buttonIdentifier]['hoverOverText'] = '';
 						$result[$buttonIdentifier]['actionName'] = 'Arm';
@@ -8010,7 +8141,7 @@ class goodcopbadcop extends Table
 						}
 						$buttonIdentifier++;
 
-						$result[$buttonIdentifier] = array(); // create a new array for this player
+						$result[$buttonIdentifier] = array(); // create a new array for this action
 						$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Shoot');
 						$result[$buttonIdentifier]['hoverOverText'] = '';
 						$result[$buttonIdentifier]['actionName'] = 'Shoot';
@@ -8057,7 +8188,7 @@ class goodcopbadcop extends Table
 						$actionName = 'PauseToUseEquipment'; // shoot, useEquipment
 						$equipmentId = $equipmentId;  // only used for equipment to specify which equipment in case of more than one in hand
 
-						$result[$buttonIdentifier] = array(); // create a new array for this player
+						$result[$buttonIdentifier] = array(); // create a new array for this action
 						$result[$buttonIdentifier]['buttonLabel'] = $translatedEquipmentName;
 						$result[$buttonIdentifier]['hoverOverText'] = $hoverOverText;
 						$result[$buttonIdentifier]['actionName'] = $actionName;
@@ -8068,7 +8199,7 @@ class goodcopbadcop extends Table
 						$buttonIdentifier++;
 				}
 
-				$result[$buttonIdentifier] = array(); // create a new array for this player
+				$result[$buttonIdentifier] = array(); // create a new array for this action
 				$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Skip My Turn');
 				$result[$buttonIdentifier]['hoverOverText'] = '';
 				$result[$buttonIdentifier]['actionName'] = 'SkipMyTurn';
@@ -8828,10 +8959,10 @@ class goodcopbadcop extends Table
 						break;
 
 						case 67: // Weapon Crate
-								$armedInfectedPlayers = $this->getArmedInfectedPlayers(); // get all players holding a gun with an infection token
+								$armedRevealedPlayers = $this->getArmedPlayersWithNoHiddenCards(); // get all players holding a gun with an infection token
 
 								// unaim their guns
-								foreach($armedInfectedPlayers as $player)
+								foreach($armedRevealedPlayers as $player)
 								{
 										$armedPlayerId = $player['player_id'];
 										$guns = $this->getGunsHeldByPlayer($armedPlayerId);
@@ -8849,10 +8980,10 @@ class goodcopbadcop extends Table
 								}
 
 
-								$unarmedInfectedPlayers = $this->getUnarmedInfectedPlayers(); // get each unarmed player with an infection token
+								$unarmedRevealedPlayers = $this->getUnarmedPlayersWithNoHiddenCards(); // get each unarmed player with an infection token
 
 								// give them a gun
-								foreach($unarmedInfectedPlayers as $player)
+								foreach($unarmedRevealedPlayers as $player)
 								{
 										$armerPlayerId = $player['player_id'];
 										$gun = $this->pickUpGun($armerPlayerId, $this->getStateName());
@@ -8945,6 +9076,15 @@ class goodcopbadcop extends Table
 				$this->gamestate->nextState( "investigateChooseCard" ); // go to the state allowing the active player to choose a card to investigate
 		}
 
+		function clickedInfectButton()
+		{
+				self::checkAction( 'clickInfectButton' ); // make sure we can take this action from this state
+
+				$activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
+
+				$this->gamestate->nextState( "chooseCardToInfect1" ); // go to the state allowing the active player to choose a card to investigate
+		}
+
 		// The active player selected an action but now would like to cancel it and choose a new action.
 		function clickedCancelButton()
 		{
@@ -8953,7 +9093,26 @@ class goodcopbadcop extends Table
 				$equipmentId = $this->getEquipmentCardIdInUse();
 
 				$stateName = $this->getStateName(); // get the name of the current state
-				if($stateName == "chooseIntegrityCards" ||
+				if($stateName == "chooseCardToInfect1" ||
+					$stateName == "chooseCardToInfect2")
+				{ // we are choosing a card to infect
+
+							// clear out any selected cards
+							$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+							foreach($players as $player)
+							{
+									$playerId = $player['player_id'];
+									$this->setInfectTarget($playerId, 1, 0); // set the saved infection target to 0 in case the Infect action was used
+									$this->setInfectTarget($playerId, 2, 0); // set the saved infection target to 0 in case the Infect action was used
+							}
+
+							$this->gamestate->nextState( "playerAction" ); // go back to start of turn
+				}
+				elseif($stateName == "chooseTokenToDiscardForZombieEquip")
+				{ // a zombie clicked Equip but now does not want to Equip anymore
+						$this->gamestate->nextState( "playerAction" ); // go back to start of turn
+				}
+				elseif($stateName == "chooseIntegrityCards" ||
 					 $stateName == "choosePlayer" ||
 					 $stateName == "chooseAnotherPlayer" ||
 					 $stateName == "chooseActiveOrHandEquipmentCard" )
@@ -8983,10 +9142,23 @@ class goodcopbadcop extends Table
 		{
 				self::checkAction( 'clickDoneSelectingButton' ); // make sure we can take this action from this state
 
-				$equipmentId = $this->getEquipmentCardIdInUse();
-				$this->setDoneSelecting($equipmentId, 1); // signify that we are done selecting targts for this equipment card
+				$stateName = $this->getStateName(); // get the name of the current state
+				if($stateName == "chooseCardToInfect1" ||
+					 $stateName == "chooseCardToInfect2")
+				{ // we are done selecting who we will infect
+						$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 
-				$this->setStateForEquipment($equipmentId); // put us in the correct next state
+						$this->setDoneSelectingPlayer($playerWhoseTurnItIs, 1); // this may not be needed
+
+						$this->gamestate->nextState( "executeInfect" );
+				}
+				else
+				{ // we are done selecting targets for an equipment
+						$equipmentId = $this->getEquipmentCardIdInUse();
+						$this->setDoneSelecting($equipmentId, 1); // signify that we are done selecting targts for this equipment card
+
+						$this->setStateForEquipment($equipmentId); // put us in the correct next state
+				}
 		}
 
 		function getIntegrityCardDetails($playerPosition, $cardPosition)
@@ -9031,6 +9203,7 @@ class goodcopbadcop extends Table
 		{
 				self::checkAction( 'clickOpponentIntegrityCard' ); // make sure we can take this action from this state
 //throw new feException( "clicked opponent integrity card" );
+				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 				$playerAsking = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 				$integrityCardOwner = $this->getPlayerIdFromLetterOrder($playerAsking, $playerPosition); // get the player ID of the player being investigated
 				$integrityCardId = $this->getIntegrityCardId($integrityCardOwner, $cardPosition); // get the unique id for this integrity card
@@ -9066,6 +9239,26 @@ class goodcopbadcop extends Table
 
 						}
 				}
+				elseif($stateName == "chooseTokenToDiscardForZombieEquip")
+				{ // we clicked on an infection token to discard for a zombie Equip action
+//throw new feException( "set card position to " . $cardPosition );
+
+						$isInfected = $this->isCardInfected($integrityCardId); // 1 if it is infected
+						if($isInfected == 0)
+						{ // this card is NOT infected
+								throw new BgaUserException( self::_("Please choose a card with an Infection Token on it.") );
+						}
+
+						$isZombie = $this->isPlayerZombie($integrityCardOwner); // true if they are a zombie
+						if($isZombie)
+						{ // they are trying to remove it from a zombie
+								throw new BgaUserException( self::_("Please choose a token from a non-Zombie.") );
+						}
+
+						$this->setLastPlayerInvestigated($playerWhoseTurnItIs, $integrityCardOwner); // save the player we are targeting
+						$this->setLastCardPositionRevealed($playerWhoseTurnItIs, $cardPosition); // save the card position targeted (maybe change this to use last_card_id_targeted_1 once everyone has the new schema)
+						$this->gamestate->nextState( "executeEquip" );
+				}
 				elseif($stateName == "chooseIntegrityCards")
 				{ // if we're in chooseIntegrityCards for equipment usage
 						$equipmentCardId = $this->getEquipmentCardIdInUse();
@@ -9081,6 +9274,45 @@ class goodcopbadcop extends Table
 						$this->setStateForEquipment($equipmentCardId);
 //throw new feException( "set state" );
 				}
+				elseif($stateName == "chooseCardToInfect1")
+				{ // if we're infecting an integrity card
+
+						$isInfected = $this->isCardInfected($integrityCardId); //1 if it is infected
+						if($isInfected == 1)
+						{ // hey... this card has already been infected
+								throw new BgaUserException( self::_("Choose a card that has not already been infected.") );
+						}
+	//throw new feException( "set state" );
+
+						//$this->addInfectionToken($integrityCardOwner, true, $cardPosition, false); // give them an infection token
+						$this->setInfectTarget($playerWhoseTurnItIs, 1, $integrityCardId); // save the card we targeted for infection
+
+						$this->gamestate->nextState( "chooseCardToInfect2" ); // stay in this same state where they will choose another card to infect
+
+				}
+				elseif($stateName == "chooseCardToInfect2")
+				{ // if we're infecting an integrity card
+
+						$isInfected = $this->isCardInfected($integrityCardId); //1 if it is infected
+						if($isInfected == 1)
+						{ // hey... this card has already been infected
+								throw new BgaUserException( self::_("Choose a card that has not already been infected.") );
+						}
+	//throw new feException( "set state" );
+
+						$cardIdTarget1 = $this->getInfectTarget($playerWhoseTurnItIs, 1); // get the first card we targeted
+						$firstPlayerTargeted = $this->getIntegrityCardOwner($cardIdTarget1); // get the owner of the first card we targeted
+						if($firstPlayerTargeted == $integrityCardOwner)
+						{ // they are trying to target the same player again
+								throw new BgaUserException( self::_("Choose a different player than you targeted with your first token.") );
+						}
+
+						//$this->addInfectionToken($integrityCardOwner, true, $cardPosition, false); // give them an infection token
+						$this->setInfectTarget($playerWhoseTurnItIs, 2, $integrityCardId); // save the card we targeted for infection
+						$this->gamestate->nextState( "executeInfect" ); // go to the state where the infection tokens will be added
+
+						$this->setStateAfterTurnAction($playerAsking);
+				}
 				else
 				{
 					throw new feException( "Unexpected state name: ".$stateName );
@@ -9090,7 +9322,7 @@ class goodcopbadcop extends Table
 		function clickedMyIntegrityCard($cardPosition)
 		{
 				self::checkAction( 'clickMyIntegrityCard' ); // make sure we can take this action from this state
-
+				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 				$playerRevealing = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 				$this->setLastCardPositionRevealed($playerRevealing, $cardPosition); // save which card was revealed until while we wait for players to react with equipment
 				$integrityCardId = $this->getIntegrityCardId($playerRevealing, $cardPosition); // get the unique id for this integrity card
@@ -9104,6 +9336,42 @@ class goodcopbadcop extends Table
 						}
 
 						$this->gamestate->nextState( "executeEquip" ); // go to the state where they will draw their equipment card
+				}
+				elseif($stateName == "chooseTokenToDiscardForZombieEquip")
+				{ // a zombie is trying to remove a token from their own card to Equip
+
+						throw new BgaUserException( self::_("Please choose a token from a non-Zombie.") );
+				}
+				elseif($stateName == "chooseCardToInfect1")
+				{ // if we're infecting an integrity card
+
+						$isInfected = $this->isCardInfected($integrityCardId); //1 if it is infected
+						if($isInfected == 1)
+						{ // hey... this card has already been infected
+								throw new BgaUserException( self::_("Choose a card that has not already been infected.") );
+						}
+	//throw new feException( "set state" );
+
+						//$this->addInfectionToken($integrityCardOwner, true, $cardPosition, false); // give them an infection token
+						$this->setInfectTarget($playerWhoseTurnItIs, 1, $integrityCardId); // save the card we targeted for infection
+
+						$this->gamestate->nextState( "chooseCardToInfect2" ); // stay in this same state where they will choose another card to infect
+				}
+				elseif($stateName == "chooseCardToInfect2")
+				{ // if we're infecting an integrity card
+
+						$isInfected = $this->isCardInfected($integrityCardId); //1 if it is infected
+						if($isInfected == 1)
+						{ // hey... this card has already been infected
+								throw new BgaUserException( self::_("Choose a card that has not already been infected.") );
+						}
+	//throw new feException( "set state" );
+
+						//$this->addInfectionToken($integrityCardOwner, true, $cardPosition, false); // give them an infection token
+						$this->setInfectTarget($playerWhoseTurnItIs, 2, $integrityCardId); // save the card we targeted for infection
+						$this->gamestate->nextState( "executeInfect" ); // go to the state where the infection tokens will be added
+
+						$this->setStateAfterTurnAction($playerRevealing);
 				}
 				elseif($stateName == "chooseCardToRevealForArm")
 				{ // execute arm
@@ -9284,8 +9552,12 @@ class goodcopbadcop extends Table
 
 				$activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 				$hiddenCards = $this->getHiddenCardsFromPlayer($activePlayerId); // get all this player's hidden integrity cards
-				if($hiddenCards && count($hiddenCards) > 0)
-				{ // they have at least one hidden card
+				if($this->isPlayerZombie($activePlayerId))
+				{ // they are a zombie
+						$this->gamestate->nextState("chooseTokenToDiscardForZombieEquip");
+				}
+				elseif($hiddenCards && count($hiddenCards) > 0)
+				{ // they are not a zombie and have at least one hidden card
 						$this->gamestate->nextState( "equipChooseCard" ); // go to the state allowing the active player to choose a card to reveal for equip
 				}
 				else
@@ -9781,6 +10053,15 @@ class goodcopbadcop extends Table
 					$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
 				}
 
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				foreach($players as $player)
+				{
+						$playerId = $player['player_id'];
+						$this->setInfectTarget($playerId, 1, 0); // set the saved infection target to 0 in case the Infect action was used
+						$this->setInfectTarget($playerId, 2, 0); // set the saved infection target to 0 in case the Infect action was used
+						$this->setDoneSelectingPlayer($playerId, 0); // set whether we are done selecting our infection targets
+				}
+
 				$guns = $this->getAllGuns(); // get the guns that are currently shooting (should just be 1)
 				foreach( $guns as $gun )
 				{ // go through each gun
@@ -9932,17 +10213,30 @@ class goodcopbadcop extends Table
 				// draw an equipment card
 				$this->drawEquipmentCard($playerWhoseTurnItIs, 1); // draw 1 equipment card
 
-				// reveal the card of the player who armed
-				$integrityCardPositionRevealed = $this->getLastCardPositionRevealed($playerWhoseTurnItIs); // get the card position revealed
+				if($this->isPlayerZombie($playerWhoseTurnItIs))
+				{ // player is a zombie
 
-				if($this->getInfectorCardId() == $this->getCardIdFromPlayerAndPosition($playerWhoseTurnItIs, $integrityCardPositionRevealed))
-				{ // the infector was revealed
-
-						$this->infectorFound($playerWhoseTurnItIs, $integrityCardPositionRevealed, $playerWhoseTurnItIs);
+						$playerWeAreRemovingFrom = $this->getLastPlayerInvestigated($playerWhoseTurnItIs); // get the player we are removing the token from
+						$cardPositionRemoving = $this->getLastCardPositionRevealed($playerWhoseTurnItIs); // get the card position revealed
+//throw new feException( "playerWeAreRemovingFrom:$playerWeAreRemovingFrom cardPositionRemoving:$cardPositionRemoving" );
+						// remove the selected infection token
+						$this->removeInfectionToken($playerWeAreRemovingFrom, $cardPositionRemoving, true);
 				}
 				else
-				{
-					$this->revealCard($playerWhoseTurnItIs, $integrityCardPositionRevealed); // reveal the integrity card from this player's perspective and notify all players
+				{ // NOT a zombie
+
+						// reveal the card of the player who armed
+						$integrityCardPositionRevealed = $this->getLastCardPositionRevealed($playerWhoseTurnItIs); // get the card position revealed
+
+						if($this->getInfectorCardId() == $this->getCardIdFromPlayerAndPosition($playerWhoseTurnItIs, $integrityCardPositionRevealed))
+						{ // the infector was revealed
+
+								$this->infectorFound($playerWhoseTurnItIs, $integrityCardPositionRevealed, $playerWhoseTurnItIs);
+						}
+						else
+						{
+							$this->revealCard($playerWhoseTurnItIs, $integrityCardPositionRevealed); // reveal the integrity card from this player's perspective and notify all players
+						}
 				}
 
 
@@ -9969,6 +10263,29 @@ class goodcopbadcop extends Table
 				}
 
 				$this->gamestate->nextState( "askAim" ); // begin a new player's turn
+		}
+
+		function executeActionInfect()
+		{
+				$playerInfecting = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+
+				$cardIdTarget1 = $this->getInfectTarget($playerInfecting, 1); // get the first card we targeted
+				if($cardIdTarget1 != 0)
+				{ // at least 1 card was targeted for infection
+						$integrityCardOwner1 = $this->getIntegrityCardOwner($cardIdTarget1);
+						$cardPosition1 = $this->getIntegrityCardPosition($cardIdTarget1);
+						$this->addInfectionToken($integrityCardOwner1, true, $cardPosition1, false); // give them an infection token
+				}
+
+				$cardIdTarget2 = $this->getInfectTarget($playerInfecting, 2); // get the second card we targeted
+				if($cardIdTarget2 != 0)
+				{ // a second card was also targeted for infection
+						$integrityCardOwner2 = $this->getIntegrityCardOwner($cardIdTarget2);
+						$cardPosition2 = $this->getIntegrityCardPosition($cardIdTarget2);
+						$this->addInfectionToken($integrityCardOwner2, true, $cardPosition2, false); // give them an infection token
+				}
+
+				$this->setStateAfterTurnAction($playerInfecting);
 		}
 
 		function executeActionBite()
@@ -10097,7 +10414,8 @@ class goodcopbadcop extends Table
 
 		function removeInfectionToken($playerIdRemoving, $cardPositionRemoving, $shouldWeNotify)
 		{
-	//throw new feException( "woundedCardId: $woundedCardId" );
+
+	//throw new feException( "removing token player id " . $playerIdRemoving . " card position " . $cardPositionRemoving );
 				// reset the token in the database
 				$sqlUpdate = "UPDATE integrityCards SET ";
 				$sqlUpdate .= "has_infection=0 WHERE ";
