@@ -3650,7 +3650,7 @@ class goodcopbadcop extends Table
 								return clienttranslate( 'Choose a player who cannot be investigated for the rest of the game.' );
 
 						case 45: // Walkie Talkie
-								return clienttranslate( 'Choose a player. All armed players aim at them.' );
+								return clienttranslate( 'Choose a player. All players holding a Gun aim at them.' );
 
 						case 9: // Polygraph
 								return clienttranslate( 'Investigate all of a player\'s Integrity Cards. They investigate all of yours.' );
@@ -3668,7 +3668,7 @@ class goodcopbadcop extends Table
 								return clienttranslate( 'Choose a player to drop their Gun.' );
 
 						case 67: // Weapon Crate
-								return clienttranslate( 'Each player without any hidden Integrity Cards may Arm and/or change their aim. Any player who does so cannot shoot this turn.' );
+								return clienttranslate( 'Each player without any hidden Integrity Cards may grab a Gun and/or change their aim. Any player who does so cannot shoot this turn.' );
 
 						case 66: // Machete
 								return clienttranslate( 'Choose a zombie. Exchange any number of their Integrity cards for the same number of revealed Honest or Crooked cards.' );
@@ -3692,7 +3692,7 @@ class goodcopbadcop extends Table
 								return clienttranslate( 'Choose another player\'s hidden Integrity card to reveal. If it is a Leader, you are shot. Otherwise, they are shot.' );
 
 						case 60: // Crossbow
-								return clienttranslate( 'Choose another player with no revealed Leader card who is armed. That player is shot.' );
+								return clienttranslate( 'Choose another player with no revealed Leader card who is holding a Gun. That player is shot.' );
 
 						default:
 							return clienttranslate( 'Equipment' );
@@ -8091,7 +8091,7 @@ class goodcopbadcop extends Table
 				$buttonIdentifier++;
 
 				$result[$buttonIdentifier] = array(); // create a new array for this action
-				$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Equip');
+				$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Draw Equipment');
 				$result[$buttonIdentifier]['hoverOverText'] = '';
 				$result[$buttonIdentifier]['actionName'] = 'Equip';
 				$result[$buttonIdentifier]['equipmentId'] = '';
@@ -8127,7 +8127,7 @@ class goodcopbadcop extends Table
 				{ // they are NOT a zombie
 
 						$result[$buttonIdentifier] = array(); // create a new array for this action
-						$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Arm');
+						$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Grab a Gun');
 						$result[$buttonIdentifier]['hoverOverText'] = '';
 						$result[$buttonIdentifier]['actionName'] = 'Arm';
 						$result[$buttonIdentifier]['equipmentId'] = '';

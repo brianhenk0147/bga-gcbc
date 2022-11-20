@@ -52,6 +52,8 @@ CREATE TABLE IF NOT EXISTS `integrityCards` (
   `card_location_arg` int(11) NOT NULL,
   `has_wound` INT UNSIGNED NOT NULL DEFAULT 0,
   `has_infection` INT UNSIGNED NOT NULL DEFAULT 0,
+  `has_bomb_symbol` INT UNSIGNED NOT NULL DEFAULT 0,
+  `has_knife_symbol` INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
