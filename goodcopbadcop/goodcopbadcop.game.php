@@ -379,6 +379,12 @@ class goodcopbadcop extends Table
 								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 64, 'card_location' => 'deck','nbr' => 1)); // Chainsaw
 								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 60, 'card_location' => 'deck','nbr' => 1)); // Crossbow
 								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 67, 'card_location' => 'deck','nbr' => 1)); // Weapon Crate
+
+								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 18, 'card_location' => 'deck','nbr' => 1)); // Classified Orders
+								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 1)); // Fake ID
+								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)); // Fingerprint Kit
+								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 21, 'card_location' => 'deck','nbr' => 1)); // Grenade
+								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 22, 'card_location' => 'deck','nbr' => 1)); // Holster
 						}
 				}
 
@@ -419,6 +425,13 @@ class goodcopbadcop extends Table
 				$this->setEquipmentName(66, 'Machete');
 				$this->setEquipmentName(67, 'Weapon Crate');
 				$this->setEquipmentName(68, 'Alarm Clock');
+
+				// BOMBERS TRAITORS
+				$this->setEquipmentName(18, 'Classified Orders');
+				$this->setEquipmentName(19, 'Fake ID');
+				$this->setEquipmentName(20, 'Fingerprint Kit');
+				$this->setEquipmentName(21, 'Grenade');
+				$this->setEquipmentName(22, 'Holster');
 		}
 
 		function initializeIntegrityCardDeck($players)
@@ -1965,7 +1978,7 @@ class goodcopbadcop extends Table
 				$isLeftArray = array();
 				$isLeftArray['a'] = array( 'a' => 0, 'b' => 1, 'c' => 0, 'd' => 0, 'e' => 0, 'f' => 0, 'g' => 1, 'h' => 0);
 				$isLeftArray['b'] = array( 'a' => 0, 'b' => 1, 'c' => 0, 'd' => 0, 'e' => 0, 'f' => 0, 'g' => 0, 'h' => 0);
-				$isLeftArray['c'] = array( 'a' => 1, 'b' => 1, 'c' => 1, 'd' => 0, 'e' => 0, 'f' => 0, 'g' => 1, 'h' => 1);
+				$isLeftArray['c'] = array( 'a' => 1, 'b' => 1, 'c' => 1, 'd' => 1, 'e' => 0, 'f' => 0, 'g' => 1, 'h' => 1);
 				$isLeftArray['d'] = array( 'a' => 1, 'b' => 1, 'c' => 1, 'd' => 0, 'e' => 0, 'f' => 0, 'g' => 1, 'h' => 1);
 				$isLeftArray['e'] = array( 'a' => 0, 'b' => 0, 'c' => 1, 'd' => 1, 'e' => 0, 'f' => 0, 'g' => 0, 'h' => 0);
 				$isLeftArray['f'] = array( 'a' => 1, 'b' => 1, 'c' => 1, 'd' => 1, 'e' => 1, 'f' => 0, 'g' => 1, 'h' => 1);
@@ -1988,9 +2001,9 @@ class goodcopbadcop extends Table
 						// because it will be faster than querying a database table, create a 2D array to hold how much a gun should be rotated based on where it is aimed
 						$rotationArray['a'] = array( 'a' => 90, 'b' => 30, 'c' => -50, 'd' => -15, 'e' => -90, 'f' => -20, 'g' => -160, 'h' => 25); // 4 plus
 						$rotationArray['b'] = array( 'a' => 70, 'b' => 0, 'c' => -30, 'd' => 15, 'e' => -70, 'f' => 0, 'g' => 105, 'h' => 35); // 4 plus
-						$rotationArray['c'] = array( 'a' => -60, 'b' => -15, 'c' => 90, 'd' => 65, 'e' => 210, 'f' => 45, 'g' => 160, 'h' => -90); // 4 plus
+						$rotationArray['c'] = array( 'a' => -60, 'b' => -15, 'c' => 90, 'd' => -120, 'e' => 210, 'f' => 45, 'g' => 160, 'h' => -90); // 4 plus
 						$rotationArray['d'] = array( 'a' => -30, 'b' => 15, 'c' => 75, 'd' => 0, 'e' => 230, 'f' => -45, 'g' => 180, 'h' => 105); // 8 plus
-						$rotationArray['e'] = array( 'a' => 90, 'b' => 160, 'c' => 150, 'd' => -15, 'e' => -90, 'f' => 25, 'g' => -160, 'h' => 50); // 5 plus
+						$rotationArray['e'] = array( 'a' => 90, 'b' => 160, 'c' => 150, 'd' => -15, 'e' => -90, 'f' => 25, 'g' => -160, 'h' => 55); // 5 plus
 						$rotationArray['f'] = array( 'a' => -30, 'b' => 0, 'c' => 60, 'd' => -115, 'e' => 30, 'f' => 0, 'g' => 180, 'h' => -75); // 4 plus
 						$rotationArray['g'] = array( 'a' => 90, 'b' => -110, 'c' => -60, 'd' => -15, 'e' => -90, 'f' => -45, 'g' => 0, 'h' => 15); // 7 plus
 						$rotationArray['h'] = array( 'a' => -30, 'b' => 20, 'c' => 90, 'd' => -15, 'e' => 50, 'f' => -45, 'g' => -160, 'h' => -90); // 6 plus
@@ -2000,7 +2013,7 @@ class goodcopbadcop extends Table
 						// because it will be faster than querying a database table, create a 2D array to hold how much a gun should be rotated based on where it is aimed
 						$rotationArray['a'] = array( 'a' => 90, 'b' => 60, 'c' => -65, 'd' => -15, 'e' => -90, 'f' => -45, 'g' => 20, 'h' => 25);
 						$rotationArray['b'] = array( 'a' => 80, 'b' => 0, 'c' => -30, 'd' => 25, 'e' => -70, 'f' => 0, 'g' => 105, 'h' => 55);
-						$rotationArray['c'] = array( 'a' => -65, 'b' => -15, 'c' => 90, 'd' => 65, 'e' => 200, 'f' => 45, 'g' => -45, 'h' => -90);
+						$rotationArray['c'] = array( 'a' => -65, 'b' => -15, 'c' => 90, 'd' => -120, 'e' => 200, 'f' => 45, 'g' => -45, 'h' => -90);
 						$rotationArray['d'] = array( 'a' => -30, 'b' => 25, 'c' => 75, 'd' => 0, 'e' => 230, 'f' => -65, 'g' => 0, 'h' => -70);
 						$rotationArray['e'] = array( 'a' => 90, 'b' => 150, 'c' => 150, 'd' => -140, 'e' => -90, 'f' => 20, 'g' => 115, 'h' => 70);
 						$rotationArray['f'] = array( 'a' => -50, 'b' => 0, 'c' => 60, 'd' => -115, 'e' => 30, 'f' => 0, 'g' => -20, 'h' => -75);
@@ -2057,9 +2070,9 @@ class goodcopbadcop extends Table
 						// because it will be faster than querying a database table, create a 2D array to hold how much a gun should be rotated based on where it is aimed
 						$rotationArray['a'] = array( 'a' => 90, 'b' => 30, 'c' => -50, 'd' => -15, 'e' => -90, 'f' => -20, 'g' => -160, 'h' => 25); // 4 plus
 						$rotationArray['b'] = array( 'a' => 70, 'b' => 0, 'c' => -30, 'd' => 15, 'e' => -70, 'f' => 0, 'g' => 105, 'h' => 35); // 4 plus
-						$rotationArray['c'] = array( 'a' => -60, 'b' => -15, 'c' => 90, 'd' => 65, 'e' => 210, 'f' => 45, 'g' => 160, 'h' => -90); // 4 plus
+						$rotationArray['c'] = array( 'a' => -60, 'b' => -15, 'c' => 90, 'd' => -120, 'e' => 210, 'f' => 45, 'g' => 160, 'h' => -90); // 4 plus
 						$rotationArray['d'] = array( 'a' => -30, 'b' => 15, 'c' => 75, 'd' => 0, 'e' => 230, 'f' => -45, 'g' => 180, 'h' => 105); // 8 plus
-						$rotationArray['e'] = array( 'a' => 90, 'b' => 160, 'c' => 150, 'd' => -15, 'e' => -90, 'f' => 25, 'g' => -160, 'h' => 50); // 5 plus
+						$rotationArray['e'] = array( 'a' => 90, 'b' => 160, 'c' => 150, 'd' => -15, 'e' => -90, 'f' => 25, 'g' => -160, 'h' => 55); // 5 plus
 						$rotationArray['f'] = array( 'a' => -30, 'b' => 0, 'c' => 60, 'd' => -115, 'e' => 30, 'f' => 0, 'g' => 180, 'h' => -75); // 4 plus
 						$rotationArray['g'] = array( 'a' => 90, 'b' => -110, 'c' => -60, 'd' => -15, 'e' => -90, 'f' => -45, 'g' => -160, 'h' => 15); // 7 plus
 						$rotationArray['h'] = array( 'a' => -30, 'b' => 20, 'c' => 90, 'd' => -15, 'e' => 50, 'f' => -45, 'g' => -160, 'h' => -90); // 6 plus
@@ -2069,7 +2082,7 @@ class goodcopbadcop extends Table
 						// because it will be faster than querying a database table, create a 2D array to hold how much a gun should be rotated based on where it is aimed
 						$rotationArray['a'] = array( 'a' => 90, 'b' => 60, 'c' => -65, 'd' => -15, 'e' => -90, 'f' => -45, 'g' => 20, 'h' => 25);
 						$rotationArray['b'] = array( 'a' => 80, 'b' => 0, 'c' => -30, 'd' => 25, 'e' => -70, 'f' => 0, 'g' => 105, 'h' => 55);
-						$rotationArray['c'] = array( 'a' => -65, 'b' => -15, 'c' => 90, 'd' => 65, 'e' => 200, 'f' => 45, 'g' => -45, 'h' => -90);
+						$rotationArray['c'] = array( 'a' => -65, 'b' => -15, 'c' => 90, 'd' => -120, 'e' => 200, 'f' => 45, 'g' => -45, 'h' => -90);
 						$rotationArray['d'] = array( 'a' => -30, 'b' => 25, 'c' => 75, 'd' => 0, 'e' => 230, 'f' => -65, 'g' => 0, 'h' => -70);
 						$rotationArray['e'] = array( 'a' => 90, 'b' => 150, 'c' => 150, 'd' => -140, 'e' => -90, 'f' => 20, 'g' => 115, 'h' => 70);
 						$rotationArray['f'] = array( 'a' => -50, 'b' => 0, 'c' => 60, 'd' => -115, 'e' => 30, 'f' => 0, 'g' => -20, 'h' => -75);
@@ -2080,7 +2093,6 @@ class goodcopbadcop extends Table
 				return $rotationArray[$gunHolderLetter][$aimedAtLetter];
 		}
 
-		// OBSOLETE
 		function getIsGunPointingLeft($gunHolderLetter, $aimedAtLetter)
 		{
 				if(is_null($gunHolderLetter) || is_null($aimedAtLetter))
@@ -2092,7 +2104,7 @@ class goodcopbadcop extends Table
 				$isLeftArray = array();
 				$isLeftArray['a'] = array( 'a' => 0, 'b' => 1, 'c' => 0, 'd' => 0, 'e' => 0, 'f' => 0, 'g' => 1, 'h' => 0);
 				$isLeftArray['b'] = array( 'a' => 0, 'b' => 1, 'c' => 0, 'd' => 0, 'e' => 0, 'f' => 0, 'g' => 0, 'h' => 0);
-				$isLeftArray['c'] = array( 'a' => 1, 'b' => 1, 'c' => 1, 'd' => 0, 'e' => 0, 'f' => 0, 'g' => 1, 'h' => 1);
+				$isLeftArray['c'] = array( 'a' => 1, 'b' => 1, 'c' => 1, 'd' => 1, 'e' => 0, 'f' => 0, 'g' => 1, 'h' => 1);
 				$isLeftArray['d'] = array( 'a' => 1, 'b' => 1, 'c' => 1, 'd' => 0, 'e' => 0, 'f' => 0, 'g' => 1, 'h' => 1);
 				$isLeftArray['e'] = array( 'a' => 0, 'b' => 0, 'c' => 1, 'd' => 1, 'e' => 0, 'f' => 0, 'g' => 0, 'h' => 0);
 				$isLeftArray['f'] = array( 'a' => 1, 'b' => 1, 'c' => 1, 'd' => 1, 'e' => 1, 'f' => 0, 'g' => 1, 'h' => 1);
@@ -2165,7 +2177,7 @@ class goodcopbadcop extends Table
 				$equipmentEffects['K-9 Unit'] = array( 'effect' => $this->getTranslatedEquipmentEffect(6));
 
 
-
+				// ZOMBIES
 				$equipmentEffects['Crossbow'] = array( 'effect' => $this->getTranslatedEquipmentEffect(60));
 				$equipmentEffects['Transfusion Tube'] = array( 'effect' => $this->getTranslatedEquipmentEffect(61));
 				$equipmentEffects['Zombie Serum'] = array( 'effect' => $this->getTranslatedEquipmentEffect(62));
@@ -2175,6 +2187,13 @@ class goodcopbadcop extends Table
 				$equipmentEffects['Machete'] = array( 'effect' => $this->getTranslatedEquipmentEffect(66));
 				$equipmentEffects['Weapon Crate'] = array( 'effect' => $this->getTranslatedEquipmentEffect(67));
 				$equipmentEffects['Alarm Clock'] = array( 'effect' => $this->getTranslatedEquipmentEffect(68));
+
+				// BOMBERS & TRAITORS
+				$equipmentEffects['Classified Orders'] = array( 'effect' => $this->getTranslatedEquipmentEffect(18));
+				$equipmentEffects['Fake ID'] = array( 'effect' => $this->getTranslatedEquipmentEffect(19));
+				$equipmentEffects['Fingerprint Kit'] = array( 'effect' => $this->getTranslatedEquipmentEffect(20));
+				$equipmentEffects['Grenade'] = array( 'effect' => $this->getTranslatedEquipmentEffect(21));
+				$equipmentEffects['Holster'] = array( 'effect' => $this->getTranslatedEquipmentEffect(22));
 
 				return $equipmentEffects;
 		}
@@ -3597,6 +3616,23 @@ class goodcopbadcop extends Table
 						case 60: // Crossbow
 								return clienttranslate( 'Crossbow' );
 
+
+
+						case 18: // Classified Orders
+								return clienttranslate( 'Classified Orders' );
+
+						case 19: // Fake ID
+								return clienttranslate( 'Fake ID' );
+
+						case 20: // Fingerprint Kit
+								return clienttranslate( 'Fingerprint Kit' );
+
+						case 21: // Grenade
+								return clienttranslate( 'Grenade' );
+
+						case 22: // Holster
+								return clienttranslate( 'Holster' );
+
 						default:
 							return clienttranslate( 'Equipment' );
 
@@ -3693,6 +3729,23 @@ class goodcopbadcop extends Table
 
 						case 60: // Crossbow
 								return clienttranslate( 'Choose another player with no revealed Leader card who is holding a Gun. That player is shot.' );
+
+
+
+						case 18: // Classified Orders
+								return clienttranslate( 'Use when someone shoots. You choose any player other than yourself to change where the gun is aimed before it fires.' );
+
+						case 19: // Fake ID
+								return clienttranslate( 'Exchange a revealed Honest or Crooked card with any other revealed Honest or Crooked card.' );
+
+						case 20: // Fingerprint Kit
+								return clienttranslate( 'Investigate any player. You may reveal an Integrity Card to put Fingerprint Kit back in your hand.' );
+
+						case 21: // Grenade
+								return clienttranslate( 'Give this to any player. On that player\'s next turn, they give it to another player. At the end of that player\'s turn, the Grenade holder is shot.' );
+
+						case 22: // Holster
+								return clienttranslate( 'Use when you shoot. You may change your aim before you shoot.' );
 
 						default:
 							return clienttranslate( 'Equipment' );
@@ -4092,6 +4145,7 @@ class goodcopbadcop extends Table
 		{
 
 				$this->gamestate->setAllPlayersMultiactive(); // set all players to active
+				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 
 				$activePlayers = 0;
 				$checkedPlayers = 0;
@@ -4108,8 +4162,16 @@ class goodcopbadcop extends Table
 								$isHoldingEquipment = $this->isPlayerHoldingPlayableEquipment($playerId, $nextGameState); // true if the player is holding playable equipment
 						}
 
-						if(!$isHoldingEquipment || $isEliminated || $wantsToSkipReactions)
-						{ // this player is not holding equipment or they are eliminated or they don't want to be asked to react with equipment
+						if($playerId==$playerWhoseTurnItIs)
+						{
+						//throw new feException("playerId: $playerId playerWhoseTurnItIs: $playerWhoseTurnItIs isHoldingEquipment: $isHoldingEquipment");
+}
+
+						if(!($playerId==$playerWhoseTurnItIs && $isHoldingEquipment==1) &&
+						(!$isHoldingEquipment || $isEliminated || $wantsToSkipReactions))
+						{ // SKIP equipment reactions... it is not true that it is this player's turn and they are holding equipment AND
+							// there is a reason we want to skip, namely: this player is NOT holding equipment or they are eliminated or they don't want to be asked to react with equipment
+
 								if($activePlayers == 0 && $checkedPlayers == (count($players) - 1))
 								{ // we are checking the last player and no one has been active yet
 
@@ -4586,6 +4648,24 @@ class goodcopbadcop extends Table
 						case 68: // Alarm Clock
 							return true; // this is always valid (you can always just use it to give someone an Infection Token)
 							break;
+
+
+
+						case 18: // Classified Orders
+								return true; // this is always valid
+
+						case 19: // Fake ID
+								return true; // this is always valid
+
+						case 20: // Fingerprint Kit
+								return true; // this is always valid
+
+						case 21: // Grenade
+								return true; // this is always valid
+
+						case 22: // Holster
+								return true; // this is always valid
+
 
 						default:
 							return false; // return false by default
@@ -5594,6 +5674,12 @@ class goodcopbadcop extends Table
 						break;
 
 
+
+
+						case 19: // Fake ID
+								return true;
+
+
 						default:
 							return false;
 							break;
@@ -5964,6 +6050,26 @@ class goodcopbadcop extends Table
 								}
 						break;
 
+
+
+
+
+						case 18: // Classified Orders
+								return true;
+
+						case 19: // Fake ID
+								return true;
+
+						case 20: // Fingerprint Kit
+								return true;
+
+						case 21: // Grenade
+								return true;
+
+						case 22: // Holster
+								return true;
+
+
 						default:
 							return false; // return false by default
 							break;
@@ -6012,7 +6118,7 @@ class goodcopbadcop extends Table
 					}
 			}
 			else
-			{ // this player is NOT holding a gun
+			{ // this player is NOT holding a gun and no one is over the equipment hand limit
 						//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
 						//{ // we are using the zombies expansion and the Infector is hidden
 						//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
@@ -6362,6 +6468,24 @@ class goodcopbadcop extends Table
 								}
 						break;
 
+
+
+
+						case 18: // Classified Orders
+								$this->gamestate->nextState( "executeEquipment" ); // use the equipment
+
+						case 19: // Fake ID
+								$this->gamestate->nextState( "executeEquipment" ); // use the equipment
+
+						case 20: // Fingerprint Kit
+								$this->gamestate->nextState( "executeEquipment" ); // use the equipment
+
+						case 21: // Grenade
+								$this->gamestate->nextState( "executeEquipment" ); // use the equipment
+
+						case 22: // Holster
+								$this->gamestate->nextState( "executeEquipment" ); // use the equipment
+
 						default:
 								throw new feException( "Unrecognized equipment card: ".$collectorNumber );
 								break;
@@ -6473,6 +6597,26 @@ class goodcopbadcop extends Table
 						case 68: // Alarm Clock
 								return false; // chosen by equipment player
 						break;
+
+
+
+
+						case 18: // Classified Orders
+							  return false;
+
+						case 19: // Fake ID
+								return false;
+
+						case 20: // Fingerprint Kit
+								return false;
+
+						case 21: // Grenade
+								return false;
+
+						case 22: // Holster
+								return false;
+
+
 
 						default:
 								return false;
@@ -8189,7 +8333,8 @@ class goodcopbadcop extends Table
 						$equipmentId = $equipmentId;  // only used for equipment to specify which equipment in case of more than one in hand
 
 						$result[$buttonIdentifier] = array(); // create a new array for this action
-						$result[$buttonIdentifier]['buttonLabel'] = $translatedEquipmentName;
+						//$result[$buttonIdentifier]['buttonLabel'] = $translatedEquipmentName;
+						$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Use Equipment');
 						$result[$buttonIdentifier]['hoverOverText'] = $hoverOverText;
 						$result[$buttonIdentifier]['actionName'] = $actionName;
 						$result[$buttonIdentifier]['equipmentId'] = $equipmentId;
@@ -9013,6 +9158,26 @@ class goodcopbadcop extends Table
 								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
 
 						break;
+
+
+
+
+						case 18: // Classified Orders
+							  throw new feException( "Not implemented: $collectorNumber" );
+
+						case 19: // Fake ID
+								throw new feException( "Not implemented: $collectorNumber" );
+
+						case 20: // Fingerprint Kit
+								throw new feException( "Not implemented: $collectorNumber" );
+
+						case 21: // Grenade
+								throw new feException( "Not implemented: $collectorNumber" );
+
+						case 22: // Holster
+								throw new feException( "Not implemented: $collectorNumber" );
+
+
 
 						default:
 							throw new feException( "Unknown equipment: $collectorNumber" );
@@ -10268,22 +10433,39 @@ class goodcopbadcop extends Table
 		function executeActionInfect()
 		{
 				$playerInfecting = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+				$playerNameInfecting = $this->getPlayerNameFromPlayerId($playerInfecting); // get name of player who is infecting
 
 				$cardIdTarget1 = $this->getInfectTarget($playerInfecting, 1); // get the first card we targeted
 				if($cardIdTarget1 != 0)
 				{ // at least 1 card was targeted for infection
 						$integrityCardOwner1 = $this->getIntegrityCardOwner($cardIdTarget1);
+						$playerNameTarget1 = $this->getPlayerNameFromPlayerId($integrityCardOwner1);
 						$cardPosition1 = $this->getIntegrityCardPosition($cardIdTarget1);
-						$this->addInfectionToken($integrityCardOwner1, true, $cardPosition1, false); // give them an infection token
+
+						self::notifyAllPlayers( 'infectActionExecuted', clienttranslate( '${player_name} is taking the Infect action targeting ${player_name_2}.' ), array(
+								 'player_name' => $playerNameInfecting,
+								 'player_name_2' => $playerNameTarget1
+						) );
+
+						$this->addInfectionToken($integrityCardOwner1, true, $cardPosition1, false); // give them an infection token (including the message log)
 				}
 
 				$cardIdTarget2 = $this->getInfectTarget($playerInfecting, 2); // get the second card we targeted
 				if($cardIdTarget2 != 0)
 				{ // a second card was also targeted for infection
 						$integrityCardOwner2 = $this->getIntegrityCardOwner($cardIdTarget2);
+						$playerNameTarget2 = $this->getPlayerNameFromPlayerId($integrityCardOwner2);
 						$cardPosition2 = $this->getIntegrityCardPosition($cardIdTarget2);
-						$this->addInfectionToken($integrityCardOwner2, true, $cardPosition2, false); // give them an infection token
+
+						self::notifyAllPlayers( 'infectActionExecuted', clienttranslate( '${player_name} is taking the Infect action targeting ${player_name_2}.' ), array(
+								 'player_name' => $playerNameInfecting,
+								 'player_name_2' => $playerNameTarget2
+						) );
+
+						$this->addInfectionToken($integrityCardOwner2, true, $cardPosition2, false); // give them an infection token (including the message log)
 				}
+
+
 
 				$this->setStateAfterTurnAction($playerInfecting);
 		}

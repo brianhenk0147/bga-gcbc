@@ -42,6 +42,8 @@ ALTER TABLE `player` ADD `is_eliminated` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `is_zombie` INT UNSIGNED NOT NULL DEFAULT '0';
 ALTER TABLE `player` ADD `aiming_at` varchar(30) NOT NULL DEFAULT '';
 ALTER TABLE `player` ADD `skip_equipment_reactions` INT UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `skip_shoot_reactions` INT UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `skip_end_of_turn_reactions` INT UNSIGNED NOT NULL DEFAULT '0';
 
 
 CREATE TABLE IF NOT EXISTS `integrityCards` (

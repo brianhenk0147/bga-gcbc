@@ -3641,13 +3641,21 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
               if(gunType == 'arm')
               { // we are dropping zombie arms
                   dojo.style( gunToMoveHtmlId, 'backgroundPosition', '-0px -50px' ); // switch to the arm pointing right image
+                  dojo.removeClass( gunToMoveHtmlId, 'gun_reset'); // to avoid guns getting messy, remove the class that resets its left and top
+                  $(gunToMoveHtmlId).style.removeProperty('top'); // remove
+                  $(gunToMoveHtmlId).style.removeProperty('left'); // remove
               }
               else
               { // we are dropping a gun
                   dojo.style( gunToMoveHtmlId, 'backgroundPosition', '-0px -0px' ); // switch to the gun pointing right image
+                  dojo.removeClass( gunToMoveHtmlId, 'gun_reset'); // to avoid guns getting messy, remove the class that resets its left and top
+                  $(gunToMoveHtmlId).style.removeProperty('top'); // remove
+                  $(gunToMoveHtmlId).style.removeProperty('left'); // remove
               }
             });
             anim1.play();
+
+
 
             this.removeTooltip(gunToMoveHtmlId); // remove hover over
 
