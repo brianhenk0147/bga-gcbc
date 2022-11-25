@@ -432,7 +432,7 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-            //console.log("onUpdateActionButtons state " + stateName);
+            console.log("onUpdateActionButtons state " + stateName);
 
 
             if( this.isCurrentPlayerActive() )
@@ -446,7 +446,27 @@ function (dojo, declare) {
                 switch( stateName )
                 {
 
-                    case 'playerTurn':
+                  case 'askStartGameReaction':
+                      this.addActionButton( 'button_PauseToUseEquipment', _('Use Equipment'), 'onClick_PauseToUseEquipment' );
+
+                      if (false)
+                      { // we want to disble this button
+                         dojo.addClass( 'button_PauseToUseEquipment', 'disabled'); //disable the button
+                      }
+
+                      this.addActionButton( 'button_PassOnUseEquipment', _('Pass'), 'onClick_PassOnEquipmentUse', null, false, 'red' );
+
+
+                      // get a list of all players, their name, and their letter from my perpsective, if possible
+                      //var myInfo = args.myNewGameInfo;
+                      //                      console.log(myInfo);
+                      //var name = myInfo['name'];
+
+                      //this.addActionButton( 'button_Name', _(name), 'onClick_PauseToUseEquipment' );
+
+                  break;
+
+                  case 'playerTurn':
                         var buttonList = args.buttonList;
 
                         const buttonKeys = Object.keys(buttonList);
@@ -554,6 +574,7 @@ function (dojo, declare) {
 
                     break;
 
+                    case 'chooseEquipmentToPlayStartGame':
                     case 'chooseEquipmentToPlayReactInvestigate':
                     case 'chooseEquipmentToPlayReactShoot':
                     case 'chooseEquipmentToPlayReactBite':
@@ -834,6 +855,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
          this.equipmentList.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
          this.equipmentList.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
 
+         this.equipmentList.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+         this.equipmentList.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+         this.equipmentList.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+         this.equipmentList.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+         this.equipmentList.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
+
          this.resetEquipmentList(allEquipment);
 
          /*
@@ -968,6 +995,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                this.activePlayerEquipmentA.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
                this.activePlayerEquipmentA.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
                this.activePlayerEquipmentA.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
+
+               this.activePlayerEquipmentA.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+               this.activePlayerEquipmentA.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+               this.activePlayerEquipmentA.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+               this.activePlayerEquipmentA.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+               this.activePlayerEquipmentA.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                break;
                case 'b':
                this.activePlayerEquipmentB = new ebg.stock();
@@ -1003,6 +1036,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                this.activePlayerEquipmentB.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
                this.activePlayerEquipmentB.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
                this.activePlayerEquipmentB.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
+
+               this.activePlayerEquipmentB.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+               this.activePlayerEquipmentB.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+               this.activePlayerEquipmentB.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+               this.activePlayerEquipmentB.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+               this.activePlayerEquipmentB.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                break;
                case 'c':
                this.activePlayerEquipmentC = new ebg.stock();
@@ -1038,6 +1077,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                this.activePlayerEquipmentC.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
                this.activePlayerEquipmentC.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
                this.activePlayerEquipmentC.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
+
+               this.activePlayerEquipmentC.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+               this.activePlayerEquipmentC.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+               this.activePlayerEquipmentC.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+               this.activePlayerEquipmentC.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+               this.activePlayerEquipmentC.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                break;
                case 'd':
                this.activePlayerEquipmentD = new ebg.stock();
@@ -1073,6 +1118,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                this.activePlayerEquipmentD.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
                this.activePlayerEquipmentD.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
                this.activePlayerEquipmentD.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
+
+               this.activePlayerEquipmentD.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+               this.activePlayerEquipmentD.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+               this.activePlayerEquipmentD.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+               this.activePlayerEquipmentD.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+               this.activePlayerEquipmentD.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                break;
                case 'e':
                this.activePlayerEquipmentE = new ebg.stock();
@@ -1108,6 +1159,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                this.activePlayerEquipmentE.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
                this.activePlayerEquipmentE.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
                this.activePlayerEquipmentE.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
+
+               this.activePlayerEquipmentE.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+               this.activePlayerEquipmentE.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+               this.activePlayerEquipmentE.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+               this.activePlayerEquipmentE.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+               this.activePlayerEquipmentE.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                break;
                case 'f':
                this.activePlayerEquipmentF = new ebg.stock();
@@ -1143,6 +1200,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                this.activePlayerEquipmentF.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
                this.activePlayerEquipmentF.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
                this.activePlayerEquipmentF.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
+
+               this.activePlayerEquipmentF.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+               this.activePlayerEquipmentF.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+               this.activePlayerEquipmentF.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+               this.activePlayerEquipmentF.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+               this.activePlayerEquipmentF.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                break;
                case 'g':
                this.activePlayerEquipmentG = new ebg.stock();
@@ -1178,6 +1241,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                this.activePlayerEquipmentG.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
                this.activePlayerEquipmentG.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
                this.activePlayerEquipmentG.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
+
+               this.activePlayerEquipmentG.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+               this.activePlayerEquipmentG.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+               this.activePlayerEquipmentG.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+               this.activePlayerEquipmentG.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+               this.activePlayerEquipmentG.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                break;
                case 'h':
                this.activePlayerEquipmentH = new ebg.stock();
@@ -1214,6 +1283,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                this.activePlayerEquipmentH.addItemType( 66, 66, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 26 ); // Machete
                this.activePlayerEquipmentH.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 21 ); // Weapon Crate
                this.activePlayerEquipmentH.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 22 ); // Alarm Clock
+
+               this.activePlayerEquipmentH.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+               this.activePlayerEquipmentH.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+               this.activePlayerEquipmentH.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+               this.activePlayerEquipmentH.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+               this.activePlayerEquipmentH.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                break;
            }
        },
@@ -1267,6 +1342,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.myHandEquipment.addItemType( 67, 67, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 21 ); // Weapon Crate
                 this.myHandEquipment.addItemType( 68, 68, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 22 ); // Alarm Clock
 
+                this.myHandEquipment.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 30 ); // Classified Orders
+                this.myHandEquipment.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 31 ); // Fake ID
+                this.myHandEquipment.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 32 ); // Fingerprint Kit
+                this.myHandEquipment.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 33 ); // Grenade
+                this.myHandEquipment.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 34 ); // Holster
+
 
 
                 this.handPlayerEquipmentA = new ebg.stock();
@@ -1302,6 +1383,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentA.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentA.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
+                this.handPlayerEquipmentA.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+                this.handPlayerEquipmentA.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+                this.handPlayerEquipmentA.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+                this.handPlayerEquipmentA.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+                this.handPlayerEquipmentA.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
+
                 break;
                 case 'b':
                 this.handPlayerEquipmentB = new ebg.stock();
@@ -1336,6 +1423,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentB.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentB.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentB.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentB.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+                this.handPlayerEquipmentB.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+                this.handPlayerEquipmentB.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+                this.handPlayerEquipmentB.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+                this.handPlayerEquipmentB.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                 break;
                 case 'c':
                 this.handPlayerEquipmentC = new ebg.stock();
@@ -1370,6 +1463,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentC.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentC.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentC.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentC.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+                this.handPlayerEquipmentC.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+                this.handPlayerEquipmentC.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+                this.handPlayerEquipmentC.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+                this.handPlayerEquipmentC.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                 break;
                 case 'd':
                 this.handPlayerEquipmentD = new ebg.stock();
@@ -1404,6 +1503,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentD.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentD.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentD.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentD.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+                this.handPlayerEquipmentD.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+                this.handPlayerEquipmentD.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+                this.handPlayerEquipmentD.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+                this.handPlayerEquipmentD.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                 break;
                 case 'e':
                 this.handPlayerEquipmentE = new ebg.stock();
@@ -1438,6 +1543,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentE.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentE.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentE.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentE.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+                this.handPlayerEquipmentE.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+                this.handPlayerEquipmentE.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+                this.handPlayerEquipmentE.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+                this.handPlayerEquipmentE.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                 break;
                 case 'f':
                 this.handPlayerEquipmentF = new ebg.stock();
@@ -1472,6 +1583,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentF.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentF.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentF.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentF.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+                this.handPlayerEquipmentF.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+                this.handPlayerEquipmentF.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+                this.handPlayerEquipmentF.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+                this.handPlayerEquipmentF.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                 break;
                 case 'g':
                 this.handPlayerEquipmentG = new ebg.stock();
@@ -1506,6 +1623,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentG.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentG.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentG.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentG.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+                this.handPlayerEquipmentG.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+                this.handPlayerEquipmentG.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+                this.handPlayerEquipmentG.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+                this.handPlayerEquipmentG.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                 break;
                 case 'h':
                 this.handPlayerEquipmentH = new ebg.stock();
@@ -1540,6 +1663,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentH.addItemType( 26, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentH.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentH.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+
+                this.handPlayerEquipmentH.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 30 ); // Classified Orders
+                this.handPlayerEquipmentH.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 31 ); // Fake ID
+                this.handPlayerEquipmentH.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 32 ); // Fingerprint Kit
+                this.handPlayerEquipmentH.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 33 ); // Grenade
+                this.handPlayerEquipmentH.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 34 ); // Holster
                 break;
             }
         },
@@ -2041,6 +2170,18 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 case "68": // Alarm Clock
                     return 4;
 
+                case "18": // Classified Orders
+                    return 0;
+                case "19": // Fake ID
+                    return 1;
+                case "20": // Fingerprint Kit
+                    return 2;
+                case "21": // Grenade
+                    return 3;
+                case "22": // Holster
+                    return 4;
+
+
             }
         },
 
@@ -2110,6 +2251,17 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                     return 3;
                 case "68": // Alarm Clock
                     return 3;
+
+                case "18": // Classified Orders
+                    return 5;
+                case "19": // Fake ID
+                    return 5;
+                case "20": // Fingerprint Kit
+                    return 5;
+                case "21": // Grenade
+                    return 5;
+                case "22": // Holster
+                    return 5;
             }
         },
 
@@ -3446,6 +3598,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
         setupNotifications: function()
         {
             dojo.subscribe( 'newGameMessage', this, "notif_newGameMessage" ); // this won't actually be called since it happens in setup before notifications are setup
+            dojo.subscribe( 'startGameDialogInfo', this, "notif_startGameDialogInfo");
             dojo.subscribe( 'viewCard', this, "notif_viewCard" );
             dojo.subscribe( 'gunPickedUp', this, "notif_gunPickedUp" );
             dojo.subscribe( 'gunAimed', this, "notif_gunAimed" );
@@ -3496,6 +3649,17 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
         notif_newGameMessage: function( notif )
         {
+            // this will never be received because it is sent during game setup
+
+        },
+
+        notif_startGameDialogInfo: function( notif )
+        {
+            // this will never be received because it is sent during game setup
+
+            console.log('notif_startGameDialogInfo');
+            var teamName = notif.args.team;
+
         },
 
         notif_gunPickedUp: function( notif )
