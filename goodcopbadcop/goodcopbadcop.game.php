@@ -7536,12 +7536,6 @@ class goodcopbadcop extends Table
 										$this->revealCard($investigatedPlayerId, $cardPosition);
 								}
 
-								if($viewOnly == false && $this->getGameStateValue('ZOMBIES_EXPANSION') == 2)
-								{ // we are using the ZOMBIES expansion and this was a real investigation (not just a view)
-
-										$this->addInfectionToken($investigatedPlayerId, true, $cardPosition, false);
-								}
-
 								$isWounded = $this->isCardWounded($cardId);
 								$isInfected = $this->isCardInfected($cardId);
 
@@ -7740,15 +7734,6 @@ class goodcopbadcop extends Table
 
 
 					$this->setLastCardPositionRevealed($playerRevealingId, 0); // set the last card position back to default
-		}
-
-		function addInfectionTokenToCard($playerId, $integrityCardPosition)
-		{
-				$sqlUpdate = "UPDATE integrityCards SET ";
-				$sqlUpdate .= "has_infection=1 WHERE ";
-				$sqlUpdate .= "card_location='$playerId' AND card_location_arg=$integrityCardPosition";
-
-				self::DbQuery( $sqlUpdate );
 		}
 
 		function removeWoundedToken($woundedPlayerId)
@@ -8136,8 +8121,6 @@ class goodcopbadcop extends Table
 						self::incStat( 1, 'players_bitten', $shooterPlayerId ); // increase end game player stat
 						self::incStat( 1, 'bites_taken', $targetPlayerId ); // increase end game player stat
 
-
-						//$this->addInfectionToken($targetPlayerId, true, '', false); // add a infection token (if they don't already have 3)
 						$this->rollZombieDice($shooterPlayerId, $targetPlayerId); // roll a zombie die for each infection token they have and take action for each zombie die face
 				}
 				else
@@ -9300,21 +9283,21 @@ class goodcopbadcop extends Table
 								$target2 = $this->getEquipmentTarget2($equipmentId);
 								if(!is_null($target1) && $target1 != '' && !is_null($target2) && $target2 != '')
 								{
-										$this->moveInfectionToken($target1, $target2); // move this infection token
+										//$this->moveInfectionToken($target1, $target2); // move this infection token
 								}
 
 								$target3 = $this->getEquipmentTarget3($equipmentId);
 								$target4 = $this->getEquipmentTarget4($equipmentId);
 								if(!is_null($target3) && $target3 != '' && !is_null($target4) && $target4 != '')
 								{
-										$this->moveInfectionToken($target3, $target4); // move this infection token
+										//$this->moveInfectionToken($target3, $target4); // move this infection token
 								}
 
 								$target5 = $this->getEquipmentTarget5($equipmentId);
 								$target6 = $this->getEquipmentTarget6($equipmentId);
 								if(!is_null($target5) && $target5 != '' && !is_null($target6) && $target6 != '')
 								{
-										$this->moveInfectionToken($target5, $target6); // move this infection token
+										//$this->moveInfectionToken($target5, $target6); // move this infection token
 								}
 
 								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
@@ -9363,10 +9346,6 @@ class goodcopbadcop extends Table
 																 'player_name' => $playerName
 											) );
 
-											if($cardPositionRemoving != 0)
-											{ // a token was added for this roll
-													$this->removeInfectionToken($playerRolling, $cardPositionRemoving, true); // remove the infection token (we don't need to do this for zombie dice)
-											}
 									}
 
 									$this->setGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN", 0); // reset whether we rolled the infection die this turn
@@ -9547,8 +9526,6 @@ class goodcopbadcop extends Table
 								{
 										throw new BgaUserException( self::_("We do not have a valid target for this Equipment.") );
 								}
-
-								$this->addInfectionToken($target1, true, '', false); // give them an infection token
 
 								$armedZombies = $this->getAllArmedZombies(); // get all zombies who are armed
 								foreach($armedZombies as $zombie)
@@ -9901,7 +9878,6 @@ class goodcopbadcop extends Table
 						}
 	//throw new feException( "set state" );
 
-						//$this->addInfectionToken($integrityCardOwner, true, $cardPosition, false); // give them an infection token
 						$this->setInfectTarget($playerWhoseTurnItIs, 1, $integrityCardId); // save the card we targeted for infection
 
 						$this->gamestate->nextState( "chooseCardToInfect2" ); // stay in this same state where they will choose another card to infect
@@ -9924,7 +9900,6 @@ class goodcopbadcop extends Table
 								throw new BgaUserException( self::_("Choose a different player than you targeted with your first token.") );
 						}
 
-						//$this->addInfectionToken($integrityCardOwner, true, $cardPosition, false); // give them an infection token
 						$this->setInfectTarget($playerWhoseTurnItIs, 2, $integrityCardId); // save the card we targeted for infection
 						$this->gamestate->nextState( "executeInfect" ); // go to the state where the infection tokens will be added
 
@@ -9969,7 +9944,6 @@ class goodcopbadcop extends Table
 						}
 	//throw new feException( "set state" );
 
-						//$this->addInfectionToken($integrityCardOwner, true, $cardPosition, false); // give them an infection token
 						$this->setInfectTarget($playerWhoseTurnItIs, 1, $integrityCardId); // save the card we targeted for infection
 
 						$this->gamestate->nextState( "chooseCardToInfect2" ); // stay in this same state where they will choose another card to infect
@@ -9984,7 +9958,6 @@ class goodcopbadcop extends Table
 						}
 	//throw new feException( "set state" );
 
-						//$this->addInfectionToken($integrityCardOwner, true, $cardPosition, false); // give them an infection token
 						$this->setInfectTarget($playerWhoseTurnItIs, 2, $integrityCardId); // save the card we targeted for infection
 						$this->gamestate->nextState( "executeInfect" ); // go to the state where the infection tokens will be added
 
@@ -10867,11 +10840,7 @@ class goodcopbadcop extends Table
 				if($this->isPlayerZombie($playerWhoseTurnItIs))
 				{ // player is a zombie
 
-						$playerWeAreRemovingFrom = $this->getLastPlayerInvestigated($playerWhoseTurnItIs); // get the player we are removing the token from
-						$cardPositionRemoving = $this->getLastCardPositionRevealed($playerWhoseTurnItIs); // get the card position revealed
-//throw new feException( "playerWeAreRemovingFrom:$playerWeAreRemovingFrom cardPositionRemoving:$cardPositionRemoving" );
-						// remove the selected infection token
-						$this->removeInfectionToken($playerWeAreRemovingFrom, $cardPositionRemoving, true);
+
 				}
 				else
 				{ // NOT a zombie
@@ -10933,7 +10902,6 @@ class goodcopbadcop extends Table
 								 'player_name_2' => $playerNameTarget1
 						) );
 
-						$this->addInfectionToken($integrityCardOwner1, true, $cardPosition1, false); // give them an infection token (including the message log)
 				}
 
 				$cardIdTarget2 = $this->getInfectTarget($playerInfecting, 2); // get the second card we targeted
@@ -10947,8 +10915,6 @@ class goodcopbadcop extends Table
 								 'player_name' => $playerNameInfecting,
 								 'player_name_2' => $playerNameTarget2
 						) );
-
-						$this->addInfectionToken($integrityCardOwner2, true, $cardPosition2, false); // give them an infection token (including the message log)
 				}
 
 
@@ -10993,7 +10959,6 @@ class goodcopbadcop extends Table
 								break;
 
 								case 11: // add extra infection token
-										$this->addInfectionToken($playerBeingBitten, true, '', true); // give them an extra Infection Token and notify them
 								break;
 						}
 				}
@@ -11080,86 +11045,6 @@ class goodcopbadcop extends Table
 				}
 		}
 
-		function removeInfectionToken($playerIdRemoving, $cardPositionRemoving, $shouldWeNotify)
-		{
-
-	//throw new feException( "removing token player id " . $playerIdRemoving . " card position " . $cardPositionRemoving );
-				// reset the token in the database
-				$sqlUpdate = "UPDATE integrityCards SET ";
-				$sqlUpdate .= "has_infection=0 WHERE ";
-				$sqlUpdate .= "card_location_arg=$cardPositionRemoving AND card_location='$playerIdRemoving'";
-
-				self::DbQuery( $sqlUpdate );
-
-				if($shouldWeNotify)
-				{
-						$playerName = $this->getPlayerNameFromPlayerId($playerIdRemoving); // get the player's name
-
-						// notify all players that the wounded token has been removed
-						self::notifyAllPlayers( "removeInfectionToken", clienttranslate( 'The Infection Token has been removed from ${player_name}.' ), array(
-								'player_name' => $playerName,
-								'player_id_removing' => $playerIdRemoving,
-								'card_position_removing' => $cardPositionRemoving
-						) );
-				}
-		}
-
-		function addInfectionToken($playerId, $shouldWeNotify, $integrityCardPositionGettingToken, $fromBiteRoll)
-		{
-				if($integrityCardPositionGettingToken == null || $integrityCardPositionGettingToken == '')
-				{ // the integrity card position was not given
-						$integrityCardPositionGettingToken = $this->getIntegrityCardPositionForNextInfectionToken($playerId); // find the next card position (1,2,3) to get an Infection Token
-				}
-
-				$cardId = $this->getIntegrityCardId($playerId, $integrityCardPositionGettingToken);
-				$isCardInfected = $this->isCardInfected($cardId); // true if this has a infection token on it
-				if($isCardInfected)
-				{ // this card is already infected
-						return; // we do not want to infect twice
-				}
-
-				$this->addInfectionTokenToCard($playerId, $integrityCardPositionGettingToken); // set the database to show this card now has an infection token
-
-				if($shouldWeNotify)
-				{
-						$playerBittenName = $this->getPlayerNameFromPlayerId($playerId); // the name of the player being bitten
-
-						self::notifyAllPlayers( "addInfectionToken", clienttranslate( '${player_name} has been infected.' ), array(
-														'player_id_of_infected' => $playerId,
-														'card_position' => $integrityCardPositionGettingToken,
-														'player_name' => $playerBittenName,
-														'from_bite' => $fromBiteRoll
-						) );
-				}
-
-				return $integrityCardPositionGettingToken;
-		}
-
-		function moveInfectionToken($cardIdSource, $cardIdDestination)
-		{
-				$sourcePlayerId = $this->getIntegrityCardOwner($cardIdSource);
-				$sourceCardPosition = $this->getIntegrityCardPosition($cardIdSource);
-				$sourcePlayerName = $this->getPlayerNameFromPlayerId($sourcePlayerId);
-
-				$destinationPlayerId = $this->getIntegrityCardOwner($cardIdDestination);
-				$destinationCardPosition = $this->getIntegrityCardPosition($cardIdDestination);
-				$destinationPlayerName = $this->getPlayerNameFromPlayerId($destinationPlayerId);
-
-				// update the database with the new locations
-				$this->removeInfectionToken($sourcePlayerId, $sourceCardPosition, false); // remove token in database
-				$this->addInfectionTokenToCard($destinationPlayerId, $destinationCardPosition); // add token in database
-
-				// notify players of the move
-				self::notifyAllPlayers( "moveInfectionToken", clienttranslate( 'The infection token has been moved from ${player_name} to ${player_name_2}.' ), array(
-										'token_player_id' => $sourcePlayerId,
-										'token_card_position' => $sourceCardPosition,
-										'destination_player_id' => $destinationPlayerId,
-										'destination_card_position' => $destinationCardPosition,
-										'player_name' => $sourcePlayerName,
-										'player_name_2' => $destinationPlayerName
-				) );
-		}
-
 		function rollZombieDice($playerBiting, $playerBeingBitten)
 		{
 				$this->clearDieValues();
@@ -11223,18 +11108,6 @@ class goodcopbadcop extends Table
 										'player_name' => self::getActivePlayerName()
 						) );
 
-						$infectedCardPosition = 0;
-						if($randomValue < 2)
-						{	// we rolled an infection symbol and we aren't maxed out on infection tokens yet
-
-								$infectedCardPosition = $this->addInfectionToken($playerWhoseTurnItIs, true, '', false);
-						}
-						else
-						{ // we are NOT adding an infection token
-								self::notifyAllPlayers( "noInfectionToken", clienttranslate( '${player_name} avoided infection.' ), array(
-												'player_name' => self::getActivePlayerName()
-								) );
-						}
 
 						$this->setDieValue(4, $randomValue, $playerWhoseTurnItIs, $playerWhoseTurnItIs, $infectedCardPosition); // set the value in the database for the infection die (id=4)
 				}
