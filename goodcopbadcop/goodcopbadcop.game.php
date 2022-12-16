@@ -395,11 +395,11 @@ class goodcopbadcop extends Table
 								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 60, 'card_location' => 'deck','nbr' => 1)); // Crossbow
 								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 67, 'card_location' => 'deck','nbr' => 1)); // Weapon Crate
 
-								//array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 18, 'card_location' => 'deck','nbr' => 1)); // Classified Orders
+								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 18, 'card_location' => 'deck','nbr' => 1)); // Classified Orders
 								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 1)); // Fake ID
 								//array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)); // Fingerprint Kit
 								//array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 21, 'card_location' => 'deck','nbr' => 1)); // Grenade
-								//array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 22, 'card_location' => 'deck','nbr' => 1)); // Holster
+								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 22, 'card_location' => 'deck','nbr' => 1)); // Holster
 						}
 				}
 
@@ -645,7 +645,7 @@ class goodcopbadcop extends Table
 		function countRevealedNonLeaderCards()
 		{
 				$sql = "SELECT * FROM `integrityCards` ic ";
-				$sql .= "WHERE ic.card_type_arg=0 AND (ic.card_type='honest' OR ic.card_type='crooked') ";
+				$sql .= "WHERE ic.card_type_arg=1 AND (ic.card_type='honest' OR ic.card_type='crooked') ";
 
 				$revealedNonLeaderCards = self::getCollectionFromDb( $sql );
 
@@ -1644,6 +1644,50 @@ class goodcopbadcop extends Table
 
 				$sql = "SELECT * FROM `equipmentCards` ";
 				$sql .= "WHERE equipment_is_active=1 AND card_type_arg=11 ";
+
+				$coffeeList = self::getObjectListFromDB( $sql );
+
+				if(count($coffeeList) > 0)
+				{
+					foreach($coffeeList as $card)
+					{
+							return $card['card_id'];
+					}
+				}
+				else
+				{
+					return 0;
+				}
+		}
+
+		function isClassifiedOrdersActive()
+		{
+				// coffee has card_type_arg=2
+
+				$sql = "SELECT * FROM `equipmentCards` ";
+				$sql .= "WHERE equipment_is_active=1 AND card_type_arg=18 ";
+
+				$coffeeList = self::getObjectListFromDB( $sql );
+
+				if(count($coffeeList) > 0)
+				{
+					foreach($coffeeList as $card)
+					{
+							return $card['card_id'];
+					}
+				}
+				else
+				{
+					return 0;
+				}
+		}
+
+		function isHolsterActive()
+		{
+				// coffee has card_type_arg=2
+
+				$sql = "SELECT * FROM `equipmentCards` ";
+				$sql .= "WHERE equipment_is_active=1 AND card_type_arg=22 ";
 
 				$coffeeList = self::getObjectListFromDB( $sql );
 
@@ -3214,7 +3258,16 @@ class goodcopbadcop extends Table
 		// order or riot shield.
 		function canWeRechooseAction()
 		{
+
+
 				return false; // this is failing when Restraining Order is used when no player has equipment that can be used so let's just not allow this for now... it might be better this way anyway
+
+
+
+
+
+
+
 
 				$activeEquipment = $this->getActiveEquipmentCards();
 
@@ -3223,12 +3276,14 @@ class goodcopbadcop extends Table
 						// 11=Restraining Order
 						// 44=Riot Shield
 						// 37=Mobile Detonator
-						// 62=Zombie Serum
+						// 62=Zombie Serum (Zombies)
+						// 18=Classified Orders (BT)
 						$collectorNumber = $equipment['card_type_arg'];
 						if($collectorNumber == 11 ||
 						   $collectorNumber == 44 ||
 							 $collectorNumber == 37 ||
-							 $collectorNumber == 62)
+							 $collectorNumber == 62 ||
+							 $collectorNumber == 18)
 							 {
 								 return false;
 							 }
@@ -4412,7 +4467,7 @@ class goodcopbadcop extends Table
 							{
 									$getLivingPlayers = $this->getLivingPlayers();
 									if(count($getLivingPlayers) < 3)
-									{ // there are only 2 players left
+									{ // there are only 2 players left because we don't want you to be able to shoot yourself
 											return false;
 									}
 
@@ -4699,11 +4754,30 @@ class goodcopbadcop extends Table
 
 
 
-						case 18: // Classified Orders
-								return true; // this is always valid
+						case 18: // classified orders
+								$gunsShooting = $this->getGunsShooting();
+								//if(($checkStateToo && ($stateName == "chooseEquipmentToPlayReactShoot" || $stateName == "chooseEquipmentToPlayReactBite" )) ||
+								//!$checkStateToo)
+								//{ // we're checking the state and we're in the right state OR we're not checking the state
+								if(count($gunsShooting) > 0)
+								{
+										$getLivingPlayers = $this->getLivingPlayers();
+										if(count($getLivingPlayers) < 3)
+										{ // there are only 2 players left because we don't want you to be able to shoot yourself
+												return false;
+										}
+
+										return true;
+								}
+								else
+								{ // we're checking the state but we're not in the correct state
+										return false;
+								}
+						break;
 
 						case 19: // Fake ID
 								$numberOfRevealedNonLeaderCards = $this->countRevealedNonLeaderCards();
+								//throw new feException( "numberOfRevealedNonLeaderCards:$numberOfRevealedNonLeaderCards");
 								if($numberOfRevealedNonLeaderCards > 1)
 								{ // there are at least 2 revealed Honest or Crooked cards
 										return true;
@@ -4712,6 +4786,7 @@ class goodcopbadcop extends Table
 								{ // there are only 0 or 1 revealed Honest or Crooked cards
 										return false;
 								}
+						break;
 
 						case 20: // Fingerprint Kit
 								return true; // this is always valid
@@ -4720,8 +4795,32 @@ class goodcopbadcop extends Table
 								return true; // this is always valid
 
 						case 22: // Holster
-								return true; // this is always valid
+							$gunsShooting = $this->getGunsShooting();
+							$playerShooting = $this->getPlayerShooting();
 
+							if($playerShooting == null || $playerShooting == '' || $playerShooting != $ownerOfEquipment)
+							{ // the player shooting is not the player using this equipment
+										return false;
+							}
+
+							//if(($checkStateToo && ($stateName == "chooseEquipmentToPlayReactShoot" || $stateName == "chooseEquipmentToPlayReactBite" )) ||
+							//!$checkStateToo)
+							//{ // we're checking the state and we're in the right state OR we're not checking the state
+							if(count($gunsShooting) > 0)
+							{
+									$getLivingPlayers = $this->getLivingPlayers();
+									if(count($getLivingPlayers) < 3)
+									{ // there are only 2 players left because we don't want you to be able to shoot yourself
+											return false;
+									}
+
+									return true;
+							}
+							else
+							{ // we're checking the state but we're not in the correct state
+									return false;
+							}
+						break;
 
 						default:
 							return false; // return false by default
@@ -5167,6 +5266,119 @@ class goodcopbadcop extends Table
 								return true;
 						}
 						break;
+
+						case 18: // classified orders
+								$playerShooting = $this->getEquipmentPlayedOnTurn($equipmentCardId);
+								$gunId = $this->getGunIdHeldByPlayer($playerShooting); // get the id of the gun the shoot player holds
+								$currentTarget = $this->getPlayerIdOfGunTarget($gunId); // current target of gun
+
+								$target1 = $this->getPlayerTarget1($equipmentCardId);
+								if( is_null($target1) || $target1 === '' )
+								{ // we are choosing the player who will target another player
+
+										if($this->isPlayerEliminated($playerId))
+										{ // they are trying to target an eliminated player
+
+												if($throwErrors)
+												{
+														throw new BgaUserException( self::_("Please target a player who has not been eliminated.") );
+												}
+												else
+												{
+														return false;
+												}
+										}
+										elseif($equipmentCardOwner == $playerId)
+										{ // they are trying to choose themselves
+
+												if($throwErrors)
+												{
+														throw new BgaUserException( self::_("Please select a new target.") );
+												}
+												else
+												{
+														return false;
+												}
+										}
+										else
+										{ // they are targeting a living, new player
+
+												return true;
+										}
+								}
+								else
+								{ // we are choosing the player the gun will target
+										if($this->isPlayerEliminated($playerId))
+										{ // they are trying to target an eliminated player
+
+												if($throwErrors)
+												{
+														throw new BgaUserException( self::_("Please target a player who has not been eliminated.") );
+												}
+												else
+												{
+														return false;
+												}
+										}
+										elseif($currentTarget == $playerId)
+										{ // they are trying to keep their gun aimed at the same player
+
+												if($throwErrors)
+												{
+														throw new BgaUserException( self::_("Please select a new target.") );
+												}
+												else
+												{
+														return false;
+												}
+										}
+										else
+										{ // they are targeting a living, new player
+
+												return true;
+										}
+								}
+
+
+						return true;
+						break;
+
+						case 22: // Holster
+									$playerShooting = $this->getEquipmentPlayedOnTurn($equipmentCardId);
+									$gunId = $this->getGunIdHeldByPlayer($playerShooting); // get the id of the gun the shoot player holds
+									$currentTarget = $this->getPlayerIdOfGunTarget($gunId); // current target of gun
+									if($this->isPlayerEliminated($playerId))
+									{ // they are trying to target an eliminated player
+
+											if($throwErrors)
+											{
+													throw new BgaUserException( self::_("Please target a player who has not been eliminated.") );
+											}
+											else
+											{
+													return false;
+											}
+									}
+									elseif($playerShooting == $playerId)
+									{ // they are trying to target themself
+
+											if($throwErrors)
+											{
+													throw new BgaUserException( self::_("Please target someone other than yourself.") );
+											}
+											else
+											{
+													return false;
+											}
+									}
+									else
+									{ // they are targeting a living player
+											return true;
+									}
+
+							return true;
+						break;
+
 						default:
 
 							if($throwErrors)
@@ -5259,6 +5471,11 @@ class goodcopbadcop extends Table
 
 						break;
 						case 1: // Blackmail
+								if($this->isPlayerEliminated($ownerOfNewIntegrityCardTarget))
+								{ // they are trying to target an eliminated player's integrity card (which is not OK because we can't let them swap a leader with an eliminated player's card)
+										throw new BgaUserException( self::_("Please target a player who has not been eliminated.") );
+								}
+
 								if($equipmentCardOwner == $ownerOfNewIntegrityCardTarget)
 								{ // they are trying to target their own integrity card
 										throw new BgaUserException( self::_("Please target a player other than yourself.") );
@@ -5749,7 +5966,7 @@ class goodcopbadcop extends Table
 //throw new feException( "target1:$target1 $integrityCardId:$integrityCardId");
 										if($target1 == $integrityCardId)
 										{ // they are targeting the same card as they did for the first selection
-												throw new BgaUserException( self::_("Please target a different card than you previously selected.") );
+												throw new BgaUserException( self::_("Please target a card that you have not previously targeted.") );
 										}
 								}
 
@@ -6131,7 +6348,18 @@ class goodcopbadcop extends Table
 
 
 						case 18: // Classified Orders
-								return true;
+								$target1 = $this->getPlayerTarget1($equipmentCardId);
+								$target2 = $this->getPlayerTarget2($equipmentCardId);
+								if( is_null($target1) || $target1 === '' ||
+										is_null($target2) || $target2 === '' )
+								{ // we do NOT have all we need for this equipment card
+										return false;
+								}
+								else
+								{ // we have all we need for this equipment card
+										return true;
+								}
+						break;
 
 						case 19: // Fake ID
 								$target1 = $this->getEquipmentTarget1($equipmentCardId);
@@ -6156,8 +6384,16 @@ class goodcopbadcop extends Table
 								return true;
 
 						case 22: // Holster
-								return true;
-
+								$target1 = $this->getPlayerTarget1($equipmentCardId);
+								if(is_null($target1) || $target1 == '')
+								{ // we do NOT have all we need for this equipment card
+										return false;
+								}
+								else
+								{ // we have all we need for this equipment card
+									return true;
+								}
+						break;
 
 						default:
 							return false; // return false by default
@@ -6560,8 +6796,28 @@ class goodcopbadcop extends Table
 
 
 
-						case 18: // Classified Orders
-								$this->gamestate->nextState( "executeEquipment" ); // use the equipment
+						case 18: // classified orders
+								$target1 = $this->getPlayerTarget1($equipmentId);
+								if(is_null($target1) || $target1 === '')
+								{ // the owner of classified orders needs to target a player who will change the aim
+
+										$this->gamestate->nextState( "choosePlayer" ); // ask them to target a player
+								}
+								else
+								{ // the owner of classified orders has already targeted a player so now that player needs to choose a new gun target
+
+										if($this->isAllInputAcquiredForEquipment($equipmentId))
+										{ // everything required has been targeted
+												$this->gamestate->nextState( "executeEquipment" ); // use the equipment
+										}
+										else
+										{ // the player to choose is targeted but the new gun target is not chosen yet
+												$this->gamestate->nextState("chooseEquipmentTargetOutOfTurn"); // let the player chosen now choose a new gun target
+										}
+
+
+								}
+
 						break;
 
 						case 19: // Fake ID
@@ -6585,7 +6841,17 @@ class goodcopbadcop extends Table
 						break;
 
 						case 22: // Holster
-								$this->gamestate->nextState( "executeEquipment" ); // use the equipment
+										if($this->isAllInputAcquiredForEquipment($equipmentId))
+										{ // the player has been targeted
+
+												$this->gamestate->nextState( "executeEquipment" ); // use the equipment
+												//throw new feException( "allinputacquired after");
+										}
+										else
+										{ // the player has not yet been targeted
+												$this->gamestate->nextState( "choosePlayer" ); // ask them to target a player
+										}
+
 						break;
 
 						default:
@@ -6704,7 +6970,8 @@ class goodcopbadcop extends Table
 
 
 						case 18: // Classified Orders
-							  return false;
+								return true; // this is both... the first target is chosen by the equipment owner but the second target is chosen by someone else
+						break;
 
 						case 19: // Fake ID
 								return false; // chosen by equipment player
@@ -6716,7 +6983,7 @@ class goodcopbadcop extends Table
 								return false;
 
 						case 22: // Holster
-								return false;
+								return false; // chosen by equipment holder
 
 
 
@@ -8737,7 +9004,7 @@ class goodcopbadcop extends Table
 
 								if($this->countPlayersWhoCanUseEquipment() > 0)
 								{ // if there are any players who can use equipment (it will double-shoot in cases where no one has active equipment)
-										$this->setEquipmentHoldersToActive("askShootReaction"); // set anyone holding equipment to active so they can react after this equipment was used
+										$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active so they can react after this equipment was used
 								}
 						break;
 
@@ -8754,7 +9021,7 @@ class goodcopbadcop extends Table
 
 								if($this->countPlayersWhoCanUseEquipment() > 0)
 								{ // if there are any players who can use equipment (it will double-shoot in cases where no one has active equipment)
-										$this->setEquipmentHoldersToActive("askShootReaction"); // set anyone holding equipment to active so they can react after this equipment was used
+										$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active so they can react after this equipment was used
 								}
 						break;
 
@@ -9298,7 +9565,21 @@ class goodcopbadcop extends Table
 
 
 						case 18: // Classified Orders
-							  throw new feException( "Not implemented: $collectorNumber" );
+								$target2 = $this->getPlayerTarget2($equipmentId); // get player target 2
+								$playerShooting = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+										$this->gamestate->changeActivePlayer( $playerShooting ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was when the equipment was played
+								}
+								$this->aimGun($playerShooting, $target2); // update the gun in the database for who it is now aimed at
+
+								$this->makePlayerEquipmentActive($equipmentId, $target2); // activate this card
+
+								if($this->countPlayersWhoCanUseEquipment() > 0)
+								{ // if there are any players who can use equipment (it will double-shoot in cases where no one has active equipment)
+										$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active so they can react after this equipment was used
+								}
+						break;
 
 						case 19: // Fake ID
 								$target1 = $this->getEquipmentTarget1($equipmentId); // get the selected integrity card
@@ -9331,7 +9612,21 @@ class goodcopbadcop extends Table
 								throw new feException( "Not implemented: $collectorNumber" );
 
 						case 22: // Holster
-								throw new feException( "Not implemented: $collectorNumber" );
+								$target1 = $this->getPlayerTarget1($equipmentId); // get player target 1
+								$playerShooting = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+										$this->gamestate->changeActivePlayer( $playerShooting ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was when the equipment was played
+								}
+								$this->aimGun($playerShooting, $target1); // update the gun in the database for who it is now aimed at
+
+								$this->makePlayerEquipmentActive($equipmentId, $target1); // activate this card
+
+								if($this->countPlayersWhoCanUseEquipment() > 0)
+								{ // if there are any players who can use equipment (it will double-shoot in cases where no one has active equipment)
+										$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active so they can react after this equipment was used
+								}
+						break;
 
 
 
@@ -10535,6 +10830,16 @@ class goodcopbadcop extends Table
 			{ // weapon crate was played this turn
 					$this->discardActivePlayerEquipmentCard($equipmentId); // discard it
 			}
+
+			if($equipmentId = $this->isClassifiedOrdersActive())
+			{ // classified orders was played this turn
+					$this->discardActivePlayerEquipmentCard($equipmentId); // discard it
+			}
+
+			if($equipmentId = $this->isHolsterActive())
+			{ // holster was played this turn
+					$this->discardActivePlayerEquipmentCard($equipmentId); // discard it
+			}
 		}
 
 		function executeActionInvestigate()
@@ -11060,7 +11365,7 @@ class goodcopbadcop extends Table
 										$this->gamestate->nextState( "playerTurn" ); // go back to player action state
 								}
 								else
-								{ // this equipment affect the shoot but it doesn't let you choose a new action (like Riot Shield, Restraining Order, Mobile Detonator)
+								{ // this equipment affects the shoot but it doesn't let you choose a new action (like Riot Shield, Restraining Order, Mobile Detonator)
 										//throw new feException( "no you cannot re-choose action" );
 
 										if($this->isZombieSerumActive())
@@ -11133,6 +11438,33 @@ class goodcopbadcop extends Table
 								}
 								//throw new feException( "player $playerIdGettingShot is now the active player." );
 								$this->gamestate->nextState( "choosePlayerNoCancel" ); // choose player but do not give them a cancel button, otherwise the target gets to cancel the equipment
+						break;
+						case 18: // classified orders
+								$equipmentCardOwner = $this->getEquipmentCardOwner($equipmentId); // get the player using Classified Orders
+								if(is_null($equipmentCardOwner))
+								{
+										throw new feException( "Could not find a player using Classified Orders.");
+								}
+
+								$target1 = $this->getPlayerTarget1($equipmentId); // the player the equipment owner chose
+								$target2 = $this->getPlayerTarget2($equipmentId); // the player we want to target with the gun
+								if( is_null($target1) || $target1 === '' )
+								{ // the equipment owner needs to target someone
+										$this->setEquipmentPlayerTarget($equipmentId, $equipmentCardOwner); // set the player using Classified Orders to the target 1
+										$this->gamestate->nextState( "choosePlayer" ); // choose player who will choose a gun target
+								}
+								else
+								{ // the out of turn player needs to choose a gun target
+										if(!$this->weAreInActivePlayerState())
+										{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+											$this->gamestate->changeActivePlayer($target1); // make the player who gets to choose a gun target as active
+										}
+
+										$this->gamestate->nextState( "choosePlayerNoCancel" ); // choose player but do not give them a cancel button, otherwise the target gets to cancel the equipment
+								}
+
+								//throw new feException( "Shooting player: $playerIdShooting");
+
 						break;
 				}
 

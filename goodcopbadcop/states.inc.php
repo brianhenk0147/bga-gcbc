@@ -151,7 +151,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeActionEquip",
         "updateGameProgression" => false,
-        "transitions" => array( "askAim" => 27, "discardEquipment" => 12, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50 )
+        "transitions" => array( "askAim" => 27, "discardEquipment" => 12, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askDiscardOutOfTurn" => 35 )
     ),
 
     12 => array(
@@ -336,7 +336,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetPlayerButtonTargets',
     		"possibleactions" => array( "clickPlayer", "clickCancelButton" ),
-    		"transitions" => array( "executeEquipment" => 31, "choosePlayer" => 41, "chooseActiveOrHandEquipmentCard" => 42, "playerTurn" => 60, "chooseEquipmentToPlayReactEndOfTurn" => 16, "chooseEquipmentToPlayReactInvestigate" => 17, "chooseEquipmentToPlayReactShoot" => 18, "chooseEquipmentToPlayOnYourTurn" => 15, "chooseEquipmentToPlayReactBite" => 19 )
+    		"transitions" => array( "executeEquipment" => 31, "choosePlayer" => 41, "chooseActiveOrHandEquipmentCard" => 42, "playerTurn" => 60, "chooseEquipmentToPlayReactEndOfTurn" => 16, "chooseEquipmentToPlayReactInvestigate" => 17, "chooseEquipmentToPlayReactShoot" => 18, "chooseEquipmentToPlayOnYourTurn" => 15, "chooseEquipmentToPlayReactBite" => 19, "chooseEquipmentTargetOutOfTurn" => 32 )
     ),
 
     42 => array(
