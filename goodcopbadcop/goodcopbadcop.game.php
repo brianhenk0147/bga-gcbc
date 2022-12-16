@@ -466,11 +466,6 @@ class goodcopbadcop extends Table
 						array( 'type' => 'kingpin', 'type_arg' => 0, 'card_location' => 'deck','nbr' => 1)
 				);
 
-				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2)
-				{ // we are using the zombies expansion
-						array_push($integrityCardsList, array( 'type' => 'infector', 'type_arg' => 0, 'card_location' => 'deck','nbr' => 1)); // add the infector
-				}
-
 				$this->integrityCards->createCards( $integrityCardsList, 'deck' ); // create the deck and override locations to deck
 				$this->integrityCards->shuffle( 'deck' ); // shuffle it
 		}
@@ -684,11 +679,6 @@ class goodcopbadcop extends Table
 				$totalNonLeadersNeeded = $totalCardsNeeded - 2; // minus the two leaders
 				$honestNeeded = ceil($totalNonLeadersNeeded / 2);
 
-				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $numberOfPlayers % 2 != 0)
-				{ // we are using the zombies expansion and there is an odd number of players
-						$honestNeeded--; // subtract one to make room for the infector
-				}
-
 				return $honestNeeded;
 		}
 
@@ -698,14 +688,9 @@ class goodcopbadcop extends Table
 
 				$numberOfPlayers = count($players); // get number of players
 				$numberOfExtraCards = 0;
-				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2)
-				{ // we are playing with the Zombies expansion, which includes the Infector
-						$numberOfExtraCards = $numberOfPlayers - 3; // subtract 3 to account for Agent and Kingpin and Infector
-				}
-				else
-				{ // we are NOT playing with the zombies expansion
-						$numberOfExtraCards = $numberOfPlayers - 2; // subtract 2 to account for Agent and Kingpin
-				}
+
+				$numberOfExtraCards = $numberOfPlayers - 2; // subtract 2 to account for Agent and Kingpin
+
 
 				$extraInitialIntegrityCards = $this->integrityCards->pickCardsForLocation( $numberOfExtraCards, 'deck', 'initialDeal' ); // put Integrity Cards in initial deal so each player has 1 plus Agent and Kingpin
 				$this->integrityCards->shuffle( 'initialDeal' ); // shuffle initial deal cards
