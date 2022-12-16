@@ -8542,13 +8542,6 @@ class goodcopbadcop extends Table
 				if($this->isPlayerZombie($playerWhoseTurnItIs))
 				{ // this player is a zombie
 
-						$result[$buttonIdentifier] = array(); // create a new array for this action
-						$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Infect');
-						$result[$buttonIdentifier]['hoverOverText'] = '';
-						$result[$buttonIdentifier]['actionName'] = 'Infect';
-						$result[$buttonIdentifier]['equipmentId'] = '';
-						$result[$buttonIdentifier]['makeRed'] = false;
-						$result[$buttonIdentifier]['isDisabled'] = false;
 				}
 				else
 				{ // this player is NOT a zombie
@@ -8567,9 +8560,11 @@ class goodcopbadcop extends Table
 						{ // this player is a zombie or cannot investigate
 								$result[$buttonIdentifier]['isDisabled'] = true;
 						}
+
+						$buttonIdentifier++;
 				}
 
-				$buttonIdentifier++;
+
 
 				$result[$buttonIdentifier] = array(); // create a new array for this action
 				$result[$buttonIdentifier]['buttonLabel'] = clienttranslate('Draw Equipment');
