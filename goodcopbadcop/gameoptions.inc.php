@@ -51,22 +51,31 @@ $game_options = array(
             ),
 
     */
+
     100 => array(
-                'name' => totranslate('Add Expansion'),
-                'values' => array(
-                                1 => array( 'name' => totranslate('None') ),
-                                2 => array( 'name' => totranslate('Zombies') )
-                            ),
-                'default' => 1
-            ),
-    101 => array(
                 'name' => totranslate('Add Extra Equipment'),
                 'values' => array(
-                                1 => array( 'name' => totranslate('None') ),
-                                2 => array( 'name' => totranslate('All') )
+                                1 => array( 'name' => totranslate('Disabled') ),
+                                2 => array( 'name' => totranslate('Enabled'), 'description' => totranslate('Add all compatible expansion Equipment to the deck.') )
                             ),
                 'default' => 1
-            ),
+    ),
+    101 => array(
+                'name' => totranslate('Zombies Expansion'),
+                'values' => array(
+                                1 => array( 'name' => totranslate('Disabled') ),
+                                2 => array( 'name' => totranslate('Enabled'), 'description' => totranslate('When you would otherwise be eliminated, you become a zombie with a new win condition.') )
+                            ),
+                'default' => 1
+    ),
+    102 => array(
+                'name' => totranslate('Bombers & Traitors Expansion'),
+                'values' => array(
+                                1 => array( 'name' => totranslate('Disabled') ),
+//                                2 => array( 'name' => totranslate('Enabled'), 'description' => totranslate('Adds the Bomber and Traitor roles that have unique win conditions.') )
+                            ),
+                'default' => 1
+    ),
 
 );
 

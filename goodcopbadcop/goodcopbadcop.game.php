@@ -41,8 +41,9 @@ class goodcopbadcop extends Table
             //      ...\
 						"CURRENT_PLAYER" => 10,
 						"ROLLED_INFECTION_DIE_THIS_TURN" => 11,
-						"ZOMBIES_EXPANSION" => 100,
-						"USE_EXTRA_EQUIPMENT" => 101
+						"ZOMBIES_EXPANSION" => 101,
+						"USE_EXTRA_EQUIPMENT" => 100,
+						"BT_EXPANSION" => 102
         ) );
 
 				// create Integrity Card Deck
@@ -368,8 +369,8 @@ class goodcopbadcop extends Table
 				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2)
 				{ // we are using the zombies expansion
 						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 60, 'card_location' => 'deck','nbr' => 1)); // Crossbow
-						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 61, 'card_location' => 'deck','nbr' => 1)); // Transfusion Tube
-						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 62, 'card_location' => 'deck','nbr' => 1)); // Zombie Serum
+						//array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 61, 'card_location' => 'deck','nbr' => 1)); // Transfusion Tube
+						//array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 62, 'card_location' => 'deck','nbr' => 1)); // Zombie Serum
  						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 63, 'card_location' => 'deck','nbr' => 1)); // Flamethrower
 						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 64, 'card_location' => 'deck','nbr' => 1)); // Chainsaw
 						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 65, 'card_location' => 'deck','nbr' => 1)); // Zombie Mask
@@ -379,8 +380,13 @@ class goodcopbadcop extends Table
 
 						if($this->getGameStateValue('USE_EXTRA_EQUIPMENT') == 2)
 						{ // they want to use all extra equipment
+							// add all the expansion equipment that is not specific to other expansions
 
-								// add all the expansion equipment that is not specific to other expansions
+								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 18, 'card_location' => 'deck','nbr' => 1)); // Classified Orders
+								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 1)); // Fake ID
+								//array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)); // Fingerprint Kit
+								//array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 21, 'card_location' => 'deck','nbr' => 1)); // Grenade
+								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 22, 'card_location' => 'deck','nbr' => 1)); // Holster
 
 						}
 				}
@@ -3824,7 +3830,7 @@ class goodcopbadcop extends Table
 								return clienttranslate( 'Choose a player. Give them an Infection Token and all zombies aim at them.' );
 
 						case 65: // Zombie Mask
-								return clienttranslate( 'Choose a revealed Leader or Infector card to exchange for another revealed Leader or Infector card.' );
+								return clienttranslate( 'Choose a revealed Kingpin to exchange for a revealed Agent card.' );
 
 						case 63: // Flamethrower
 								return clienttranslate( 'All zombies are shot.' );
