@@ -432,7 +432,7 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-            //console.log("onUpdateActionButtons state " + stateName);
+            console.log("onUpdateActionButtons state " + stateName);
 
 
             if( this.isCurrentPlayerActive() )
@@ -509,6 +509,10 @@ function (dojo, declare) {
                         }
 
 
+                    break;
+
+                    case 'chooseCardToRevealToReturnEquipmentToHand':
+                        this.addActionButton( 'button_pass', _('Pass'), 'onClick_PassOnOption' );
                     break;
 
                     case 'chooseCardToInfect1':
@@ -1738,6 +1742,16 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                   this.highlightComponent(htmlIdOfCard); // highlight the card just moved
                 });
                 anim1.play();
+            }
+        },
+
+        destroyEquipmentDiscard: function(collectorNumber)
+        {
+            var equipmentHtmlId = "center_active_equipment_" + collectorNumber; // the HTML ID of the card
+
+            if(document.getElementById(equipmentHtmlId))
+            { // the card exists
+                dojo.destroy(equipmentHtmlId);
             }
         },
 
@@ -3558,6 +3572,31 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                          } );
         },
 
+        onClick_PassOnOption: function( evt )
+        {
+
+            dojo.stopEvent( evt ); // Preventing default browser reaction
+
+            // Check that this action is possible (see "possibleactions" in states.inc.php)
+            if( ! this.checkAction( 'clickPassOnOptionButton' ) )
+            {   return; }
+
+            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/passOnOption.html", {
+                                                                    lock: true
+                                                                 },
+                         this, function( result ) {
+
+                            // What to do after the server call if it succeeded
+                            // (most of the time: nothing)
+
+                         }, function( is_error) {
+
+                            // What to do after the server call in anyway (success or failure)
+                            // (most of the time: nothing)
+
+                         } );
+        },
+
         onClickEndTurnButton: function( evt )
         {
 
@@ -3636,6 +3675,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             dojo.subscribe( 'rePlaceIntegrityCard', this, "notif_rePlaceIntegrityCard" );
             dojo.subscribe( 'playEquipmentOnTable', this, "notif_playEquipmentOnTable" );
             dojo.subscribe( 'equipmentDeckReshuffled', this, "notif_equipmentDeckReshuffled" );
+            dojo.subscribe( 'destroyEquipmentDiscard', this, "notif_destroyEquipmentDiscard" );
 
             // ZOMBIES
             dojo.subscribe( 'addInfectionToken', this, "notif_addInfectionToken" );
@@ -4822,7 +4862,13 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.addLargeEquipmentTooltip(equipmentHtmlId, collectorNumber, equipName, equipEffect); // add a hoverover tooltip with a bigger version of the card
             }
             this.highlightComponent(equipmentHtmlId); // highlight the card
-        }
+        },
 
+        notif_destroyEquipmentDiscard: function( notif )
+        {
+            var collectorNumber = notif.args.collector_number;
+
+            this.destroyEquipmentDiscard(collectorNumber);
+        }
    });
 });

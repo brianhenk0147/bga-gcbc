@@ -219,6 +219,15 @@ class action_goodcopbadcop extends APP_GameAction
         self::ajaxResponse( );
     }
 
+    public function passOnOption()
+    {
+        self::setAjaxMode();
+
+        $this->game->passOnOption(); // tell the server that this player is oassing on a bonus option
+
+        self::ajaxResponse( );
+    }
+
     public function clickedEndTurnButton()
     {
         self::setAjaxMode();
