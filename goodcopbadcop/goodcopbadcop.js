@@ -246,7 +246,7 @@ function (dojo, declare) {
                     this.placeInfectionToken(infectedPlayerLetterOrder, infectedCardPosition); // put the token on the integrity card
                 }
 
-                this.placeCenterInfectionToken(); // put a token in the center mat
+                //this.placeCenterInfectionToken(); // put a token in the center mat
             }
 
             for( var i in gamedatas.woundedTokens )
@@ -432,7 +432,7 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-            console.log("onUpdateActionButtons state " + stateName);
+            //console.log("onUpdateActionButtons state " + stateName);
 
 
             if( this.isCurrentPlayerActive() )
@@ -3657,7 +3657,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
         {
             // this will never be received because it is sent during game setup
 
-            console.log('notif_startGameDialogInfo');
+            //console.log('notif_startGameDialogInfo');
             var teamName = notif.args.team;
 
         },
