@@ -3173,6 +3173,34 @@ class goodcopbadcop extends Table
 				}
 		}
 
+		function didZombiePlayerJustBite($playerId)
+		{
+				// get all guns held by this player
+				$sql = "SELECT * FROM `guns` ";
+				$sql .= "WHERE gun_held_by=$playerId ";
+
+				$gunsHeldByPlayer = self::getObjectListFromDB( $sql );
+
+				foreach( $gunsHeldByPlayer as $gun )
+				{ // go through each gun (should only be 1)
+
+						$gunId = $gun['gun_id']; // get the PLAYER ID of the player holding this gun
+						$gunFiredThisTurn = $gun['gun_fired_this_turn'];
+						$gunAimedAt = $gun['gun_aimed_at'];
+						$isTargetAZombie = $this->isPlayerZombie($gunAimedAt);
+						$isShooterAZombie = $this->isPlayerZombie($playerId);
+
+						if($gunFiredThisTurn && $isShooterAZombie)
+						{ // a zombie player just took a Bite action
+								return true;
+						}
+						else
+						{
+								return false;
+						}
+				}
+		}
+
 		function isPlayerHoldingGun($playerId)
 		{
 				// get all guns held by this player
@@ -6418,8 +6446,8 @@ class goodcopbadcop extends Table
 			elseif($this->isPlayerHoldingGun($playerWhoseTurnItIs))
 			{ // this player IS holding a gun
 
-					if($this->didNonZombiePlayerJustShootAZombie($playerWhoseTurnItIs))
-					{ // this player just shot a zombie
+					if($this->didZombiePlayerJustBite($playerWhoseTurnItIs))
+					{ // this player just took a Bite action
 							$this->gamestate->nextState( "askAimMustReaim" ); // ask the player to aim their arms
 					}
 					else
@@ -8105,8 +8133,6 @@ class goodcopbadcop extends Table
 						// STATS
 						self::incStat( 1, 'players_bitten', $shooterPlayerId ); // increase end game player stat
 						self::incStat( 1, 'bites_taken', $targetPlayerId ); // increase end game player stat
-
-						$this->rollZombieDice($shooterPlayerId, $targetPlayerId); // roll a zombie die for each infection token they have and take action for each zombie die face
 				}
 				else
 				{ // SHOT WITH GUN OR EQUIPMENT
@@ -8124,6 +8150,7 @@ class goodcopbadcop extends Table
 								self::incStat( 1, 'opponents_shot', $shooterPlayerId ); // increase end game player stat
 						}
 						self::incStat( 1, 'bullets_taken', $targetPlayerId ); // increase end game player stat
+				}
 
 
 						$isTargetALeader = $this->isPlayerALeader($targetPlayerId); // see if the player shot was a LEADER
@@ -8132,9 +8159,15 @@ class goodcopbadcop extends Table
 						// check for game over
 						if($isTargetALeader && $isTargetWounded)
 						{ // if you're shooting a wounded leader, the game ends
+
+
 								$playerTeam = $this->getPlayerTeam($targetPlayerId); // get the eliminated leader's team
 								$winningTeam = 'crooked'; // default assuming agent was eliminated
-								if($playerTeam == 'crooked')
+								if($teamOfShooter == 'zombie')
+								{ // zombie biting
+										$winningTeam = 'zombie'; // zombie wins
+								}
+								elseif($playerTeam == 'crooked')
 								{ // the kingpin was eliminated
 										$winningTeam = 'honest'; // honest wins
 								}
@@ -8159,21 +8192,9 @@ class goodcopbadcop extends Table
 								else
 								{ // a non-Leader is being shot
 
-										if($this->getPlayerRole($targetPlayerId) == 'zombie_infector')
-										{ // the infector was revealed
-												$infectorCardId = $this->getInfectorCardId();
-												$infectorIntegrityCardPosition = $this->getIntegrityCardPosition($infectorCardId);
-												$this->infectorFound($targetPlayerId, $infectorIntegrityCardPosition, $shooterPlayerId);
-										}
-										else
-										{
-
-										}
-
 										$this->eliminatePlayer($targetPlayerId); // eliminate this player
 								}
 						}
-				}
 		}
 
 		// $winType = 'team_win', 'solo_win'
@@ -10122,12 +10143,8 @@ class goodcopbadcop extends Table
 
 				$activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 				$hiddenCards = $this->getHiddenCardsFromPlayer($activePlayerId); // get all this player's hidden integrity cards
-				if($this->isPlayerZombie($activePlayerId))
-				{ // they are a zombie
-						$this->gamestate->nextState("chooseTokenToDiscardForZombieEquip");
-				}
-				elseif($hiddenCards && count($hiddenCards) > 0)
-				{ // they are not a zombie and have at least one hidden card
+				if($hiddenCards && count($hiddenCards) > 0)
+				{ // they have at least one hidden card
 						$this->gamestate->nextState( "equipChooseCard" ); // go to the state allowing the active player to choose a card to reveal for equip
 				}
 				else
@@ -10673,6 +10690,14 @@ class goodcopbadcop extends Table
 						{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
 							$this->gamestate->changeActivePlayer( $coffeeOwnerId ); // make coffee owner go next
 						}
+
+						$coffeeOwnerName = $this->getPlayerNameFromPlayerId($coffeeOwnerId);
+						$equipmentName = $this->getEquipmentName($coffeeId); // get the name of this equipment
+
+						self::notifyAllPlayers( "coffeeOwnerTurn", clienttranslate( '${player_name} will take their turn next because they played ${equipment_name}.' ), array(
+								'player_name' => $coffeeOwnerName,
+								'equipment_name' => $equipmentName
+						) );
 						//throw new feException( "player $coffeeOwnerId is now the active player." );
 				}
 				else
@@ -10904,6 +10929,14 @@ class goodcopbadcop extends Table
 
 		function executeActionBite()
 		{
+			// if non-wounded leader
+			//     they are wounded
+			// if wounded leader
+			//     game over
+			// if non-leader
+			//     they become a zombie
+
+
 				$initialStateName = $this->getStateName();
 				$diceRolled = $this->getZombieDiceRolled();
 				$playerBiting = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
@@ -11004,7 +11037,7 @@ class goodcopbadcop extends Table
 										$this->dropGun($gunId); // drop the gun in the database (do this BEFORE setState so you know whether you should ask them to aim or not)
 								}
 								else
-								{
+								{ // this was a GUN and it hit a zombie
 										$this->setGunState($gunId, 'aimed'); // it can't stay in the 'shooting' state
 								}
 
@@ -11019,8 +11052,12 @@ class goodcopbadcop extends Table
 
 								$this->setGunState($gunId, 'aimed'); // it can't stay in the 'shooting' state
 
-								$this->setEquipmentHoldersToActive("askBiteReaction"); // set anyone holding equipment to active
-								//$this->gamestate->nextState( "askBiteReaction" );
+								//$this->setEquipmentHoldersToActive("askBiteReaction"); // set anyone holding equipment to active
+
+								$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+								//throw new feException("playerWhoseTurnItIs:$playerWhoseTurnItIs");
+								$this->setStateAfterTurnAction($playerWhoseTurnItIs); // see which state we go into after completing this turn action
+
 						}
 				}
 		}
