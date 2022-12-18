@@ -235,7 +235,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetGunTargets',
     		"possibleactions" => array( "clickPlayer", "clickEndTurnButton" ),
-    		"transitions" => array( "aimAtPlayer" => 28, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askAimMustReaim" => 26, "askAim" => 27, "endGame" => 99, "allPassedOnReactions" => 30, "askStartGameReaction" => 2 )
+    		"transitions" => array( "aimAtPlayer" => 28, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askAimMustReaim" => 26, "askAim" => 27, "endGame" => 99, "allPassedOnReactions" => 30, "askStartGameReaction" => 2, "chooseAnotherPlayer" => 43 )
     ),
 
     28 => array(
@@ -356,7 +356,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetPlayerButtonTargets',
     		"possibleactions" => array( "clickPlayer", "clickCancelButton" ),
-    		"transitions" => array( "executeEquipment" => 31, "chooseActiveOrHandEquipmentCard" => 42, "chooseEquipmentToPlayReactEndOfTurn" => 16 )
+    		"transitions" => array( "executeEquipment" => 31, "chooseActiveOrHandEquipmentCard" => 42, "chooseEquipmentToPlayReactEndOfTurn" => 16, "endTurnReaction" => 29 )
     ),
 
     44 => array(
