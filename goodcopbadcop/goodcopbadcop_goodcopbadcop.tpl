@@ -446,6 +446,8 @@ var jstpl_some_game_item='<div class="my_game_item" id="my_game_item_${MY_ITEM_I
 <!-- match the id to the js file when you dojo.place it -->
 var jstpl_integrityCard = '<div class="integrity_card component_rounding" id="player_${playerLetter}_integrity_card_${cardPosition}" style="background-position:-${x}px -${y}px">\
                         </div>';
+var jstpl_integritySymbol = '<div class="integrity_symbol" id="symbol_player_${playerLetter}_integrity_card_${cardPosition}_${symbolIndex}" style="background-position:-${x}px -${y}px">\
+                        </div>';
 var jstpl_gun = '<div class="gun component_rounding" id="gun_${gunId}" style="background-position:-${x}px -${y}px">\
                         </div>';
 var jstpl_integrityCardToken = '<div id="integrity_token_${cardType}" class="integrity_card_token" style="background-position:-${x}px -${y}px">\
@@ -458,7 +460,7 @@ var jstpl_activeEquipment = '<div class="active_equipment_card component_roundin
 var jstpl_listEquipment = '<div class="list_equipment_card component_rounding" id="list_equipment_${collectorNumber}" style="background-position:-${x}px -${y}px"><div class="large_equipment_name">${equipmentName}</div><div class="large_equipment_effect">${equipmentEffect}</div>\
                         </div>';
 
-var jstpl_integrityDetails = '<div id="integrity_details"><div>${type}</div><div>${state}</div><div>${position}</div><div>${seenBy}</div><div>${woundedLine}</div><div>${infectedLine}</div>\
+var jstpl_integrityDetails = '<div id="integrity_details"><div>${type}</div><div>${state}</div><div>${position}</div><div>${seenBy}</div><div>${woundedLine}</div><div>${bombLine}</div><div>${knifeLine}</div>\
                         </div>';
 
 var jstpl_equipmentInHand = '<div class="hand_equipment_card component_rounding" id="player_${playerLetter}_hand_equipment_${equipmentId}" style="background-position:-${x}px -${y}px">\

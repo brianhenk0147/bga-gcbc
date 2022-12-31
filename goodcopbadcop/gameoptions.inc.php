@@ -72,7 +72,7 @@ $game_options = array(
                 'name' => totranslate('Bombers & Traitors Expansion'),
                 'values' => array(
                                 1 => array( 'name' => totranslate('Disabled') ),
-//                                2 => array( 'name' => totranslate('Enabled'), 'description' => totranslate('Adds the Bomber and Traitor roles that have unique win conditions.') )
+                                2 => array( 'name' => totranslate('Enabled'), 'description' => totranslate('Adds the Bomber and Traitor roles that have unique win conditions.') )
                             ),
                 'default' => 1
     ),

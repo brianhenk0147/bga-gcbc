@@ -47,6 +47,9 @@ function (dojo, declare) {
             this.dieWidth = 63;
             this.dieHeight = 63;
 
+            this.integritySymbolWidth = 25;
+            this.integritySymbolHeight = 27;
+
             this.EXTRA_DESCRIPTION_TEXT = ''; // this is only set when playing equipment to give specific direction to the player
 
             this.honestTranslated = _("HONEST");
@@ -142,13 +145,16 @@ function (dojo, declare) {
                 var playersSeen = card['player_list']; // the list of players who have seen this card
 
                 var isWounded = card['has_wound'];
-                var isInfected = card['has_infection'];
+                var hasBombSymbol = card['has_bomb_symbol'];
+                var hasKnifeSymbol = card['has_knife_symbol'];
+                var hasSeen3Bombs = card['hasSeen3Bombs'];
+                var hasSeen3Knives = card['hasSeen3Knives'];
 
                 var affectedByPlantedEvidence = card['affectedByPlantedEvidence'];
                 var affectedByDisguise = card['affectedByDisguise'];
                 var affectedBySurveillanceCamera = card['affectedBySurveillanceCamera'];
 
-                this.placeIntegrityCard(playerLetter, cardPosition, 'REVEALED', cardType, rotation, 0, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected); // put a revealed card face-up
+                this.placeIntegrityCard(playerLetter, cardPosition, 'REVEALED', cardType, rotation, 0, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, hasBombSymbol, hasKnifeSymbol, hasSeen3Bombs, hasSeen3Knives); // put a revealed card face-up
             }
 
             //hiddenCardsIHaveSeen
@@ -165,13 +171,16 @@ function (dojo, declare) {
                 var playersSeen = card['player_list']; // the list of players who have seen this card
 
                 var isWounded = card['has_wound'];
-                var isInfected = card['has_infection'];
+                var hasBombSymbol = card['has_bomb_symbol'];
+                var hasKnifeSymbol = card['has_knife_symbol'];
+                var hasSeen3Bombs = card['hasSeen3Bombs'];
+                var hasSeen3Knives = card['hasSeen3Knives'];
 
                 var affectedByPlantedEvidence = card['affectedByPlantedEvidence'];
                 var affectedByDisguise = card['affectedByDisguise'];
                 var affectedBySurveillanceCamera = card['affectedBySurveillanceCamera'];
 
-                this.placeIntegrityCard(playerLetter, cardPosition, 'HIDDEN_SEEN', cardType, rotation, 1, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected); // put a hidden card out so i can see what it is but it is clear it is not visible to everyone
+                this.placeIntegrityCard(playerLetter, cardPosition, 'HIDDEN_SEEN', cardType, rotation, 1, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, hasBombSymbol, hasKnifeSymbol, hasSeen3Bombs, hasSeen3Knives); // put a hidden card out so i can see what it is but it is clear it is not visible to everyone
             }
 
             //hiddenCardsIHaveNotSeen
@@ -187,13 +196,12 @@ function (dojo, declare) {
                 var playersSeen = card['player_list']; // the list of players who have seen this card
 
                 var isWounded = card['has_wound'];
-                var isInfected = card['has_infection'];
 
                 var affectedByPlantedEvidence = card['affectedByPlantedEvidence'];
                 var affectedByDisguise = card['affectedByDisguise'];
                 var affectedBySurveillanceCamera = card['affectedBySurveillanceCamera'];
 
-                this.placeIntegrityCard(playerLetter, cardPosition, 'HIDDEN_NOT_SEEN', cardType, rotation, 1, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected); // put a face-down integrity card out
+                this.placeIntegrityCard(playerLetter, cardPosition, 'HIDDEN_NOT_SEEN', cardType, rotation, 1, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, 2, 2, false, false); // put a face-down integrity card out
             }
 
             for( var gun_id in gamedatas.guns )
@@ -1307,6 +1315,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
              }
         },
 
+        // For handPlayerEquipmentX, we just need to reserve a spot for each equipment card in the deck.
         initializeOnePlayerHand : function(playerLetter)
         {
             switch(playerLetter)
@@ -1353,10 +1362,11 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.myHandEquipment.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_240w.jpg', 34 ); // Holster
 
 
-
                 this.handPlayerEquipmentA = new ebg.stock();
                 this.handPlayerEquipmentA.create( this, $('player_board_hand_equipment_a'), this.equipmentCardWidth, this.equipmentCardHeight );
                 this.handPlayerEquipmentA.image_items_per_row = 6;
+
+                // RESERVE A SPOT FOR EACH EQUIPMENT CARD IN THE DECK
                 this.handPlayerEquipmentA.addItemType( 1, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentA.addItemType( 2, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentA.addItemType( 3, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1387,17 +1397,19 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentA.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentA.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
-                this.handPlayerEquipmentA.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Classified Orders
-                this.handPlayerEquipmentA.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fake ID
-                this.handPlayerEquipmentA.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fingerprint Kit
-                this.handPlayerEquipmentA.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Grenade
-                this.handPlayerEquipmentA.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Holster
+                this.handPlayerEquipmentA.addItemType( 29, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentA.addItemType( 30, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentA.addItemType( 31, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentA.addItemType( 32, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentA.addItemType( 33, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
                 break;
                 case 'b':
                 this.handPlayerEquipmentB = new ebg.stock();
                 this.handPlayerEquipmentB.create( this, $('player_board_hand_equipment_b'), this.equipmentCardWidth, this.equipmentCardHeight );
                 this.handPlayerEquipmentB.image_items_per_row = 6;
+
+                // RESERVE A SPOT FOR EACH EQUIPMENT CARD IN THE DECK
                 this.handPlayerEquipmentB.addItemType( 1, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentB.addItemType( 2, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentB.addItemType( 3, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1428,16 +1440,18 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentB.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentB.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
-                this.handPlayerEquipmentB.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Classified Orders
-                this.handPlayerEquipmentB.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fake ID
-                this.handPlayerEquipmentB.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fingerprint Kit
-                this.handPlayerEquipmentB.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Grenade
-                this.handPlayerEquipmentB.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Holster
+                this.handPlayerEquipmentB.addItemType( 29, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Classified Orders
+                this.handPlayerEquipmentB.addItemType( 30, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fake ID
+                this.handPlayerEquipmentB.addItemType( 31, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fingerprint Kit
+                this.handPlayerEquipmentB.addItemType( 32, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Grenade
+                this.handPlayerEquipmentB.addItemType( 33, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Holster
                 break;
                 case 'c':
                 this.handPlayerEquipmentC = new ebg.stock();
                 this.handPlayerEquipmentC.create( this, $('player_board_hand_equipment_c'), this.equipmentCardWidth, this.equipmentCardHeight );
                 this.handPlayerEquipmentC.image_items_per_row = 6;
+
+                // RESERVE A SPOT FOR EACH EQUIPMENT CARD IN THE DECK
                 this.handPlayerEquipmentC.addItemType( 1, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentC.addItemType( 2, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentC.addItemType( 3, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1458,6 +1472,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentC.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentC.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
+                // add 9 more spots for Zombies equipment
                 this.handPlayerEquipmentC.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentC.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentC.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1468,16 +1483,20 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentC.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentC.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
-                this.handPlayerEquipmentC.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Classified Orders
-                this.handPlayerEquipmentC.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fake ID
-                this.handPlayerEquipmentC.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fingerprint Kit
-                this.handPlayerEquipmentC.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Grenade
-                this.handPlayerEquipmentC.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Holster
+                // add 5 more spots for Bombers & Traitors equipment
+                this.handPlayerEquipmentC.addItemType( 29, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentC.addItemType( 30, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentC.addItemType( 31, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentC.addItemType( 32, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentC.addItemType( 33, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 break;
+
                 case 'd':
                 this.handPlayerEquipmentD = new ebg.stock();
                 this.handPlayerEquipmentD.create( this, $('player_board_hand_equipment_d'), this.equipmentCardWidth, this.equipmentCardHeight );
                 this.handPlayerEquipmentD.image_items_per_row = 6;
+
+                // RESERVE A SPOT FOR EACH EQUIPMENT CARD IN THE DECK
                 this.handPlayerEquipmentD.addItemType( 1, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // card back
                 this.handPlayerEquipmentD.addItemType( 2, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentD.addItemType( 3, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1498,6 +1517,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentD.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentD.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
+                // add 9 more spots for Zombies equipment
                 this.handPlayerEquipmentD.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentD.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentD.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1508,16 +1528,20 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentD.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentD.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
-                this.handPlayerEquipmentD.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Classified Orders
-                this.handPlayerEquipmentD.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fake ID
-                this.handPlayerEquipmentD.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fingerprint Kit
-                this.handPlayerEquipmentD.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Grenade
-                this.handPlayerEquipmentD.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Holster
+                // add 5 more spots for Bombers & Traitors equipment
+                this.handPlayerEquipmentD.addItemType( 29, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentD.addItemType( 30, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentD.addItemType( 31, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentD.addItemType( 32, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentD.addItemType( 33, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 break;
+
                 case 'e':
                 this.handPlayerEquipmentE = new ebg.stock();
                 this.handPlayerEquipmentE.create( this, $('player_board_hand_equipment_e'), this.equipmentCardWidth, this.equipmentCardHeight );
                 this.handPlayerEquipmentE.image_items_per_row = 6;
+
+                // RESERVE A SPOT FOR EACH EQUIPMENT CARD IN THE DECK
                 this.handPlayerEquipmentE.addItemType( 1, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentE.addItemType( 2, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentE.addItemType( 3, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1538,6 +1562,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentE.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentE.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
+                // add 9 more spots for Zombies equipment
                 this.handPlayerEquipmentE.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentE.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentE.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1548,16 +1573,20 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentE.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentE.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
-                this.handPlayerEquipmentE.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Classified Orders
-                this.handPlayerEquipmentE.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fake ID
-                this.handPlayerEquipmentE.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fingerprint Kit
-                this.handPlayerEquipmentE.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Grenade
-                this.handPlayerEquipmentE.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Holster
+                // add 5 more spots for Bombers & Traitors equipment
+                this.handPlayerEquipmentE.addItemType( 29, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentE.addItemType( 30, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentE.addItemType( 31, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentE.addItemType( 32, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentE.addItemType( 33, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 break;
+
                 case 'f':
                 this.handPlayerEquipmentF = new ebg.stock();
                 this.handPlayerEquipmentF.create( this, $('player_board_hand_equipment_f'), this.equipmentCardWidth, this.equipmentCardHeight );
                 this.handPlayerEquipmentF.image_items_per_row = 6;
+
+                // RESERVE A SPOT FOR EACH EQUIPMENT CARD IN THE DECK
                 this.handPlayerEquipmentF.addItemType( 1, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentF.addItemType( 2, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentF.addItemType( 3, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1578,6 +1607,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentF.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentF.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
+                // add 9 more spots for Zombies equipment
                 this.handPlayerEquipmentF.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentF.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentF.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1588,16 +1618,20 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentF.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentF.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
-                this.handPlayerEquipmentF.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Classified Orders
-                this.handPlayerEquipmentF.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fake ID
-                this.handPlayerEquipmentF.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fingerprint Kit
-                this.handPlayerEquipmentF.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Grenade
-                this.handPlayerEquipmentF.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Holster
+                // add 5 more spots for Bombers & Traitors equipment
+                this.handPlayerEquipmentF.addItemType( 29, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentF.addItemType( 30, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentF.addItemType( 31, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentF.addItemType( 32, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentF.addItemType( 33, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 break;
+
                 case 'g':
                 this.handPlayerEquipmentG = new ebg.stock();
                 this.handPlayerEquipmentG.create( this, $('player_board_hand_equipment_g'), this.equipmentCardWidth, this.equipmentCardHeight );
                 this.handPlayerEquipmentG.image_items_per_row = 6;
+
+                // RESERVE A SPOT FOR EACH EQUIPMENT CARD IN THE DECK
                 this.handPlayerEquipmentG.addItemType( 1, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentG.addItemType( 2, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentG.addItemType( 3, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1618,6 +1652,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentG.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentG.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
+                // add 9 more spots for Zombies equipment
                 this.handPlayerEquipmentG.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentG.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentG.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1628,16 +1663,20 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentG.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentG.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
-                this.handPlayerEquipmentG.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Classified Orders
-                this.handPlayerEquipmentG.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fake ID
-                this.handPlayerEquipmentG.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fingerprint Kit
-                this.handPlayerEquipmentG.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Grenade
-                this.handPlayerEquipmentG.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Holster
+                // add 5 more spots for Bombers & Traitors equipment
+                this.handPlayerEquipmentG.addItemType( 29, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentG.addItemType( 30, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentG.addItemType( 31, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentG.addItemType( 32, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentG.addItemType( 33, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 break;
+
                 case 'h':
                 this.handPlayerEquipmentH = new ebg.stock();
                 this.handPlayerEquipmentH.create( this, $('player_board_hand_equipment_h'), this.equipmentCardWidth, this.equipmentCardHeight );
                 this.handPlayerEquipmentH.image_items_per_row = 6;
+
+                // RESERVE A SPOT FOR EACH EQUIPMENT CARD IN THE DECK
                 this.handPlayerEquipmentH.addItemType( 1, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentH.addItemType( 2, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentH.addItemType( 3, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1658,6 +1697,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentH.addItemType( 18, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentH.addItemType( 19, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
+                // add 9 more spots for Zombies equipment
                 this.handPlayerEquipmentH.addItemType( 20, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentH.addItemType( 21, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentH.addItemType( 22, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
@@ -1668,11 +1708,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.handPlayerEquipmentH.addItemType( 27, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 this.handPlayerEquipmentH.addItemType( 28, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
 
-                this.handPlayerEquipmentH.addItemType( 18, 18, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Classified Orders
-                this.handPlayerEquipmentH.addItemType( 19, 19, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fake ID
-                this.handPlayerEquipmentH.addItemType( 20, 20, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Fingerprint Kit
-                this.handPlayerEquipmentH.addItemType( 21, 21, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Grenade
-                this.handPlayerEquipmentH.addItemType( 22, 22, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 ); // Holster
+                // add 5 more spots for Bombers & Traitors equipment
+                this.handPlayerEquipmentH.addItemType( 29, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentH.addItemType( 30, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentH.addItemType( 31, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentH.addItemType( 32, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
+                this.handPlayerEquipmentH.addItemType( 33, 0, g_gamethemeurl+'img/equipment_card_sprite_50w.jpg', 0 );
                 break;
             }
         },
@@ -1914,6 +1955,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
         addHandPlayerEquipmentToStock(playerLetter, collectorNumber, equipmentId, equipName, equipEffect)
         {
+            console.log('adding collectorNumber '+collectorNumber+' and equipmentId '+equipmentId+' to player equipment stock '+playerLetter);
             switch(playerLetter)
             {
               case 'a':
@@ -1947,7 +1989,117 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             dojo.connect( $(htmlIdForCardInStock), 'onclick', this, 'onClickPlayerBoardEquipmentCard' );
         },
 
-        placeIntegrityCard: function(playerLetter, cardPosition, visibilityToYou, cardType, rotation, isHidden, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected)
+        addBombAndKnifeSymbols: function(playerLetter, cardHolderDiv, cardPosition, hasBombSymbol, hasKnifeSymbol, hasSeen3Bombs, hasSeen3Knives)
+        {
+          console.log('addBombAndKnifeSymbols hasBombSymbol:'+hasBombSymbol+' hasKnifeSymbol:'+hasKnifeSymbol);
+            var symbolIndex = 0; // 0 for first symbol, 1 for second symbol
+            var symbolDiv = 'symbol_player_' + playerLetter + '_integrity_card_' + cardPosition + '_'+symbolIndex;
+
+            var seen3OffsetKnives = 0;
+            if(hasSeen3Knives)
+            {
+                seen3OffsetKnives = 1;
+            }
+
+            var seen3OffsetBombs = 0;
+            if(hasSeen3Bombs)
+            {
+                seen3OffsetBombs = 1;
+            }
+
+            if(hasKnifeSymbol == 1)
+            { // has a KNIFE symbol on it
+
+                if(!document.getElementById(symbolDiv))
+                { // this symbol doesn't already exist
+
+  console.log('placing knife symbol on '+cardHolderDiv);
+
+                    // place the KNIFE symbol
+                    dojo.place(
+                                this.format_block( 'jstpl_integritySymbol', {
+                                    x: 0,
+                                    y: seen3OffsetKnives * this.integritySymbolHeight,
+                                    playerLetter: playerLetter,
+                                    cardPosition: cardPosition,
+                                    symbolIndex: symbolIndex
+                            } ), cardHolderDiv );
+
+                    // position the symbol based on the location
+                    if(playerLetter == 'a' || playerLetter == 'h' || playerLetter == 'c' || playerLetter == 'e')
+                    {
+                      console.log('player '+playerLetter+' knife');
+                        dojo.addClass(symbolDiv, 'integrity_symbol_vertical'); // put it in the upper-left corner
+                    }
+                    else if(playerLetter == 'b' || playerLetter == 'g')
+                    {
+                        dojo.addClass(symbolDiv, 'integrity_symbol_counterclockwise'); // put it in the upper-left corner
+                    }
+                    else if(playerLetter == 'd' || playerLetter == 'f')
+                    {
+                        dojo.addClass(symbolDiv, 'integrity_symbol_clockwise'); // put it in the upper-left corner
+                    }
+                }
+            }
+
+            if(hasBombSymbol == 1)
+            { // has a BOMB symbol on it
+console.log('placing bomb symbol on '+cardHolderDiv);
+
+                if(hasKnifeSymbol == 1)
+                { // it ALSO has a knife symbol
+                    symbolIndex = 1;
+                }
+                symbolDiv = 'symbol_player_' + playerLetter + '_integrity_card_' + cardPosition + '_'+symbolIndex;
+                if(!document.getElementById(symbolDiv))
+                { // this symbol doesn't already exist
+
+                    // place the BOMB symbol
+                    dojo.place(
+                                this.format_block( 'jstpl_integritySymbol', {
+                                    x: this.integritySymbolWidth,
+                                    y: seen3OffsetBombs * this.integritySymbolHeight,
+                                    playerLetter: playerLetter,
+                                    cardPosition: cardPosition,
+                                    symbolIndex: symbolIndex
+                            } ), cardHolderDiv );
+
+                    // position the symbol based on the location
+                    if(playerLetter == 'a' || playerLetter == 'h' || playerLetter == 'c' || playerLetter == 'e')
+                    {
+                                            console.log('player '+playerLetter+' bomb');
+                        dojo.addClass(symbolDiv, 'integrity_symbol_vertical'); // put it in the upper-left corner
+
+                        if(hasKnifeSymbol == 1)
+                        { // it ALSO has a knife symbol
+                                                                      console.log('player '+playerLetter+' second bomb');
+                            dojo.addClass(symbolDiv, 'integrity_symbol_vertical_second_symbol'); // put it in the upper-left corner
+                        }
+                    }
+                    else if(playerLetter == 'b' || playerLetter == 'g')
+                    {
+                        dojo.addClass(symbolDiv, 'integrity_symbol_counterclockwise'); // put it in the upper-left corner
+
+                        if(hasKnifeSymbol == 1)
+                        { // it ALSO has a knife symbol
+                            dojo.addClass(symbolDiv, 'integrity_symbol_counterclockwise_second_symbol'); // put it in the upper-left corner
+                        }
+                    }
+                    else if(playerLetter == 'd' || playerLetter == 'f')
+                    {
+                        dojo.addClass(symbolDiv, 'integrity_symbol_clockwise'); // put it in the upper-left corner
+
+                        if(hasKnifeSymbol == 1)
+                        { // it ALSO has a knife symbol
+                            dojo.addClass(symbolDiv, 'integrity_symbol_clockwise_second_symbol'); // put it in the upper-left corner
+                        }
+                    }
+                }
+
+            }
+        },
+
+        placeIntegrityCard: function(playerLetter, cardPosition, visibilityToYou, cardType, rotation, isHidden, playersSeen, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, hasBombSymbol, hasKnifeSymbol, hasSeen3Bombs, hasSeen3Knives)
         {
             var visibilityOffset = this.getVisibilityOffset(visibilityToYou); // get sprite X value for this card type
             var cardTypeOffset = this.getCardTypeOffset(cardType, affectedByPlantedEvidence); // get sprite Y value for this card type
@@ -1957,7 +2109,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
 
 
-
+            // place the INTEGRITY CARD
             dojo.place(
                         this.format_block( 'jstpl_integrityCard', {
                             x: this.integrityCardWidth*(visibilityOffset),
@@ -1966,7 +2118,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                             cardPosition: cardPosition
                     } ), cardHolderDiv );
 
+            if(this.gamedatas.bombersTraitorsExpansion == 2)
+            { // we are using the Bombers & Traitors expansion
+                //console.log('hasBombSymbol:'+hasBombSymbol+' hasKnifeSymbol:'+hasKnifeSymbol+' playerLetter:'+playerLetter);
 
+                this.addBombAndKnifeSymbols(playerLetter, cardDiv, cardPosition, hasBombSymbol, hasKnifeSymbol, hasSeen3Bombs, hasSeen3Knives);
+            }
 
 
             if(affectedByPlantedEvidence ||
@@ -1983,7 +2140,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
 
             // add tooltip
-            this.addIntegrityCardTooltip(cardDiv, cardType, isHidden, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected);
+            this.addIntegrityCardTooltip(cardDiv, cardType, isHidden, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, hasBombSymbol, hasKnifeSymbol);
 
 
             //this.rotateTo( cardDiv, rotation );
@@ -2006,21 +2163,23 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             return cardDiv;
         },
 
-        addIntegrityCardTooltip: function(htmlId, cardType, isHidden, playersSeen, cardPositionInt, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected)
+        addIntegrityCardTooltip: function(htmlId, cardType, isHidden, playersSeen, cardPositionInt, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, hasBombSymbol, hasKnifeSymbol)
         {
             var typeLabel = _("Type:"); // separate out labels for translation
             var stateLabel = _("State:"); // separate out labels for translation
             var positionLabel = _("Position:"); // separate out labels for translation
             var playersSeenLabel = _("Seen By:"); // separate out labels for translation
             var woundedLabel = _("Wounded:"); // separate out labels for translation
-            var infectedLabel = _("Infected:"); // separate out labels for translation
+            var bombLabel = _("Bomb:"); // separate out labels for translation
+            var knifeLabel = _("Knife:"); // separate out labels for translation
 
             var isHiddenText = this.convertIsHiddenToText(isHidden, affectedByDisguise, affectedBySurveillanceCamera); // convert whether it is hidden to a translated text
             var cardTypeText = this.convertCardTypeToText(cardType, affectedByPlantedEvidence); // convert the type of card to a translated version
             var positionText = this.convertCardPositionToText(cardPositionInt); // convert card position (1,2,3) to text (LEFT,MIDDLE,RIGHT)
             var playersSeenText = this.convertPlayersSeenToText(playersSeen);
             var woundedText = this.convertWoundedToText(isWounded);
-            var infectedText = this.convertInfectedToText(isInfected);
+            var bombText = this.convertBombToText(hasBombSymbol);
+            var knifeText = this.convertKnifeToText(hasKnifeSymbol);
 
             var html = '<div>';
             html += '<div><b>'+ typeLabel + '</b> '+ cardTypeText +'</div>';
@@ -2033,9 +2192,10 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 html += '<div><b>'+ woundedLabel + '</b> '+ woundedText +'</div>';
             }
 
-            if(this.gamedatas.zombieExpansion == 2)
+            if(this.gamedatas.bombersTraitorsExpansion == 2)
             { // we are using the zombies expansion
-                html += '<div><b>'+ infectedLabel + '</b> '+ infectedText +'</div>';
+                html += '<div><b>'+ bombLabel + '</b> '+ bombText +'</div>';
+                html += '<div><b>'+ knifeLabel + '</b> '+ knifeText + '</div>';
             }
 
             html += '</div>';
@@ -2902,9 +3062,21 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             }
         },
 
-        convertInfectedToText: function(isInfected)
+        convertBombToText: function(hasBombSymbol)
         {
-            if(isInfected == null || isInfected == '' || isInfected == false || isInfected == 'false' || isInfected == 0 || isInfected == '0')
+            if(hasBombSymbol == null || hasBombSymbol == '' || hasBombSymbol == false || hasBombSymbol == 'false' || hasBombSymbol == 0 || hasBombSymbol == '0')
+            {
+                return _("No");
+            }
+            else
+            {
+                return _("Yes");
+            }
+        },
+
+        convertKnifeToText: function(hasKnifeSymbol)
+        {
+            if(hasKnifeSymbol == null || hasKnifeSymbol == '' || hasKnifeSymbol == false || hasKnifeSymbol == 'false' || hasKnifeSymbol == 0 || hasKnifeSymbol == '0')
             {
                 return _("No");
             }
@@ -3767,7 +3939,10 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var affectedBySurveillanceCamera = notif.args.affectedBySurveillanceCamera;
 
             var isWounded = notif.args.isWounded;
-            var isInfected = notif.args.isInfected;
+
+            var hasBombSymbol = notif.args.hasBombSymbol;
+            var hasKnifeSymbol = notif.args.hasKnifeSymbol;
+
 
             // update the integrity card for this player to the seen version of it... should be in format -${x}px -${y}px
             var visibilityOffset = this.getVisibilityOffset('REVEALED'); // get sprite X value for this card type
@@ -3778,9 +3953,15 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var integrityCardHtmlId = "player_" + playerLetter + "_integrity_card_" + integrityCardPositionRevealed;
             dojo.style( integrityCardHtmlId, 'backgroundPosition', '-' + integrityCardSpriteX + 'px -' + integrityCardSpriteY + 'px' ); // update the integrity card for this player to the seen version of it... should be in format -${x}px -${y}px
 
+            if(this.gamedatas.bombersTraitorsExpansion == 2)
+            { // we are using the Bombers & Traitors expansion
+              console.log("revealIntegrityCard hasBombSymbol:"+hasBombSymbol+" hasKnifeSymbol:"+hasKnifeSymbol);
+                this.addBombAndKnifeSymbols(playerLetter, integrityCardHtmlId, integrityCardPositionRevealed, hasBombSymbol, hasKnifeSymbol, false, false); // we will do a rePlace right after this so we don't need to specify whether the player has seen 3 symbols
+            }
+
             this.highlightComponent(integrityCardHtmlId); // highlight the card just investigated
 
-            this.addIntegrityCardTooltip(integrityCardHtmlId, cardTypeRevealed, 0, playersSeen, integrityCardPositionRevealed, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected);
+            this.addIntegrityCardTooltip(integrityCardHtmlId, cardTypeRevealed, 0, playersSeen, integrityCardPositionRevealed, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, hasBombSymbol, hasKnifeSymbol);
         },
 
         notif_targetIntegrityCard: function( notif )
@@ -3961,8 +4142,9 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var affectedByDisguise = notif.args.affectedByDisguise;
             var affectedBySurveillanceCamera = notif.args.affectedBySurveillanceCamera;
 
-            var isInfected = notif.args.isInfected;
             var isWounded = notif.args.isWounded;
+            var hasBombSymbol = notif.args.hasBombSymbol;
+            var hasKnifeSymbol = notif.args.hasKnifeSymbol;
 
             // Create the new dialog over the play zone. You should store the handler in a member variable to access it later
             this.myDlg = new ebg.popindialog();
@@ -3975,13 +4157,15 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var positionLabel = _("Position:"); // separate out labels for translation
             var seenByLabel = _("Seen By:"); // separate out labels for translation
             var woundedLabel = _("Wounded:");
-            var infectedLabel = _("Infected:");
+            var bombLabel = _("Bomb:");
+            var knifeLabel = _("Knife:");
 
             var isHiddenText = this.convertIsHiddenToText(isHiddenInt, affectedByDisguise, affectedBySurveillanceCamera); // convert whether it is hidden to a translated text
             var cardTypeText = this.convertCardTypeToText(cardType, affectedByPlantedEvidence); // convert the type of card to a translated version
             var positionText = this.convertCardPositionToText(cardPosition); // convert card position (1,2,3) to text (LEFT,MIDDLE,RIGHT)
             var woundedText = this.convertWoundedToText(isWounded);
-            var infectedText = this.convertInfectedToText(isInfected);
+            var bombText = this.convertBombToText(hasBombSymbol);
+            var knifeText = this.convertKnifeToText(hasKnifeSymbol);
 
             var woundedLine = '';
             if(cardTypeText == 'Agent' || cardTypeText == 'Kingpin')
@@ -3990,9 +4174,10 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             }
 
             var infectedLine = '';
-            if(this.gamedatas.zombieExpansion == 2)
-            { // we are using the zombies expansion
-                infectedLine = '<b>'+ infectedLabel + '</b> '+ infectedText;
+            if(this.gamedatas.bombersTraitorsExpansion == 2)
+            { // we are using the Bombers & Traitors expansion
+                bombLine = '<b>'+ bombLabel + '</b> '+ bombText;
+                knifeLine = '<b>'+ knifeLabel + '</b> '+ knifeText;
             }
 
             // Create the HTML of my dialog.
@@ -4003,7 +4188,8 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                           position: '<b>'+positionLabel+'</b> '+positionText,
                           seenBy: '<b>'+seenByLabel+'</b> '+seenByList,
                           woundedLine: woundedLine,
-                          infectedLine: infectedLine
+                          bombLine: bombLine,
+                          knifeLine: knifeLine
                       } );
 
             // Show the dialog
@@ -4019,8 +4205,13 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
             var playersSeenArray = notif.args.playersSeenArray;
             var playersSeenList = notif.args.playersSeenList;
-            var hasInfection = notif.args.hasInfection;
             var hasWound = notif.args.hasWound;
+
+            var hasBombSymbol = notif.args.hasBombSymbol;
+            var hasKnifeSymbol = notif.args.hasKnifeSymbol;
+            var hasSeen3Bombs = notif.args.hasSeen3Bombs;
+            var hasSeen3Knives = notif.args.hasSeen3Knives;
+            console.log('replace hasSeen3Knives:'+hasSeen3Knives);
 
             var affectedByPlantedEvidence = notif.args.affectedByPlantedEvidence;
             var affectedByDisguise = notif.args.affectedByDisguise;
@@ -4056,24 +4247,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 dojo.destroy(cardHtmlId);
             }
 
-            var idOfCard = this.placeIntegrityCard(playerLetter, cardPosition, cardVisibility, cardType, rotation, isHiddenInt, playersSeenList, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, hasWound, hasInfection); // place a new one with correct hover over and such
+            var idOfCard = this.placeIntegrityCard(playerLetter, cardPosition, cardVisibility, cardType, rotation, isHiddenInt, playersSeenList, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, hasWound, hasBombSymbol, hasKnifeSymbol, hasSeen3Bombs, hasSeen3Knives); // place a new one with correct hover over and such
 
-            if(hasInfection)
-            { // this integrity card has an infection on it
-                var htmlOfInfectedToken1 = this.placeInfectionToken(playerLetter, cardPosition); // place a new infection token so it has the correct id
-              /*
-                var infectionCardType = cardPosition+''+playerLetter;
-
-
-                dojo.place(
-                            this.format_block( 'jstpl_integrityCardToken', {
-                                cardType: infectionCardType,
-                                x: 0,
-                                y: this.woundedTokenHeight
-                            } ), idOfCard );
-
-                            dojo.addClass("integrity_token_"+infectionCardType, "infection_token"); // add the infection token class
-              */
+            if(this.gamedatas.bombersTraitorsExpansion == 2)
+            { // we are using the Bombers & Traitors expansion
+              console.log("rePlaceIntegrityCard hasBombSymbol:"+hasBombSymbol+" hasKnifeSymbol:"+hasKnifeSymbol);
+                this.addBombAndKnifeSymbols(playerLetter, idOfCard, cardPosition, hasBombSymbol, hasKnifeSymbol, hasSeen3Bombs, hasSeen3Knives);
             }
 
             if(hasWound)
@@ -4504,6 +4683,11 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var card2Wounded = notif.args.card2Wounded;
             var card1Infected = notif.args.card1Infected;
             var card2Infected = notif.args.card2Infected;
+            var card1HasBombSymbol = notif.args.card1HasBombSymbol;
+            var card2HasBombSymbol = notif.args.card2HasBombSymbol;
+            var card1HasKnifeSymbol = notif.args.card1HasKnifeSymbol;
+            var card2HasKnifeSymbol = notif.args.card2HasKnifeSymbol;
+
             var card1affectedByPlantedEvidence = notif.args.card1affectedByPlantedEvidence;
             var card2affectedByPlantedEvidence = notif.args.card2affectedByPlantedEvidence;
             var card1affectedByDisguise = notif.args.card1affectedByDisguise;
@@ -4590,8 +4774,8 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
 
             // PLACE NEW INTEGRITY CARDS
-            this.placeIntegrityCard(playerLetter1, card1Position, card1Visibility, card1Type, card1Rotation, card1IsHiddenInt, card1PlayersSeen, card1affectedByPlantedEvidence, card1affectedByDisguise, card1affectedBySurveillanceCamera, card1Wounded, card1Infected); // put a revealed card face-up
-            this.placeIntegrityCard(playerLetter2, card2Position, card2Visibility, card2Type, card2Rotation, card2IsHiddenInt, card2PlayersSeen, card2affectedByPlantedEvidence, card2affectedByDisguise, card2affectedBySurveillanceCamera, card2Wounded, card2Infected); // put a revealed card face-up
+            this.placeIntegrityCard(playerLetter1, card1Position, card1Visibility, card1Type, card1Rotation, card1IsHiddenInt, card1PlayersSeen, card1affectedByPlantedEvidence, card1affectedByDisguise, card1affectedBySurveillanceCamera, card1Wounded, card1HasBombSymbol, card1HasKnifeSymbol, true, true); // put a revealed card face-up
+            this.placeIntegrityCard(playerLetter2, card2Position, card2Visibility, card2Type, card2Rotation, card2IsHiddenInt, card2PlayersSeen, card2affectedByPlantedEvidence, card2affectedByDisguise, card2affectedBySurveillanceCamera, card2Wounded, card2HasBombSymbol, card2HasKnifeSymbol, true, true); // put a revealed card face-up
 
             dojo.style(card1HtmlId, 'transform', 'rotate('+card1Rotation+'deg)');
             dojo.style(card2HtmlId, 'transform', 'rotate('+card2Rotation+'deg)');
@@ -4619,46 +4803,6 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 }
             }
 
-            // INFECTED TOKENS
-            if(card1Infected)
-            { // this card is infected
-
-                // place a wounded token
-                var htmlOfInfectedToken1 = this.placeInfectionToken(playerLetter1, card1Position); // place a new infection token so it has the correct id
-
-                if(document.getElementById(htmlOfInfectedToken1) && card1Rotation)
-                { // our data exists
-                    dojo.style(htmlOfInfectedToken1, 'transform', 'rotate('+card1Rotation+'deg)'); // rotate wounded token
-                }
-            }
-            else
-            { // this card is NOT infected
-
-                if(document.getElementById(htmlOfInfectedToken1))
-                { // our data exists
-                    dojo.destroy(htmlOfInfectedToken1);
-                }
-            }
-
-            if(card2Infected)
-            {
-
-                // place the wounded token
-                var htmlOfInfectedToken2 = this.placeInfectionToken(playerLetter2, card2Position); // place a new infection token so it has the correct id
-
-                if(document.getElementById(htmlOfInfectedToken2) && card2Rotation)
-                {  // the previous card had an infection token
-                    dojo.style(htmlOfInfectedToken2, 'transform', 'rotate('+card2Rotation+'deg)'); // destroy it so we don't have duplicate tokens out there
-                }
-            }
-            else
-            { // this card is NOT infected
-
-                if(document.getElementById(htmlOfInfectedToken2))
-                { // the previous card had an infection token
-                    dojo.destroy(htmlOfInfectedToken2); // destroy it so we don't have duplicate tokens out there
-                }
-            }
 
             this.highlightComponent(card2HtmlId); // highlight the card
             this.highlightComponent(card1HtmlId); // highlight the card
@@ -4700,7 +4844,11 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var affectedBySurveillanceCamera = notif.args.affectedBySurveillanceCamera;
 
             var isWounded = notif.args.isWounded;
-            var isInfected = notif.args.isInfected;
+
+            var hasBombSymbol = notif.args.hasBombSymbol;
+            var hasKnifeSymbol = notif.args.hasKnifeSymbol;
+            var hasSeen3Bombs = notif.args.hasSeen3Bombs;
+            var hasSeen3Knives = notif.args.hasSeen3Knives;
 
             var isHidden = notif.args.isHidden;
             var isHiddenInt = 0;
@@ -4724,10 +4872,14 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
             // update the integrity card for this player to the seen version of it... should be in format -${x}px -${y}px
             dojo.style( htmlId, 'backgroundPosition', '-' + spriteX + 'px -' + spriteY + 'px' );
+            if(this.gamedatas.bombersTraitorsExpansion == 2)
+            { // we are using the Bombers & Traitors expansion
+                this.addBombAndKnifeSymbols(playerLetter, htmlId, cardPosition, hasBombSymbol, hasKnifeSymbol, hasSeen3Bombs, hasSeen3Knives);
+            }
 
             this.highlightComponent(htmlId); // highlight the card just investigated
 
-            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected); // add tooltip to show who has seen this card
+            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, hasBombSymbol, hasKnifeSymbol); // add tooltip to show who has seen this card
         },
 
         notif_investigationAttempt: function( notif )
@@ -4748,7 +4900,8 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var cardType = notif.args.cardType;
 
             var isWounded = notif.args.isWounded;
-            var isInfected = notif.args.isInfected;
+            var hasBombSymbol = notif.args.hasBombSymbol;
+            var hasKnifeSymbol = notif.args.hasKnifeSymbol;
 
             var playersSeen = notif.args.playersSeen;
             var affectedByPlantedEvidence = notif.args.affectedByPlantedEvidence;
@@ -4766,7 +4919,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
             this.highlightComponent(htmlId); // highlight the card
 
-            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected); // add tooltip to show who has seen this card
+            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, hasBombSymbol, hasKnifeSymbol); // add tooltip to show who has seen this card
         },
 
         notif_iWasInvestigated: function( notif )
@@ -4777,7 +4930,8 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var cardType = notif.args.cardTypeCamel;
 
             var isWounded = notif.args.isWounded;
-            var isInfected = notif.args.isInfected;
+            var hasBombSymbol = notif.args.hasBombSymbol;
+            var hasKnifeSymbol = notif.args.hasKnifeSymbol;
 
             var playersSeen = notif.args.playersSeen;
             var affectedByPlantedEvidence = notif.args.affectedByPlantedEvidence;
@@ -4793,7 +4947,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
             var htmlId = "player_" + investigateePlayerLetter + "_integrity_card_" + cardPosition;
 
-            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, isInfected); // add tooltip to show who has seen this card
+            this.addIntegrityCardTooltip(htmlId, cardType, isHiddenInt, playersSeen, cardPosition, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, hasBombSymbol, hasKnifeSymbol); // add tooltip to show who has seen this card
         },
 
         notif_endTurn: function( notif )

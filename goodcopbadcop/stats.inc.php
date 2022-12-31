@@ -78,6 +78,18 @@ $stats_type = array(
         "zombies_at_end" => array("id"=> 19,
                     "name" => totranslate("Zombie players at end"),
                     "type" => "int" ),
+        "bombers_at_start" => array("id"=> 20,
+                    "name" => totranslate("Bombers players at start"),
+                    "type" => "int" ),
+        "bombers_at_end" => array("id"=> 21,
+                    "name" => totranslate("Bomber players at end"),
+                    "type" => "int" ),
+        "traitors_at_start" => array("id"=> 22,
+                    "name" => totranslate("Traitor players at start"),
+                    "type" => "int" ),
+        "traitors_at_end" => array("id"=> 23,
+                    "name" => totranslate("Traitor players at end"),
+                    "type" => "int" ),
 
 /*
         Examples:
@@ -124,7 +136,7 @@ $stats_type = array(
                     "name" => totranslate("Teammates shot"),
                     "type" => "int" ),
         "bullets_taken" => array("id"=> 27,
-                    "name" => totranslate("Bullets taken"),
+                    "name" => totranslate("Times shot"),
                     "type" => "int" ),
         "players_bitten" => array("id"=> 28,
                     "name" => totranslate("Players bitten"),
@@ -154,7 +166,12 @@ $stats_type = array(
 			       2 => totranslate("Crooked Kingpin"),
  			       3 => totranslate("Crooked Cop"),
              4 => totranslate("Zombie Infector"),
-             5 => totranslate("Zombie Minion")
+             5 => totranslate("Zombie Minion"),
+             6 => totranslate("Kingpin Agent"),
+             7 => totranslate("Infector Agent"),
+             8 => totranslate("Infector Kingpin"),
+             9 => totranslate("Bomber"),
+             10 => totranslate("Traitor")
 		    ),
         12 => array(
 			       0 => totranslate("Honest Agent"),
@@ -165,12 +182,16 @@ $stats_type = array(
              5 => totranslate("Zombie Minion"),
              6 => totranslate("Kingpin Agent"),
              7 => totranslate("Infector Agent"),
-             8 => totranslate("Infector Kingpin")
+             8 => totranslate("Infector Kingpin"),
+             9 => totranslate("Bomber"),
+             10 => totranslate("Traitor")
 		    ),
         13 => array(
 			       0 => totranslate("Honest"),
 			       1 => totranslate("Crooked"),
-			       2 => totranslate("Zombie")
+			       2 => totranslate("Zombie"),
+             3 => totranslate("Bomber"),
+             4 => totranslate("Traitor")
 		    ),
     )
 

@@ -591,6 +591,45 @@ background-image: url('img/medal_from_tracker_50w.png');
     margin-top: 0px;
 }
 
+.integrity_symbol {
+    background-image: url('img/integrity_symbols_25w.png');
+    width: 25px;
+    height: 27px;
+    z-index: 5;
+    display: inline-block;
+    position: absolute;
+}
+
+.integrity_symbol_vertical {
+    margin-left: 2px;
+    margin-top: 2px;
+}
+
+.integrity_symbol_counterclockwise {
+    margin-left: 2px;
+    margin-top: 2px;
+}
+
+.integrity_symbol_clockwise {
+    margin-left: 2px;
+    margin-top: 2px;
+}
+
+.integrity_symbol_vertical_second_symbol {
+    margin-left: 19px;
+    margin-top: 2px;
+}
+
+.integrity_symbol_counterclockwise_second_symbol {
+    margin-left: 19px;
+    margin-top: 2px;
+}
+
+.integrity_symbol_clockwise_second_symbol {
+    margin-left: 19px;
+    margin-top: 2px;
+}
+
 /* INTEGRITY CARDS */
 .integrity_card {
     display: inline-block;

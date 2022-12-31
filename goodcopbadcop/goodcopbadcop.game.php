@@ -154,6 +154,7 @@ class goodcopbadcop extends Table
 
 
 				$result['zombieExpansion'] = $this->getGameStateValue('ZOMBIES_EXPANSION'); // send whether we have the zombies expansion activated
+				$result['bombersTraitorsExpansion'] = $this->getGameStateValue('BT_EXPANSION'); // send whether we have the Bombers & Traitors expansion activated
 				$result['currentPlayerTurn'] = $this->getGameStateValue('CURRENT_PLAYER'); // let the client know whose turn it is
 				$result['isClockwise'] = $this->isTurnOrderClockwise(); // true if we are currently going clockwise
 				$result['currentState'] = $this->getStateName();
@@ -331,6 +332,14 @@ class goodcopbadcop extends Table
 						self::initStat( 'player', 'players_bitten', 0 );
 		        self::initStat( 'player', 'bites_taken', 0 );
 				}
+
+				if($this->getGameStateValue('BT_EXPANSION') == 2)
+				{ // we are using the Bombers & Traitors expansion
+						self::initStat( 'table', 'bombers_at_start', 0 );
+		        self::initStat( 'table', 'bombers_at_end', 0 );
+		        self::initStat( 'table', 'traitors_at_start', 0 );
+		        self::initStat( 'table', 'traitors_at_end', 0 );
+				}
 		}
 
 		function initializeEquipmentCardDeck($players)
@@ -385,7 +394,6 @@ class goodcopbadcop extends Table
 								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 18, 'card_location' => 'deck','nbr' => 1)); // Classified Orders
 								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 1)); // Fake ID
 								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)); // Fingerprint Kit
-
 								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 21, 'card_location' => 'deck','nbr' => 1)); // Grenade
 								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 22, 'card_location' => 'deck','nbr' => 1)); // Holster
 
@@ -460,6 +468,8 @@ class goodcopbadcop extends Table
 		{
 				$honestCardQuantity = $this->getHonestCardQuantity($players);
 				$crookedCardQuantity = $honestCardQuantity;
+
+
 				// Create Integrity Cards
 				// `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT - unique, internal id of the card
 				// `card_type` varchar(16) NOT NULL - value of card (honest, crooked, agent, kingpin)
@@ -467,14 +477,121 @@ class goodcopbadcop extends Table
 				// `card_location` varchar(30) NOT NULL - the player who holds this card or the deck if it wasn't dealt (123456)
 				// `card_location_arg` int(11) NOT NULL - the position where it is placed (1,2,3)
 				$integrityCardsList = array(
-						array( 'type' => 'honest', 'type_arg' => 0, 'card_location' => 'deck','nbr' => $honestCardQuantity),
-						array( 'type' => 'crooked', 'type_arg' => 0, 'card_location' => 'deck','nbr' => $crookedCardQuantity),
-						array( 'type' => 'agent', 'type_arg' => 0, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'kingpin', 'type_arg' => 0, 'card_location' => 'deck','nbr' => 1)
+								array( 'type' => 'honest', 'type_arg' => 0, 'card_location' => 'deck','nbr' => $honestCardQuantity),
+								array( 'type' => 'crooked', 'type_arg' => 0, 'card_location' => 'deck','nbr' => $crookedCardQuantity),
+								array( 'type' => 'agent', 'type_arg' => 0, 'card_location' => 'deck','nbr' => 1),
+								array( 'type' => 'kingpin', 'type_arg' => 0, 'card_location' => 'deck','nbr' => 1)
 				);
 
 				$this->integrityCards->createCards( $integrityCardsList, 'deck' ); // create the deck and override locations to deck
 				$this->integrityCards->shuffle( 'deck' ); // shuffle it
+
+				if($this->getGameStateValue('BT_EXPANSION') == 2)
+				{ // we are using the Bombers & Traitors expansion
+						$this->addBombAndKnifeSymbols($players);
+				}
+		}
+
+		function addBombAndKnifeSymbols($players)
+		{
+				// 4 players
+				$this->setBombKnifeSymbol('crooked', 'bomb'); // crooked bomb
+				$this->setBombKnifeSymbol('crooked', 'bomb'); // crooked bomb
+				$this->setBombKnifeSymbol('crooked', 'bombknife'); // crooked bomb knife
+				$this->setBombKnifeSymbol('crooked', 'knife'); // crooked knife
+				$this->setBombKnifeSymbol('crooked', 'knife'); // crooked knife
+				$this->setBombKnifeSymbol('honest', 'bomb'); // honest bomb
+				$this->setBombKnifeSymbol('honest', 'bomb'); // honest bomb
+				$this->setBombKnifeSymbol('honest', 'bombknife'); // honest bomb knife
+				$this->setBombKnifeSymbol('honest', 'knife'); // honest knife
+				$this->setBombKnifeSymbol('honest', 'knife'); // honest knife
+
+				if(count($players) > 4)
+				{ // 5 players
+						$this->setBombKnifeSymbol('crooked', 'knife'); // crooked knife
+						$this->setBombKnifeSymbol('honest', 'bomb'); // honest bomb
+				}
+
+				// 6 players (no changes)
+
+				if(count($players) > 6)
+				{ // 7 players
+						$this->setBombKnifeSymbol('crooked', 'bomb'); // crooked bomb
+						$this->setBombKnifeSymbol('honest', 'knife'); // honest knife
+				}
+
+				if(count($players) > 7)
+				{ // 8 players
+						$this->setBombKnifeSymbol('crooked', 'bomb'); // crooked bomb
+						$this->setBombKnifeSymbol('honest', 'knife'); // honest knife
+				}
+		}
+
+		function setBombKnifeSymbol($factionToSet, $symbolToAdd)
+		{
+				$integrityCards = $this->getAllIntegrityCards();
+
+				foreach( $integrityCards as $integrityCard )
+				{
+						$card_id = $integrityCard['card_id'];
+						$card_faction = $integrityCard['card_type'];
+						$has_bomb_symbol = $integrityCard['has_bomb_symbol'];
+						$has_knife_symbol = $integrityCard['has_knife_symbol'];
+						if($card_faction == $factionToSet)
+						{ // this is the type of card we're looking for
+								if($has_bomb_symbol == 0 && $has_knife_symbol == 0)
+								{	// this card has neither a bomb nor a knife symbol
+
+										if($symbolToAdd == 'bomb')
+										{
+												$sqlUpdate = "UPDATE integrityCards SET ";
+												$sqlUpdate .= "has_bomb_symbol=1 WHERE ";
+												$sqlUpdate .= "card_id=$card_id";
+
+												self::DbQuery( $sqlUpdate );
+										}
+										elseif($symbolToAdd == 'knife')
+										{
+												$sqlUpdate = "UPDATE integrityCards SET ";
+												$sqlUpdate .= "has_knife_symbol=1 WHERE ";
+												$sqlUpdate .= "card_id=$card_id";
+
+												self::DbQuery( $sqlUpdate );
+										}
+										else
+										{ // add bomb AND knife
+											$sqlUpdate = "UPDATE integrityCards SET ";
+											$sqlUpdate .= "has_bomb_symbol=1,has_knife_symbol=1 WHERE ";
+											$sqlUpdate .= "card_id=$card_id";
+
+											self::DbQuery( $sqlUpdate );
+										}
+
+										return true; // we found one to update (and we only want to update one of them)
+								}
+						}
+
+				}
+
+				return false; // we did not find a card we could update with this symbol
+		}
+
+		function setDatabaseBombSymbol($cardId, $value)
+		{
+				$sqlUpdate = "UPDATE integrityCards SET ";
+				$sqlUpdate .= "has_bomb_symbol=$value WHERE ";
+				$sqlUpdate .= "card_id=$cardId";
+
+				self::DbQuery( $sqlUpdate );
+		}
+
+		function setDatabaseKnifeSymbol($cardId, $value)
+		{
+				$sqlUpdate = "UPDATE integrityCards SET ";
+				$sqlUpdate .= "has_knife_symbol=$value WHERE ";
+				$sqlUpdate .= "card_id=$cardId";
+
+				self::DbQuery( $sqlUpdate );
 		}
 
 		function initializePlayerPositioning($players)
@@ -739,11 +856,66 @@ class goodcopbadcop extends Table
 				$this->countPlayersOnTeams('start');
 		}
 
-		function getSoloWinner()
+		// Get the player ID of an eliminated Bomber, otherwise null if a bomber is not currently eliminated.
+		function getEliminatedBomber()
 		{
-				$kingpinPlayerId = 0;
-				$agentPlayerId = 0;
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				foreach( $players as $player )
+				{ // go through each player
+						$playerId = $player['player_id']; // the ID of this player
+						$playerRole = $this->getPlayerRole($playerId); // crooked_kingpin, honest_cop, etc.
+						$isEliminated = $this->isPlayerEliminated($playerId); // true if player is eliminated
 
+						if($playerRole == 'bomber' &&
+						   $isEliminated == true &&
+							 !$this->isPlayerZombie($playerId))
+						{ // this player is a bomber and they are eliminated
+								return $playerId;
+						}
+				}
+
+				return null;
+		}
+
+		function getEliminatedLeader()
+		{
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				foreach( $players as $player )
+				{ // go through each player
+						$playerId = $player['player_id']; // the ID of this player
+						$playerRole = $this->getPlayerRole($playerId); // crooked_kingpin, honest_cop, etc.
+						$isEliminated = $this->isPlayerEliminated($playerId); // true if player is eliminated
+
+						if(($playerRole == 'crooked_kingpin' || $playerRole == 'honest_agent') &&
+							 $isEliminated == true)
+						{ // this player is a leader and they are eliminated
+								return $playerId;
+						}
+				}
+
+				return null;
+		}
+
+		function doesTraitorExist()
+		{
+				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+				foreach( $players as $player )
+				{ // go through each player
+						$playerId = $player['player_id']; // the ID of this player
+						$playerRole = $this->getPlayerRole($playerId); // crooked_kingpin, honest_cop, etc.
+
+						if($playerRole == 'traitor' && !$this->isPlayerEliminated($playerId) && !$this->isPlayerZombie($playerId))
+						{ // this player is a traitor and they are alive and not a zombie
+								return true;
+						}
+				}
+
+				return false;
+		}
+
+		// Get the player ID of whoever has both the Agent and Kingpin, otherwise null if no one has both.
+		function getKingpinAgent()
+		{
 				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
 				foreach( $players as $player )
 				{ // go through each player
@@ -771,7 +943,6 @@ class goodcopbadcop extends Table
 				$playerRoleAsInt = $this->convertPlayerRoleToInt($playerRole); // convert to int for stat purposes
 				$playerTeam = $this->getPlayerTeam($playerId); // crooked, honest, zombie
 				$playerTeamAsInt = $this->convertPlayerTeamToInt($playerTeam); // convert to int for stat purposes
-
 
 				if($playerRole == 'honest_agent')
 				{ // honest leader
@@ -851,6 +1022,7 @@ class goodcopbadcop extends Table
 						}
 						else
 						{
+//throw new feException( "zombie_infector Player role is $playerRole and playerRoleAsInt is $playerRoleAsInt and playerTeam is $playerTeam and playerTeamAsInt is $playerTeamAsInt");
 								self::incStat( 1, 'zombies_at_end' ); // increase end game table stat
 								self::setStat( $playerRoleAsInt, 'ending_role', $playerId ); // update stat for ending team
 						}
@@ -865,6 +1037,7 @@ class goodcopbadcop extends Table
 						}
 						else
 						{
+	//						throw new feException( "zombie_minion Player role is $playerRole and playerRoleAsInt is $playerRoleAsInt and playerTeam is $playerTeam and playerTeamAsInt is $playerTeamAsInt");
 								self::incStat( 1, 'zombies_at_end' ); // increase end game table stat
 								self::setStat( $playerRoleAsInt, 'ending_role', $playerId ); // update stat for ending team
 						}
@@ -893,8 +1066,35 @@ class goodcopbadcop extends Table
 								self::setStat( $playerRoleAsInt, 'ending_role', $playerId ); // update stat for ending team
 						}
 				}
-
-
+				elseif($playerRole == 'bomber')
+				{ // bomber
+					//throw new feException( "Player role is $playerRole and playerRoleAsInt is $playerRoleAsInt and playerTeam is $playerTeam and playerTeamAsInt is $playerTeamAsInt");
+						if($startOrEnd == 'start')
+						{
+								self::incStat( 1, 'bombers_at_start' ); // increase end game table stat
+								self::setStat( $playerRoleAsInt, 'starting_role', $playerId ); // update stat for starting team
+						}
+						else
+						{
+							//throw new feException( "Player role is $playerRole and playerRoleAsInt is $playerRoleAsInt and playerTeam is $playerTeam and playerTeamAsInt is $playerTeamAsInt");
+								self::incStat( 1, 'bombers_at_end' ); // increase end game table stat
+								self::setStat( $playerRoleAsInt, 'ending_role', $playerId ); // update stat for ending team
+						}
+				}
+				elseif($playerRole == 'traitor')
+				{ // traitor
+					//throw new feException( "Player role is $playerRole and playerRoleAsInt is $playerRoleAsInt and playerTeam is $playerTeam and playerTeamAsInt is $playerTeamAsInt");
+						if($startOrEnd == 'start')
+						{
+									self::incStat( 1, 'traitors_at_start' ); // increase end game table stat
+									self::setStat( $playerRoleAsInt, 'starting_role', $playerId ); // update stat for starting team
+						}
+						else
+						{
+								self::incStat( 1, 'traitors_at_end' ); // increase end game table stat
+								self::setStat( $playerRoleAsInt, 'ending_role', $playerId ); // update stat for ending team
+						}
+				}
 
 			}
 		}
@@ -923,6 +1123,18 @@ class goodcopbadcop extends Table
 				{ // infector
 						self::notifyPlayer( $playerId, 'newGameMessage', clienttranslate('You are secretly on the ZOMBIE team. Your mission is to eliminate non-Leaders so they join your team while staying hidden. Once you are revealed, you want to Bite the Agent or Kingpin.'), array(
 							'team_name' => 'HONEST'
+						) );
+				}
+				elseif($this->getPlayerRole($playerId) == 'bomber')
+				{ // bomber
+						self::notifyPlayer( $playerId, 'newGameMessage', clienttranslate('You are secretly on the BOMBER team. Your mission is to convince someone else to eliminate you or for you to be the one to shoot a wounded Agent or Kingpin.'), array(
+							'team_name' => 'BOMBER'
+						) );
+				}
+				elseif($this->getPlayerRole($playerId) == 'traitor')
+				{ // traitor
+						self::notifyPlayer( $playerId, 'newGameMessage', clienttranslate('You are secretly on the TRAITOR team. Your mission is to survive until either the Agent or Kingpin is eliminated.'), array(
+							'team_name' => 'TRAITOR'
 						) );
 				}
 				else
@@ -1006,6 +1218,8 @@ class goodcopbadcop extends Table
 				return $equipmentList;
 		}
 
+
+
 		function doesPlayerHaveRevealedLeader($playerId)
 		{
 				$revealedCards = $this->getRevealedCardsForPlayer($playerId);
@@ -1036,7 +1250,7 @@ class goodcopbadcop extends Table
 				{ // this is a spectator
 						$playerId = $this->getPlayerIdFromPlayerNo(1);
 
-						$sql = "SELECT ic.card_id, ic.card_type, ic.card_type_arg, ic.card_location, ic.card_location_arg, ic.has_wound, ic.has_infection, pp.player_position FROM `integrityCards` ic ";
+						$sql = "SELECT ic.card_id, ic.card_type, ic.card_type_arg, ic.card_location, ic.card_location_arg, ic.has_wound, ic.has_infection, ic.has_bomb_symbol, ic.has_knife_symbol, pp.player_position FROM `integrityCards` ic ";
 						$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
 						$sql .= "JOIN `playerPositioning` pp ON (ic.card_location=pp.player_id AND pp.player_asking=$playerId) ";
 						$sql .= "WHERE card_type_arg=1 ";
@@ -1044,7 +1258,7 @@ class goodcopbadcop extends Table
 				}
 				else
 				{ // this is NOT a spectator
-						$sql = "SELECT ic.card_id, ic.card_type, ic.card_type_arg, ic.card_location, ic.card_location_arg, ic.has_wound, ic.has_infection, pp.player_position FROM `integrityCards` ic ";
+						$sql = "SELECT ic.card_id, ic.card_type, ic.card_type_arg, ic.card_location, ic.card_location_arg, ic.has_wound, ic.has_infection, ic.has_bomb_symbol, ic.has_knife_symbol, pp.player_position FROM `integrityCards` ic ";
 						$sql .= "JOIN `playerCardVisibility` pcv ON ic.card_id=pcv.card_id ";
 						$sql .= "JOIN `playerPositioning` pp ON (ic.card_location=pp.player_id AND pp.player_asking=$playerId) ";
 						$sql .= "WHERE card_type_arg=1 ";
@@ -1054,6 +1268,7 @@ class goodcopbadcop extends Table
 				foreach($cardArray as $card)
 				{
 							$cardId = $card['card_id'];
+							$cardOwnerId = $card['card_location'];
 
 							// get list of players seen
 							$listOfPlayersSeen = $this->getListOfPlayersWhoHaveSeenCard($cardId); // get the list of players who have seen this card or "all" if all have seen it or "none" if none have seen it
@@ -1068,6 +1283,12 @@ class goodcopbadcop extends Table
 
 							$isAffectedBySurveillanceCamera = $this->isAffectedBySurveillanceCamera($cardId);
   						$cardArray[$cardId]['affectedBySurveillanceCamera'] = $isAffectedBySurveillanceCamera;
+
+							$hasSeen3Bombs = $this->hasPlayerSeen3BombsFromPlayer($playerId, $cardOwnerId);
+							$cardArray[$cardId]['hasSeen3Bombs'] = $hasSeen3Bombs;
+
+							$hasSeen3Knives = $this->hasPlayerSeen3KnivesFromPlayer($playerId, $cardOwnerId);
+							$cardArray[$cardId]['hasSeen3Knives'] = $hasSeen3Knives;
 				}
 
 				return $cardArray;
@@ -1101,6 +1322,7 @@ class goodcopbadcop extends Table
 				foreach($cardArray as $card)
 				{
 							$cardId = $card['card_id'];
+							$cardOwnerId = $card['card_location'];
 
 							// get list of players seen
 							$listOfPlayersSeen = $this->getListOfPlayersWhoHaveSeenCard($cardId); // get the list of players who have seen this card or "all" if all have seen it or "none" if none have seen it
@@ -1115,11 +1337,18 @@ class goodcopbadcop extends Table
 
 							$isAffectedBySurveillanceCamera = $this->isAffectedBySurveillanceCamera($cardId);
   						$cardArray[$cardId]['affectedBySurveillanceCamera'] = $isAffectedBySurveillanceCamera;
+
+							$hasSeen3Bombs = $this->hasPlayerSeen3BombsFromPlayer($playerId, $cardOwnerId);
+							$cardArray[$cardId]['hasSeen3Bombs'] = $hasSeen3Bombs;
+
+							$hasSeen3Knives = $this->hasPlayerSeen3KnivesFromPlayer($playerId, $cardOwnerId);
+							$cardArray[$cardId]['hasSeen3Knives'] = $hasSeen3Knives;
 				}
 
 				return $cardArray;
 		}
 
+		// DO NOT SEND ANY PRIVATE INFORMATION BECAUSE THE CLIENT SHOULD NOT GET THIS.
 		function getHiddenCardsIHaveNotSeen($playerId)
 		{
 				if(self::isSpectator())
@@ -1194,10 +1423,45 @@ class goodcopbadcop extends Table
 		{
 				$role = $this->getPlayerRole($playerId);
 
-				$roleSplit = explode("_", $role);
-				$team = $roleSplit[0]; // honest, crooked, zombie
+				if($role == 'bomber')
+				{
+						$team = 'bomber';
+				}
+				elseif($role == 'traitor')
+				{
+						$team = 'traitor';
+				}
+				else
+				{
+						$roleSplit = explode("_", $role);
+						$team = $roleSplit[0]; // honest, crooked, zombie
+				}
 
 				return $team;
+		}
+
+		function getFriendlyNameForTeam($teamString)
+		{
+				if($teamString == "honest")
+				{
+						return clienttranslate('HONEST');
+				}
+				elseif($teamString == "crooked")
+				{
+						return clienttranslate('CROOKED');
+				}
+				elseif($teamString == "bomber")
+				{
+						return clienttranslate('BOMBER');
+				}
+				elseif($teamString == "traitor")
+				{
+						return clienttranslate('TRAITOR');
+				}
+				else
+				{ // zombie
+						return clienttranslate('ZOMBIE');
+				}
 		}
 
 		function convertPlayerTeamToInt($teamString)
@@ -1209,6 +1473,14 @@ class goodcopbadcop extends Table
 				elseif($teamString == "crooked")
 				{
 						return 1;
+				}
+				elseif($teamString == "bomber")
+				{
+						return 3;
+				}
+				elseif($teamString == "traitor")
+				{
+						return 4;
 				}
 				else
 				{ // zombie
@@ -1254,9 +1526,17 @@ class goodcopbadcop extends Table
 				{ // has both infector and kingpin
 					 return 8;
 				}
+				elseif($roleString == "bomber")
+				{ // bomber
+					 return 9;
+				}
+				elseif($roleString == "traitor")
+				{ // traitor
+					 return 10;
+				}
 		}
 
-		// Return honest_cop, honest_agent, crooked_kinpin, crooked_cop, kingpin_agent
+		// Return honest_cop, honest_agent, crooked_kinpin, crooked_cop, kingpin_agent, bomber, traitor
 		function getPlayerRole($playerId)
 		{
 				$sql = "SELECT * FROM `integrityCards` ic ";
@@ -1269,8 +1549,22 @@ class goodcopbadcop extends Table
 				$agentCards = 0;
 				$kingpinCards = 0;
 				$infectorCards = 0;
+				$bombSymbols = 0;
+				$knifeSymbols = 0;
 				foreach( $myIntegrityCards as $integrityCard )
 				{
+						$hasBombSymbol = $integrityCard['has_bomb_symbol'];
+						if($hasBombSymbol == 1)
+						{
+								$bombSymbols++;
+						}
+
+						$hasKnifeSymbol = $integrityCard['has_knife_symbol'];
+						if($hasKnifeSymbol == 1)
+						{
+								$knifeSymbols++;
+						}
+
 						$cardType = $integrityCard['card_type'];
 						if($cardType == 'honest')
 						{
@@ -1325,6 +1619,14 @@ class goodcopbadcop extends Table
 				elseif($this->isPlayerZombie($playerId))
 				{ // this player is a zombie
 						return 'zombie_minion';
+				}
+				elseif($bombSymbols > 2)
+				{ // they have 3 bomb symbols (must come after zombie check because if they have 3 bombs but are a zombie, their role is zombie)
+						return 'bomber';
+				}
+				elseif($knifeSymbols > 2)
+				{ // they have 3 knife symbols (must come after zombie check because if they have 3 knives but are a zombie, their role is zombie)
+						return 'traitor';
 				}
 				elseif($honestCards > $crookedCards)
 				{ // honest team
@@ -3465,6 +3767,16 @@ class goodcopbadcop extends Table
 				return self::getObjectListFromDB( $sql );
 		}
 
+		function hasBombSymbol($playerId, $cardPosition)
+		{
+				return self::getUniqueValueFromDb("SELECT has_bomb_symbol FROM integrityCards WHERE card_location=$playerId AND card_location_arg=$cardPosition LIMIT 1");
+		}
+
+		function hasKnifeSymbol($playerId, $cardPosition)
+		{
+				return self::getUniqueValueFromDb("SELECT has_knife_symbol FROM integrityCards WHERE card_location=$playerId AND card_location_arg=$cardPosition LIMIT 1");
+		}
+
 		function getLastPlayerInvestigated($playerId)
 		{
 				return self::getUniqueValueFromDb("SELECT last_player_investigated FROM player WHERE player_id=$playerId LIMIT 1");
@@ -3999,6 +4311,7 @@ class goodcopbadcop extends Table
 														 'card_2' => $player1BeforeCardType2,
 														 'card_3' => $player1BeforeCardType3
 				) );
+				$player1BeforeTeam = $this->getPlayerTeam($oldOwnerOfCardId1);
 
 				$player2BeforeCardType1 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId2,1));
 				$player2BeforeCardType2 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId2,2));
@@ -4009,6 +4322,8 @@ class goodcopbadcop extends Table
 															'card_2' => $player2BeforeCardType2,
 															'card_3' => $player2BeforeCardType3
 				) );
+				$player2BeforeTeam = $this->getPlayerTeam($oldOwnerOfCardId2);
+
 
 				$oldPositionCardId1 = $this->getIntegrityCardPosition($cardId1); // 1, 2, 3
 				$oldPositionCardId2 = $this->getIntegrityCardPosition($cardId2); // 1, 2, 3
@@ -4060,7 +4375,10 @@ class goodcopbadcop extends Table
 				$card2Wounded = $this->isCardWounded($cardId1); // true if this has a wounded token on it
 				$card1Infected = $this->isCardInfected($cardId2); // true if this has a infection token on it
 				$card2Infected = $this->isCardInfected($cardId1); // true if this has a infection token on it
-
+				$card1HasBombSymbol = $this->hasBombSymbol($oldOwnerOfCardId1, $card1OriginalPosition);
+				$card2HasBombSymbol = $this->hasBombSymbol($oldOwnerOfCardId2, $card2OriginalPosition);
+				$card1HasKnifeSymbol = $this->hasKnifeSymbol($oldOwnerOfCardId1, $card1OriginalPosition);
+				$card2HasKnifeSymbol = $this->hasKnifeSymbol($oldOwnerOfCardId2, $card2OriginalPosition);
 
 				self::notifyAllPlayers( "integrityCardsExchanged", clienttranslate( '${player_name} ${card1PositionText} card has been exchanged with ${player_name_2} ${card2PositionText} card.' ), array(
 							'i18n' => array( 'card1PositionText', 'card2PositionText' ),
@@ -4089,7 +4407,11 @@ class goodcopbadcop extends Table
 							'card1affectedByDisguise' => $this->isAffectedByDisguise($cardId2),
 							'card2affectedByDisguise' => $this->isAffectedByDisguise($cardId1),
 							'card1affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId2),
-							'card2affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId1)
+							'card2affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId1),
+							'card1HasBombSymbol' => $card1HasBombSymbol,
+							'card2HasBombSymbol' => $card2HasBombSymbol,
+							'card1HasKnifeSymbol' => $card1HasKnifeSymbol,
+							'card2HasKnifeSymbol' => $card2HasKnifeSymbol
 				) );
 
 				$player1AfterCardType1 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId1,1));
@@ -4101,6 +4423,12 @@ class goodcopbadcop extends Table
 														 'card_2' => $player1AfterCardType2,
 														 'card_3' => $player1AfterCardType3
 				) );
+				$player1AfterTeam = $this->getPlayerTeam($oldOwnerOfCardId1);
+				$this->notifyIfChangedTeams($oldOwnerOfCardId1, $player1BeforeTeam, $player1AfterTeam); // if this player changed teams, send them a message to notify them
+
+
+
+
 
 				$player2AfterCardType1 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId2,1));
 				$player2AfterCardType2 = $this->convertCardTypeToText($this->getCardTypeFromPlayerIdAndPosition($oldOwnerOfCardId2,2));
@@ -4111,6 +4439,17 @@ class goodcopbadcop extends Table
 															'card_2' => $player2AfterCardType2,
 															'card_3' => $player2AfterCardType3
 				) );
+				$player2AfterTeam = $this->getPlayerTeam($oldOwnerOfCardId2);
+				$this->notifyIfChangedTeams($oldOwnerOfCardId2, $player2BeforeTeam, $player2AfterTeam); // if this player changed teams, send them a message to notify them
+
+
+				// replace all the cards so we can make sure the correct versions of the bomb and knife symbols show
+				$this->rePlaceIntegrityCard($this->getCardIdFromPlayerAndPosition($oldOwnerOfCardId1, 1));
+				$this->rePlaceIntegrityCard($this->getCardIdFromPlayerAndPosition($oldOwnerOfCardId1, 2));
+				$this->rePlaceIntegrityCard($this->getCardIdFromPlayerAndPosition($oldOwnerOfCardId1, 3));
+				$this->rePlaceIntegrityCard($this->getCardIdFromPlayerAndPosition($oldOwnerOfCardId2, 1));
+				$this->rePlaceIntegrityCard($this->getCardIdFromPlayerAndPosition($oldOwnerOfCardId2, 2));
+				$this->rePlaceIntegrityCard($this->getCardIdFromPlayerAndPosition($oldOwnerOfCardId2, 3));
 
 
 				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2)
@@ -4138,27 +4477,29 @@ class goodcopbadcop extends Table
 								if(!$this->isPlayerZombie($oldOwnerOfCardId1) && $this->getPlayerRole($oldOwnerOfCardId1) == 'zombie_infector')
 								{ // player is an Infector and NOT a zombie
 		//throw new feException("oldOwnerOfCardId1 is not zombie and oldOwnerOfCardId1 is infector");
+										$this->setEliminatedBy($oldOwnerOfCardId1, $oldOwnerOfCardId1); // set in the DB the player who eliminated them because it's needed to determine a game winner (only set eliminator to someone else if shot with a gun per Bombers & Traitors rules)
 										$this->eliminatePlayer($oldOwnerOfCardId1); // zombify them
 								}
 
 								if(!$this->isPlayerZombie($oldOwnerOfCardId2) && $this->getPlayerRole($oldOwnerOfCardId2) == 'zombie_infector')
 								{ // player is an Infector and NOT a zombie
 		//throw new feException("oldOwnerOfCardId2 is not zombie and oldOwnerOfCardId2 is infector");
+										$this->setEliminatedBy($oldOwnerOfCardId2, $oldOwnerOfCardId2); // set in the DB the player who eliminated them because it's needed to determine a game winner (only set eliminator to someone else if shot with a gun per Bombers & Traitors rules)
 										$this->eliminatePlayer($oldOwnerOfCardId2); // zombify them
 								}
 						}
 				}
+		}
 
-
-
-
-				$soloWinner = $this->getSoloWinner();
-				if($soloWinner)
-				{ // someone got both leaders
-						//$this->revealLeaderCards($soloWinner); // reveal the leader cards this player has
-						$this->endGameCleanup('solo_win', $soloWinner);
-
-						$this->gamestate->nextState( "endGame" );
+		function notifyIfChangedTeams($playerIdToNotify, $oldTeam, $newTeam)
+		{
+				if($oldTeam != $newTeam)
+				{ // player 1 changed teams
+						$newTeamName = $this->getFriendlyNameForTeam($newTeam);
+						self::notifyPlayer( $playerIdToNotify, 'newTeamMessage', clienttranslate( '<b>YOU HAVE CHANGED TEAMS!</b> YOU ARE NOW ON THE ${new_team_name} TEAM!' ), array(
+																 'i18n' => array('new_team_name'),
+																 'new_team_name' => $newTeamName
+						) );
 				}
 		}
 
@@ -5646,6 +5987,11 @@ class goodcopbadcop extends Table
 										throw new BgaUserException( self::_("Please target a player who has not been eliminated.") );
 								}
 
+								if($this->isPlayerZombie($ownerOfNewIntegrityCardTarget))
+								{ // they are trying to target an Integrity Card of a zombie
+										throw new BgaUserException( self::_("Please target a non-zombie's Integrity Card.") );
+								}
+
 								if($equipmentCardOwner == $ownerOfNewIntegrityCardTarget)
 								{ // they are trying to target their own integrity card
 										throw new BgaUserException( self::_("Please target a player other than yourself.") );
@@ -6117,6 +6463,15 @@ class goodcopbadcop extends Table
 
 
 						case 19: // Fake ID
+								if($this->isPlayerEliminated($ownerOfNewIntegrityCardTarget))
+								{ // they are trying to target an eliminated player's integrity card
+										throw new BgaUserException( self::_("Please target a player who has not been eliminated.") );
+								}
+
+								if($this->isPlayerZombie($ownerOfNewIntegrityCardTarget))
+								{ // they are trying to target an Integrity Card of a zombie
+										throw new BgaUserException( self::_("Please target a non-zombie's Integrity Card.") );
+								}
 
 //throw new feException( "isHidden:$isHidden cardType:$cardType integrityCardId:$integrityCardId");
 								if($isHidden == true || $isHidden == 1 || $cardType == 'kingpin' || $cardType == 'agent' || $cardType == 'infector')
@@ -6148,6 +6503,11 @@ class goodcopbadcop extends Table
 								if($this->isPlayerEliminated($ownerOfNewIntegrityCardTarget))
 								{ // they are trying to target an eliminated player's integrity card
 										throw new BgaUserException( self::_("Please target a player who has not been eliminated.") );
+								}
+
+								if($this->isPlayerZombie($ownerOfNewIntegrityCardTarget))
+								{ // they are trying to target an Integrity Card of a zombie
+										throw new BgaUserException( self::_("Please target a non-zombie's Integrity Card.") );
 								}
 
 								if($this->isPlayerDisguised($ownerOfNewIntegrityCardTarget))
@@ -6665,21 +7025,26 @@ class goodcopbadcop extends Table
 					$target1 = $this->getPlayerTarget1($grenadeId);
 					$target2 = $this->getPlayerTarget2($grenadeId);
 
+					$nameOfCurrentPlayer = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
+
 //throw new feException( "holding grenade");
 					if(!is_null($target2) && $target2 != '')
 					{	// someone has been tossed twice
 //throw new feException( "tossed twice");
-							$nameOfCurrentPlayer = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
+
 							self::notifyAllPlayers( "grenadeExplodes", clienttranslate( '${player_name} is holding the Grenade when it explodes.' ), array(
 										'player_name' => $nameOfCurrentPlayer
 							) );
-							$this->eliminatePlayer($playerWhoseTurnItIs); // mark them as eliminated
+							$this->shootPlayer($playerWhoseTurnItIs, $playerWhoseTurnItIs, 'equipment');
 							$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
 							$this->setStateAfterTurnAction($playerWhoseTurnItIs);
 					}
 					else
 					{ // grenade has been tossed only once
 //throw new feException( "tossed once");
+							self::notifyAllPlayers( "grenadeToss2Pre", clienttranslate( '${player_name} must toss the Grenade. It will explode at the end of that player\'s next turn.' ), array(
+										'player_name' => $nameOfCurrentPlayer
+							) );
 							$this->gamestate->nextState( "choosePlayer" ); // i need to toss it to someone else
 					}
 			}
@@ -7378,6 +7743,67 @@ class goodcopbadcop extends Table
 				return self::getObjectListFromDB( $sql );
 		}
 
+		function hasPlayerSeen3BombsFromPlayer($playerAsking, $playerTargeting)
+		{
+				$position1CardId = $this->getCardIdFromPlayerAndPosition($playerTargeting, 1);
+				$position2CardId = $this->getCardIdFromPlayerAndPosition($playerTargeting, 2);
+				$position3CardId = $this->getCardIdFromPlayerAndPosition($playerTargeting, 3);
+
+				$position1Revealed = $this->getCardRevealedStatus($position1CardId);
+				$position2Revealed = $this->getCardRevealedStatus($position2CardId);
+				$position3Revealed = $this->getCardRevealedStatus($position3CardId);
+
+				$position1Seen = $this->isSeen($playerAsking, $playerTargeting, 1);
+				$position2Seen = $this->isSeen($playerAsking, $playerTargeting, 2);
+				$position3Seen = $this->isSeen($playerAsking, $playerTargeting, 3);
+
+				$position1Bomb = $this->hasBombSymbol($playerTargeting, 1);
+				$position2Bomb = $this->hasBombSymbol($playerTargeting, 2);
+				$position3Bomb = $this->hasBombSymbol($playerTargeting, 3);
+
+				if(($position1Revealed == 1 || $position1Seen == 1) && $position1Bomb == 1 &&
+				($position2Revealed == 1 || $position2Seen == 1) && $position2Bomb == 1 &&
+				($position3Revealed == 1 || $position3Seen == 1) && $position3Bomb == 1)
+				{
+						return true;
+				}
+				else
+				{
+						return false;
+				}
+		}
+
+		function hasPlayerSeen3KnivesFromPlayer($playerAsking, $playerTargeting)
+		{
+				$position1CardId = $this->getCardIdFromPlayerAndPosition($playerTargeting, 1);
+				$position2CardId = $this->getCardIdFromPlayerAndPosition($playerTargeting, 2);
+				$position3CardId = $this->getCardIdFromPlayerAndPosition($playerTargeting, 3);
+
+				$position1Revealed = $this->getCardRevealedStatus($position1CardId);
+				$position2Revealed = $this->getCardRevealedStatus($position2CardId);
+				$position3Revealed = $this->getCardRevealedStatus($position3CardId);
+
+				$position1Seen = $this->isSeen($playerAsking, $playerTargeting, 1);
+				$position2Seen = $this->isSeen($playerAsking, $playerTargeting, 2);
+				$position3Seen = $this->isSeen($playerAsking, $playerTargeting, 3);
+
+				$position1Knife = $this->hasKnifeSymbol($playerTargeting, 1);
+				$position2Knife = $this->hasKnifeSymbol($playerTargeting, 2);
+				$position3Knife = $this->hasKnifeSymbol($playerTargeting, 3);
+//throw new feException( "position1Seen: $position1Seen position1Knife: $position1Knife position2Seen: $position2Seen position2Knife: $position2Knife position3Seen: $position3Seen position3Knife: $position3Knife" );
+				if(($position1Revealed == 1 || $position1Seen == 1) && $position1Knife == 1 &&
+				($position2Revealed == 1 || $position2Seen == 1) && $position2Knife == 1 &&
+				($position3Revealed == 1 || $position3Seen == 1) && $position3Knife == 1)
+				{ // the cards are all either revealed or seen by this player and have a knife symbol
+
+						return true;
+				}
+				else
+				{
+						return false;
+				}
+		}
+
 		function isSeen($playerAsking, $playerTargeting, $cardPosition)
 		{
 				if(self::isSpectator())
@@ -7543,6 +7969,22 @@ class goodcopbadcop extends Table
 				}
 
 
+		}
+
+		function getEliminatedBy($eliminatedPlayerId)
+		{
+				return self::getUniqueValueFromDb("SELECT aiming_at FROM player WHERE player_id=$eliminatedPlayerId LIMIT 1");
+				//return self::getUniqueValueFromDb("SELECT eliminated_by FROM player WHERE player_id=$eliminatedPlayerId LIMIT 1"); // TODO: use player.eliminated_by after all games have that field because it will be more accurate... otherwise we have to make assumptions and calculate it i'm not confident it will be accurate (i don't think aiming_at is used though so there's no big hurry)
+		}
+
+		function setEliminatedBy($eliminatedPlayer, $eliminator)
+		{
+				$sqlUpdate = "UPDATE player SET ";
+//				$sqlUpdate .= "eliminated_by='$eliminator' WHERE "; // TODO: use player.eliminated_by after all games have that field because it will be more accurate... otherwise we have to make assumptions and calculate it i'm not confident it will be accurate (i don't think aiming_at is used though so there's no big hurry)
+				$sqlUpdate .= "aiming_at='$eliminator' WHERE ";
+				$sqlUpdate .= "player_id=$eliminatedPlayer";
+
+				self::DbQuery( $sqlUpdate );
 		}
 
 		function setGunAcquiredInState($gunId, $value)
@@ -7797,11 +8239,16 @@ class goodcopbadcop extends Table
 
 								$isWounded = $this->isCardWounded($cardId);
 								$isInfected = $this->isCardInfected($cardId);
+								$hasBombSymbol = $this->hasBombSymbol($investigatedPlayerId, $cardPosition);
+								$hasKnifeSymbol = $this->hasKnifeSymbol($investigatedPlayerId, $cardPosition);
+								$hasSeen3Bombs = $this->hasPlayerSeen3BombsFromPlayer($playerInvestigating, $investigatedPlayerId);
+								$hasSeen3Knives = $this->hasPlayerSeen3KnivesFromPlayer($playerInvestigating, $investigatedPlayerId);
 
 								if($viewOnly == false)
 								{ // this is a real investigation
 
 										self::incStat( 1, 'investigations_completed', $playerInvestigating ); // increase end game player stat
+
 
 										// send notification with public information that this card has been investigated
 										self::notifyAllPlayers( 'investigationComplete', clienttranslate( '${player_name} investigated the ${position_text} card of ${player_name_2}.' ), array(
@@ -7818,30 +8265,36 @@ class goodcopbadcop extends Table
 											'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
 											'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId),
 											'isWounded' => $isWounded,
-											'isInfected' => $isInfected
+											'hasBombSymbol' => $hasBombSymbol,
+											'hasKnifeSymbol' => $hasKnifeSymbol,
+											'hasSeen3Bombs' => $hasSeen3Bombs,
+											'hasSeen3Knives' => $hasSeen3Knives
 										) );
 								}
 
-										// send notification with private information to the player who investigated
-										self::notifyPlayer( $playerInvestigating, 'viewCard', clienttranslate( 'You saw their ${position_text} ${cardTypeTranslated} card.' ), array(
-																				 'i18n' => array('position_text', 'cardTypeTranslated'),
-																				 'investigated_player_id' => $investigatedPlayerId,
-																				 'cardPosition' => $cardPosition,
-																				 'cardTypeTranslated' => strtoupper($cardType),
-																				 'cardType' => strtoupper($cardType),
-																				 'player_name' => $investigateePlayerName,
-																				 'isHidden' => $isHidden,
-																				 'playersSeen' => $listOfPlayersSeen,
-																				 'position_text' => $cardPositionText,
-																				 'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
-																				 'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
-																				 'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId),
-																				 'isWounded' => $isWounded,
-																				 'isInfected' => $isInfected
-										) );
+								// send notification with private information to the player who investigated
+								self::notifyPlayer( $playerInvestigating, 'viewCard', clienttranslate( 'You saw their ${position_text} ${cardTypeTranslated} card.' ), array(
+																		 'i18n' => array('position_text', 'cardTypeTranslated'),
+																		 'investigated_player_id' => $investigatedPlayerId,
+																		 'cardPosition' => $cardPosition,
+																		 'cardTypeTranslated' => strtoupper($cardType),
+																		 'cardType' => strtoupper($cardType),
+																		 'player_name' => $investigateePlayerName,
+																		 'isHidden' => $isHidden,
+																		 'playersSeen' => $listOfPlayersSeen,
+																		 'position_text' => $cardPositionText,
+																		 'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
+																		 'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
+																		 'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId),
+																		 'isWounded' => $isWounded,
+																		 'hasBombSymbol' => $hasBombSymbol,
+																		 'hasKnifeSymbol' => $hasKnifeSymbol,
+																		 'hasSeen3Bombs' => $hasSeen3Bombs,
+							 											 'hasSeen3Knives' => $hasSeen3Knives
+								) );
 
-										// notify the player being investigated exactly what they saw
-										self::notifyPlayer( $investigatedPlayerId, 'iWasInvestigated', clienttranslate( '${player_name} saw your ${position_text} ${cardType} card.' ), array(
+								// notify the player being investigated exactly what they saw
+								self::notifyPlayer( $investigatedPlayerId, 'iWasInvestigated', clienttranslate( '${player_name} saw your ${position_text} ${cardType} card.' ), array(
 																				 'i18n' => array('position_text', 'cardType'),
 																				 'cardType' => strtoupper($cardType),
 																				 'cardTypeCamel' => $cardType,
@@ -7855,10 +8308,11 @@ class goodcopbadcop extends Table
 									 											 'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
 									 											 'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId),
 																				 'isWounded' => $isWounded,
-																				 'isInfected' => $isInfected
-										) );
-
-
+																				 'hasBombSymbol' => $hasBombSymbol,
+																				 'hasKnifeSymbol' => $hasKnifeSymbol,
+																				 'hasSeen3Bombs' => $hasSeen3Bombs,
+									 											 'hasSeen3Knives' => $hasSeen3Knives
+								) );
 
 						}
 				}
@@ -7883,6 +8337,7 @@ class goodcopbadcop extends Table
 						else
 						{ // not yet a zombie
 
+								$this->setEliminatedBy($infectorPlayerId, $infectorPlayerId); // set in the DB the player who eliminated them because it's needed to determine a game winner (only set eliminator to someone else if shot with a gun per Bombers & Traitors rules)
 								$this->eliminatePlayer($infectorPlayerId); // turn into a zombie, notify everyone, reveal all cards, drop any guns
 
 						}
@@ -7984,6 +8439,11 @@ class goodcopbadcop extends Table
 					$cardType = $this->getCardTypeFromCardId($cardId);
 					$isWounded = $this->isCardWounded($cardId);
 					$isInfected = $this->isCardInfected($cardId);
+					$hasBombSymbol = $this->hasBombSymbol($playerRevealingId, $cardPosition);
+					$hasKnifeSymbol = $this->hasKnifeSymbol($playerRevealingId, $cardPosition);
+
+
+					//throw new feException( "hasBombSymbol: $hasBombSymbol hasKnifeSymbol: $hasKnifeSymbol" );
 
 					// notify all players (mainly any spectators)
 					self::notifyAllPlayers( 'revealIntegrityCard', clienttranslate( 'A ${card_type} card of ${player_name} has been revealed.' ), array(
@@ -7993,13 +8453,21 @@ class goodcopbadcop extends Table
 									 'card_position' => $cardPosition,
 									 'revealer_player_id' => $playerRevealingId,
 									 'isWounded' => $isWounded,
-									 'isInfected' => $isInfected
+									 'hasBombSymbol' => $hasBombSymbol,
+									 'hasKnifeSymbol' => $hasKnifeSymbol
 					) );
 
-					$this->rePlaceIntegrityCard($cardId);
-
-
 					$this->setLastCardPositionRevealed($playerRevealingId, 0); // set the last card position back to default
+
+					// update each card to make sure things look right for things like Disguise and Surveillance Camera and Bombs and Knives
+					$revealerIntegrityCards = $this->getIntegrityCardsForPlayer($playerRevealingId);
+					foreach($revealerIntegrityCards as $card)
+					{ // go through each of this player's cards
+							$cardId = $card['card_id'];
+							//$this->reverseHonestCrooked($cardId);
+							$this->rePlaceIntegrityCard($cardId);
+					}
+
 		}
 
 		function removeWoundedToken($woundedPlayerId)
@@ -8075,9 +8543,11 @@ class goodcopbadcop extends Table
 						$listOfPlayersSeen = $this->getListOfPlayersWhoHaveSeenCard($cardId); // get the list of players who have seen this card or "all" if all have seen it or "none" if none have seen it
 						$isHidden = $this->isIntegrityCardHidden($cardId); // true if this card is hidden
 
-						$hasInfection = $this->isCardInfected($cardId);
 						$hasWound = $this->isCardWounded($cardId); // true if this card has a wound token on it
 						$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
+
+						$hasBombSymbol = $this->hasBombSymbol($playerId, $cardPosition);
+						$hasKnifeSymbol = $this->hasKnifeSymbol($playerId, $cardPosition);
 
 						foreach( $players as $player )
 						{ // go through each player
@@ -8085,12 +8555,18 @@ class goodcopbadcop extends Table
 								$playerAsking = $player['player_id'];
 								$cardTypeMasked = $cardType; // we may need to mask the card type for this player so we don't send it to the client
 								$isSeen = $this->isSeen($playerAsking, $playerId, $cardPosition); //1 if this player has seen it
+								$hasBombSymbolMasked = $hasBombSymbol;
+								$hasKnifeSymbolMasked = $hasKnifeSymbol;
 
 								if($isSeen != 1 && ($isHidden == 1 || $isHidden == true))
 								{ // the card is not seen by this player and it is hidden
 										$cardTypeMasked = clienttranslate("Unknown");
-
+										$hasBombSymbolMasked = clienttranslate("Unknown");
+										$hasKnifeSymbolMasked = clienttranslate("Unknown");
 								}
+
+								$hasSeen3Bombs = $this->hasPlayerSeen3BombsFromPlayer($playerAsking, $playerId);
+								$hasSeen3Knives = $this->hasPlayerSeen3KnivesFromPlayer($playerAsking, $playerId);
 
 								self::notifyPlayer( $playerAsking, 'rePlaceIntegrityCard', '', array(
 										'player_id' => $playerId,
@@ -8098,7 +8574,10 @@ class goodcopbadcop extends Table
 										'cardType' => $cardTypeMasked,
 										'playersSeenArray' => $listOfPlayersSeenArray,
 										'playersSeenList' => $listOfPlayersSeen,
-										'hasInfection' => $hasInfection,
+										'hasBombSymbol' => $hasBombSymbolMasked,
+										'hasKnifeSymbol' => $hasKnifeSymbolMasked,
+										'hasSeen3Bombs' => $hasSeen3Bombs,
+										'hasSeen3Knives' => $hasSeen3Knives,
 										'hasWound' => $hasWound,
 										'affectedByPlantedEvidence' => $this->isAffectedByPlantedEvidence($cardId),
 										'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
@@ -8387,8 +8866,16 @@ class goodcopbadcop extends Table
 						self::incStat( 1, 'players_bitten', $shooterPlayerId ); // increase end game player stat
 						self::incStat( 1, 'bites_taken', $targetPlayerId ); // increase end game player stat
 				}
+				elseif($gunType == 'equipment')
+				{ // SHOT WITH EQUIPMENT
+						self::notifyAllPlayers( "executeGunShoot", clienttranslate( '${player_name} has been shot.' ), array(
+								'player_name' => $targetName
+						) );
+
+						self::incStat( 1, 'bullets_taken', $targetPlayerId ); // increase end game player stat (this is shown as Times Shot so it applies to more than just bullets)
+				}
 				else
-				{ // SHOT WITH GUN OR EQUIPMENT
+				{ // SHOT WITH GUN
 						self::notifyAllPlayers( "executeGunShoot", clienttranslate( '${player_name} has been shot.' ), array(
 								'player_name' => $targetName
 						) );
@@ -8402,34 +8889,19 @@ class goodcopbadcop extends Table
 						{
 								self::incStat( 1, 'opponents_shot', $shooterPlayerId ); // increase end game player stat
 						}
-						self::incStat( 1, 'bullets_taken', $targetPlayerId ); // increase end game player stat
+						self::incStat( 1, 'bullets_taken', $targetPlayerId ); // increase end game player stat (this is shown as Times Shot so it applies to more than just bullets)
 				}
 
 
 						$isTargetALeader = $this->isPlayerALeader($targetPlayerId); // see if the player shot was a LEADER
 						$isTargetWounded = $this->isPlayerWounded($targetPlayerId); // see if the player is WOUNDED
 
-						// check for game over
 						if($isTargetALeader && $isTargetWounded)
 						{ // if you're shooting a wounded leader, the game ends
 
-
-								$playerTeam = $this->getPlayerTeam($targetPlayerId); // get the eliminated leader's team
-								$winningTeam = 'crooked'; // default assuming agent was eliminated
-								if($teamOfShooter == 'zombie')
-								{ // zombie biting
-										$winningTeam = 'zombie'; // zombie wins
-								}
-								elseif($playerTeam == 'crooked')
-								{ // the kingpin was eliminated
-										$winningTeam = 'honest'; // honest wins
-								}
-
+								$this->setEliminatedBy($targetPlayerId, $shooterPlayerId); // set in the DB the player who eliminated them because it's needed to determine a game winner (only set eliminator to someone else if shot with a gun per Bombers & Traitors rules)
 								$this->eliminatePlayer($targetPlayerId); // mark them as eliminated
 
-								$this->endGameCleanup('team_win', $winningTeam);
-
-								$this->gamestate->nextState( "endGame" );
 						}
 						else
 						{ // the game is not ending
@@ -8445,36 +8917,158 @@ class goodcopbadcop extends Table
 								else
 								{ // a non-Leader is being shot
 
+										$this->setEliminatedBy($targetPlayerId, $shooterPlayerId); // set in the DB the player who eliminated them because it's needed to determine a game winner (only set eliminator to someone else if shot with a gun per Bombers & Traitors rules)
 										$this->eliminatePlayer($targetPlayerId); // eliminate this player
 								}
 						}
 		}
 
+		// See if any of the following end game conditions are met:
+		//    - someone has both the Agent and the Kingpin
+		//    - a Leader is eliminated
+		//    - a Bomber is eliminated
+		function doesGameEnd()
+		{
+//throw new feException( "doesGameEnd" );
+
+
+				$agentKingpin = $this->getKingpinAgent();
+				//$this->endGameCleanup('team_win', $winningTeam);
+				if($agentKingpin)
+				{ // someone got both leaders
+						$nameOfAgentKingpin = $this->getPlayerNameFromPlayerId($agentKingpin);
+
+//throw new feException( "game end: someone got both leaders" );
+
+						self::notifyAllPlayers( 'bothLeaders', clienttranslate( 'END GAME: ${player_name} got both Leaders so they win alone!' ), array(
+									'player_name' => $nameOfAgentKingpin
+						) );
+						//$this->revealLeaderCards($soloWinner); // reveal the leader cards this player has
+						$this->endGameCleanup('agent_kingpin');
+						return true;
+				}
+
+				// a bomber is eliminated
+				$eliminatedBomber = $this->getEliminatedBomber();
+				if($eliminatedBomber)
+				{ // a bomber was eliminated
+
+						$playerWhoEliminatedBomber = $this->getEliminatorPlayerId($eliminatedBomber);
+
+						if($playerWhoEliminatedBomber != $eliminatedBomber)
+						{ // the bomber did not shoot himself/herself
+//throw new feException( "game end: bomber eliminated" );
+								self::notifyAllPlayers( "bomberEliminatesLeader", clienttranslate( 'END GAME: A Bomber has been eliminated so all Bombers win!' ), array() );
+								$this->endGameCleanup('bomber');
+								return true;
+						}
+				}
+
+
+
+				$eliminatedLeader = $this->getEliminatedLeader();
+				if($eliminatedLeader)
+				{ // a leader is eliminated
+
+						$doesTraitorExist = $this->doesTraitorExist(); // see if there is a living traitor in the game
+
+						$playerWhoEliminatedLeader = $this->getEliminatorPlayerId($eliminatedLeader);
+						$teamOfPlayerWhoEliminatedLeader = $this->getPlayerTeam($playerWhoEliminatedLeader);
+						if($playerWhoEliminatedLeader && $teamOfPlayerWhoEliminatedLeader == 'bomber')
+						{ // a bomber eliminated a leader
+
+								if($doesTraitorExist)
+								{ // a traitor exists
+//throw new feException( "game end: bomber eliminated leader and traitor exists so both bombers and traitors win" );
+										self::notifyAllPlayers( "traitorExistsBomberWin", clienttranslate( 'END GAME: A Bomber eliminated a Leader and there was also a Traitor so all Bombers and Traitors win!' ), array() );
+										$this->endGameCleanup('bomber_traitor');
+										return true;
+								}
+								else
+								{
+//throw new feException( "game end: bomber eliminated a leader and no traitors exist so all bombers win" );
+										self::notifyAllPlayers( "noTraitorBomberWin", clienttranslate( 'END GAME: A Bomber eliminated a Leader so all Bombers win!' ), array() );
+										$this->endGameCleanup('bomber');
+										return true;
+								}
+						}
+
+						if($doesTraitorExist)
+						{ // all traitors win
+//throw new feException( "game end: traitors win" );
+								self::notifyAllPlayers( "leaderEliminatedAndTraitorExists", clienttranslate( 'END GAME: A Traitor was still alive when a Leader was eliminated so all Traitors win!' ), array() );
+								$this->endGameCleanup('traitor');
+								return true;
+						}
+
+						if($playerWhoEliminatedLeader && $teamOfPlayerWhoEliminatedLeader == 'zombie')
+						{ // all zombies win
+//throw new feException( "game end: zombies win" );
+								self::notifyAllPlayers( "zombieBitesLeader", clienttranslate( 'END GAME: A Zombie eliminated a Leader so all Zombies win!' ), array() );
+								$this->endGameCleanup('zombie');
+								return true;
+						}
+
+						$teamOfLeader = $this->getPlayerTeam($eliminatedLeader); // get the team of the eliminated leader
+						if($teamOfLeader == 'honest')
+						{ // all crooked win
+//throw new feException( "game end: crooked team wins" );
+								self::notifyAllPlayers( "agentEliminated", clienttranslate( 'END GAME: The Agent was eliminated so all Crooked players win!' ), array() );
+								$this->endGameCleanup('crooked');
+								return true;
+						}
+
+						if($teamOfLeader == 'crooked')
+						{ // all honest win
+//throw new feException( "game end: honest team wins" );
+								self::notifyAllPlayers( "kingpinEliminated", clienttranslate( 'END GAME: The Kingpin was eliminated so all Honest players win!' ), array() );
+								$this->endGameCleanup('honest');
+								return true;
+						}
+				}
+
+				return false; // no winning conditions are met
+		}
+
+		function getEliminatorPlayerId($eliminatedPlayer)
+		{
+				return $this->getEliminatedBy($eliminatedPlayer);
+		}
+
 		// $winType = 'team_win', 'solo_win'
 		// $leader = the ELIMINATED leader in a team win and the WINNING leader in a solo win.
-		function endGameCleanup($winType, $winningTeam)
+		function endGameCleanup($winningTeam)
 		{
 			$this->revealAllIntegrityCards();
 			$this->revealAllEquipmentCards();
 
-			$this->awardEndGamePoints($winType, $winningTeam); // award end game points
+			$this->awardEndGamePoints($winningTeam); // award end game points
 			$this->countPlayersOnTeams('end'); // update stats on how many were on each team at the end of the game
 		}
 
 		// $winningTeam = either the team who wins (honest, crooked, zombie) or, for solo, the player ID who won
-		function awardEndGamePoints($endType, $winningTeam)
+		function awardEndGamePoints($winningTeam)
 		{
-				if($endType == 'solo_win')
-				{
-						$sqlAll = "UPDATE player SET player_score='1' WHERE player_id=$winningTeam"; // update score in the database
+				if($winningTeam == 'agent_kingpin')
+				{ // single player wins
+						$agentKingpin = $this->getKingpinAgent();
+
+						$sqlAll = "UPDATE player SET player_score='1' WHERE player_id=$agentKingpin"; // update score in the database
 						self::DbQuery( $sqlAll );
 
 						self::notifyAllPlayers( 'playerWinsGame', '', array(
-																 'winner_player_id' => $winningTeam
+																 'winner_player_id' => $agentKingpin
 						) );
 				}
-				elseif($endType == 'team_win')
-				{
+				else
+				{ // team win
+							$winningTeam2 = 'no_second_winning_team';
+							if($winningTeam == 'bomber_traitor')
+							{ // both the bomber and traitor teams win
+									$winningTeam = 'bomber';
+									$winningTeam2 = 'traitor';
+							}
+
 							$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
 
 							foreach( $players as $player )
@@ -8483,7 +9077,7 @@ class goodcopbadcop extends Table
 									$thisPlayerId = $player['player_id'];
 									$playerTeam = $this->getPlayerTeam($thisPlayerId); // get this player's team
 
-									if($playerTeam == $winningTeam)
+									if($playerTeam == $winningTeam || $playerTeam == $winningTeam2)
 									{ // this player WON
 											$sqlAll = "UPDATE player SET player_score='1' WHERE player_id=$thisPlayerId"; // update score in the database
 											self::DbQuery( $sqlAll );
@@ -8571,11 +9165,21 @@ class goodcopbadcop extends Table
 				}
 		}
 
+		// This is called when a wounded Leader is shot/bitten or a non-Leader is shot/bitten. Tese are the things
+		// that can happen in here:
+		//    - a Leader can become a zombie (leader==true, zombieExpansion==true)
+		//    - a Leader can be eliminated (leader==true, zombieExpansion== false)
+		//    - a non-Leader can become a zombie (isZombie==false, leader==false, zombieExpansion== true)
+		//    - a non-Leader can be eliminated (leader==false, zombieExpansion==false)
+		//    - a non-Leader zombie can be shot (isZombie==true, leader==false, zombieExpansion==true)
+		// After this is done, check to see if any team wins.
 		function eliminatePlayer($playerId)
 		{
 				$targetName = $this->getPlayerNameFromPlayerId($playerId);
-				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2)
-				{ // we are using the zombies expansion
+				$playerRole = $this->getPlayerRole($playerId); // crooked_kingpin, honest_cop, bomber, traitor, etc.
+
+				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $playerRole != 'bomber')
+				{ // we are using the zombies expansion (and we didn't just eliminate a bomber who won't turn into a zombie)
 
 						$isTargetALeader = $this->isPlayerALeader($playerId); // see if the player turning into a zombie was a LEADER
 						if($isTargetALeader)
@@ -8612,24 +9216,26 @@ class goodcopbadcop extends Table
 								else
 								{ // not yet a zombie
 
-										// discard guns they were holding
-										$guns = $this->getGunsHeldByPlayer($playerId);
-										foreach( $guns as $gun )
-										{ // go through each gun (should only be 1)
-												$gunId = $gun['gun_id'];
-												$this->dropGun($gunId);
-												//throw new feException( "dropped gun $gunId");
-										}
 
-										$this->zombifyPlayer($playerId); // update DB that they are a zombie and notify everyone (but do not drop guns or reveal cards)
+												// discard guns they were holding
+												$guns = $this->getGunsHeldByPlayer($playerId);
+												foreach( $guns as $gun )
+												{ // go through each gun (should only be 1)
+														$gunId = $gun['gun_id'];
+														$this->dropGun($gunId);
+														//throw new feException( "dropped gun $gunId");
+												}
 
-										//$countguns = count($guns);
-										//throw new feException( "count guns:$countguns");
+												$this->zombifyPlayer($playerId); // update DB that they are a zombie and notify everyone (but do not drop guns or reveal cards)
 
-										$this->pickUpGun($playerId, $this->getStateName()); // pick up arms
+												//$countguns = count($guns);
+												//throw new feException( "count guns:$countguns");
 
-										// aim arms at self if they have any
-										$this->aimGun($playerId, $playerId); // update the gun in the database for who it is now aimed at
+												$this->pickUpGun($playerId, $this->getStateName()); // pick up arms
+
+												// aim arms at self if they have any
+												$this->aimGun($playerId, $playerId); // update the gun in the database for who it is now aimed at
+
 								}
 						}
 				}
@@ -9132,7 +9738,9 @@ class goodcopbadcop extends Table
 							{
 									throw new BgaUserException( self::_("We do not have a valid target for this Equipment.") );
 							}
+							$teamBefore = $this->getPlayerTeam($target1);
 							$this->makePlayerEquipmentActive($equipmentId, $target1); // activate this card
+							$teamAfter = $this->getPlayerTeam($target1);
 
 							// send client notification that each card has been reversed
 							$playerCards = $this->getIntegrityCardsForPlayer($target1);
@@ -9145,6 +9753,8 @@ class goodcopbadcop extends Table
 
 							self::notifyPlayer( $target1, 'plantedEvidenceMessage', clienttranslate( 'Your HONEST cards are now CROOKED and your CROOKED cards are HONEST.' ), array(
 							) );
+
+							$this->notifyIfChangedTeams($target1, $teamBefore, $teamAfter); // if this player changed teams, send them a message to notify them
 
 							$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 							if(!$this->weAreInActivePlayerState())
@@ -9652,23 +10262,36 @@ class goodcopbadcop extends Table
 								$integrityCardOwner = $this->getIntegrityCardOwner($target1); // get the player who owns the integrity card targeted
 								$cardPosition = $this->getIntegrityCardPosition($target1); // get the position of the integrity card targeted
 								$cardId = $this->getCardIdFromPlayerAndPosition($integrityCardOwner, $cardPosition);
+								$target1TeamBefore = $this->getPlayerTeam($target1);
 
 								$target2 = $this->getEquipmentTarget2($equipmentId); // get the selected integrity card
 								$integrityCardOwner2 = $this->getIntegrityCardOwner($target2); // get the player who owns the integrity card targeted
 								$cardPosition2 = $this->getIntegrityCardPosition($target2); // get the position of the integrity card targeted
 								$cardId2 = $this->getCardIdFromPlayerAndPosition($integrityCardOwner2, $cardPosition2);
+								$target2TeamBefore = $this->getPlayerTeam($target2);
 
 								$this->swapIntegrityCards($cardId, $cardId2); // swap the owners of the two integrity cards
+								$target1TeamAfter = $this->getPlayerTeam($target1);
+								$target2TeamAfter = $this->getPlayerTeam($target2);
+
 								$this->investigateCard($cardId2, $integrityCardOwner, true); // let the new owner investigate this card and notify players
 								$this->investigateCard($cardId, $integrityCardOwner2, true); // let the new owner investigate this card and notify players
 
 								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
+
+								$this->notifyIfChangedTeams($target1, $target1TeamBefore, $target1TeamAfter); // if this player changed teams, send them a message to notify them
+								$this->notifyIfChangedTeams($target2, $target2TeamBefore, $target2TeamAfter); // if this player changed teams, send them a message to notify them
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 								if(!$this->weAreInActivePlayerState())
 								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
 										$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
 								}
+
+
+
+
+
 						break;
 
 						case 66: // Machete
@@ -9739,7 +10362,7 @@ class goodcopbadcop extends Table
 						break;
 
 						case 67: // Weapon Crate
-								$armedRevealedPlayers = $this->getArmedPlayersWithNoHiddenCards(); // get all players holding a gun with an infection token
+								$armedRevealedPlayers = $this->getArmedPlayersWithNoHiddenCards(); // get all players holding a gun without any hidden integrity cards
 
 								// unaim their guns
 								foreach($armedRevealedPlayers as $player)
@@ -9760,16 +10383,19 @@ class goodcopbadcop extends Table
 								}
 
 
-								$unarmedRevealedPlayers = $this->getUnarmedPlayersWithNoHiddenCards(); // get each unarmed player with an infection token
+								$unarmedRevealedPlayers = $this->getUnarmedPlayersWithNoHiddenCards(); // get each unarmed player without any hidden integrity cards
 
 								// give them a gun
 								foreach($unarmedRevealedPlayers as $player)
 								{
 										$armerPlayerId = $player['player_id'];
-										$gun = $this->pickUpGun($armerPlayerId, $this->getStateName());
+										if(!$this->isPlayerEliminated($armerPlayerId) && !$this->isPlayerZombie($armerPlayerId))
+										{ // player is not eliminated (because they can't arm) and they are not a zombie (because they don't need to Arm)
+												$gun = $this->pickUpGun($armerPlayerId, $this->getStateName());
 
-										$newGunId = $gun['gun_id'];
-										$this->setGunCanShoot($newGunId, 0); // make sure player cannot shoot the gun this turn
+												$newGunId = $gun['gun_id'];
+												$this->setGunCanShoot($newGunId, 0); // make sure player cannot shoot the gun this turn
+										}
 								}
 
 						break;
@@ -10053,7 +10679,9 @@ class goodcopbadcop extends Table
 						$listOfPlayersSeen = $this->getListOfPlayersWhoHaveSeenCard($cardId); // get the list of players who have seen this card or "all" if all have seen it or "none" if none have seen it
 
 						$isWounded = $this->isCardWounded($cardId);
-						$isInfected = $this->isCardInfected($cardId);
+
+						$hasBombSymbol = $this->hasBombSymbol($integrityCardOwner, $cardPosition);
+						$hasKnifeSymbol = $this->hasKnifeSymbol($integrityCardOwner, $cardPosition);
 
 						if($isSeen != 1 && $isHidden)
 						{
@@ -10071,7 +10699,8 @@ class goodcopbadcop extends Table
 							'affectedByDisguise' => $this->isAffectedByDisguise($cardId),
 							'affectedBySurveillanceCamera' => $this->isAffectedBySurveillanceCamera($cardId),
 							'isWounded' => $isWounded,
-							'isInfected' => $isInfected
+							'hasBombSymbol' => $hasBombSymbol,
+							'hasKnifeSymbol' => $hasKnifeSymbol
 						) );
 				}
 		}
@@ -10399,11 +11028,19 @@ class goodcopbadcop extends Table
 										self::notifyAllPlayers( "grenadeExplodes", clienttranslate( '${player_name} is holding the Grenade when it explodes.' ), array(
 													'player_name' => $nameOfCurrentPlayer
 										) );
-										$this->eliminatePlayer($playerWhoseTurnItIs); // mark them as eliminated
-										$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
 
-										$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+										$this->shootPlayer($playerWhoseTurnItIs, $playerWhoseTurnItIs, 'equipment');
+										if($this->doesGameEnd())
+										{ // the game ends
 
+												$this->gamestate->nextState( "endGame" );
+										}
+										else
+										{ // game does NOT end
+												$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
+
+												$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+										}
 								}
 								else
 								{ // grenade has been tossed only once
@@ -10411,6 +11048,9 @@ class goodcopbadcop extends Table
 										if($target2 != $playerId)
 										{ // just clicked on a player because of aiming a gun and now needs to choose a player who gets the grenade
 											//throw new feException( "tossed once after aim");
+												self::notifyAllPlayers( "grenadeToss2Pre", clienttranslate( '${player_name} must toss the Grenade. It will explode at the end of that player\'s next turn.' ), array(
+															'player_name' => $nameOfCurrentPlayer
+												) );
 												$this->gamestate->nextState( "chooseAnotherPlayer" ); // i need to toss it to someone else
 										}
 										else
@@ -10466,7 +11106,7 @@ class goodcopbadcop extends Table
 										self::notifyAllPlayers( "grenadeExplodes", clienttranslate( '${player_name} is holding the Grenade when it explodes.' ), array(
 													'player_name' => $nameOfCurrentPlayer
 										) );
-										$this->eliminatePlayer($playerWhoseTurnItIs); // mark them as eliminated
+										$this->shootPlayer($playerWhoseTurnItIs, $playerWhoseTurnItIs, 'equipment');
 										$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
 										$this->setStateAfterTurnAction($playerWhoseTurnItIs);
 								}
@@ -11412,13 +12052,14 @@ class goodcopbadcop extends Table
 				if($zombieFaceRolled)
 				{ // we are zombifying a NON-leader
 
+						$this->setEliminatedBy($playerBeingBitten, $playerBiting); // set in the DB the player who eliminated them because it's needed to determine a game winner (only set eliminator to someone else if shot with a gun per Bombers & Traitors rules)
 						$this->eliminatePlayer($playerBeingBitten); // turn into a zombie, notify everyone, reveal all cards, drop guns
 				}
 
 				// SEE WHICH STATE WE END UP IN
 				if($zombieFaceRolled && $isTargetALeader)
 				{ // we are zombifying a LEADER
-						$this->endGameCleanup('team_win', 'zombie');
+						//$this->endGameCleanup('team_win', 'zombie');
 						$this->gamestate->nextState( "endGame" );
 				}
 				elseif($biterReaimsRolled)
@@ -11471,10 +12112,6 @@ class goodcopbadcop extends Table
 								{ // this was a GUN and it hit a zombie
 										$this->setGunState($gunId, 'aimed'); // it can't stay in the 'shooting' state
 								}
-
-								$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-//throw new feException("playerWhoseTurnItIs:$playerWhoseTurnItIs");
-								$this->setStateAfterTurnAction($playerWhoseTurnItIs); // see which state we go into after completing this turn action
 						}
 						else
 						{ // this is a zombie biting
@@ -11484,11 +12121,18 @@ class goodcopbadcop extends Table
 								$this->setGunState($gunId, 'aimed'); // it can't stay in the 'shooting' state
 
 								//$this->setEquipmentHoldersToActive("askBiteReaction"); // set anyone holding equipment to active
+						}
 
+						if($this->doesGameEnd())
+						{ // the game ends
+
+								$this->gamestate->nextState( "endGame" );
+						}
+						else
+						{ // game does NOT end
 								$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 								//throw new feException("playerWhoseTurnItIs:$playerWhoseTurnItIs");
 								$this->setStateAfterTurnAction($playerWhoseTurnItIs); // see which state we go into after completing this turn action
-
 						}
 				}
 		}
@@ -11603,55 +12247,65 @@ class goodcopbadcop extends Table
 				//throw new feException( "playersOverEquipmentCardLimit:$countPlayerOver" );
 
 
-				$equipmentUserHiddenCards = $this->getHiddenCardsFromPlayer($playerUsingEquipment);
-				//$countPlayers = count($equipmentUserHiddenCards);
-				//throw new feException( "equipmentUserHiddenCards:$countPlayers" );
-				if($collectorNumber == 20 && count($equipmentUserHiddenCards) > 0)
-				{ // fingerprint kit was just played and the player who played it has at least 1 hidden card
+				if($this->doesGameEnd())
+				{ // the use of the equipment ended the game
+						//$this->revealLeaderCards($soloWinner); // reveal the leader cards this player has
 
-						// send to a special state where they can choose if they want to reveal a card to put it back in their hand
-						$this->gamestate->nextState( "chooseCardToRevealToReturnEquipmentToHand" );
-				}
-				elseif(count($playersOverEquipmentCardLimit) > 0)
-				{ // someone is over the equipment card hand limit
-					//throw new feException( "over hand limit" );
-						foreach($playersOverEquipmentCardLimit as $player)
-						{ // go through each player over the hand limit
-								$playerIdOverLimit = $player['player_id'];
-
-								if(!$this->weAreInActivePlayerState())
-								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
-										$this->gamestate->changeActivePlayer($playerIdOverLimit); // make that player active so they can aim it
-								}
-
-								$this->gamestate->nextState( "askDiscardOutOfTurn" );
-						}
-				}
-				elseif(count($unaimedGuns) > 0)
-				{ // there IS an unaimed gun
-//throw new feException( "before changing active player" );
-							foreach($unaimedGuns as $unaimedGun)
-							{ // go through each unaimed gun (there should only be 1)
-									$gunId = $unaimedGun['gun_id'];
-
-									$gunHolder = $this->getPlayerIdOfGunHolder($gunId); // get the player holding the unaimed gun
-									if(!$this->weAreInActivePlayerState())
-									{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
-										$this->gamestate->changeActivePlayer($gunHolder); // make that player active so they can aim it
-									}
-
-									$this->gamestate->nextState( "askAimOutOfTurn" );
-
-									return; // if multiple guns need to be aimed out of turn, we need to do one at a time since you can't change active player in askAimOutOfTurn
-							}
-
-//throw new feException( "after changing active player" );
+						$this->gamestate->nextState( "endGame" );
 				}
 				else
-				{ // there are no special situations we need to handle
-//throw new feException( "stateName:$stateName" );
+				{ // the game does NOT end
 
-						$this->goToStateAfterEquipmentPlay($equipmentId, $stateName);
+						$equipmentUserHiddenCards = $this->getHiddenCardsFromPlayer($playerUsingEquipment);
+						//$countPlayers = count($equipmentUserHiddenCards);
+						//throw new feException( "equipmentUserHiddenCards:$countPlayers" );
+						if($collectorNumber == 20 && count($equipmentUserHiddenCards) > 0)
+						{ // fingerprint kit was just played and the player who played it has at least 1 hidden card
+
+								// send to a special state where they can choose if they want to reveal a card to put it back in their hand
+								$this->gamestate->nextState( "chooseCardToRevealToReturnEquipmentToHand" );
+						}
+						elseif(count($playersOverEquipmentCardLimit) > 0)
+						{ // someone is over the equipment card hand limit
+							//throw new feException( "over hand limit" );
+								foreach($playersOverEquipmentCardLimit as $player)
+								{ // go through each player over the hand limit
+										$playerIdOverLimit = $player['player_id'];
+
+										if(!$this->weAreInActivePlayerState())
+										{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+												$this->gamestate->changeActivePlayer($playerIdOverLimit); // make that player active so they can aim it
+										}
+
+										$this->gamestate->nextState( "askDiscardOutOfTurn" );
+								}
+						}
+						elseif(count($unaimedGuns) > 0)
+						{ // there IS an unaimed gun
+		//throw new feException( "before changing active player" );
+									foreach($unaimedGuns as $unaimedGun)
+									{ // go through each unaimed gun (there should only be 1)
+											$gunId = $unaimedGun['gun_id'];
+
+											$gunHolder = $this->getPlayerIdOfGunHolder($gunId); // get the player holding the unaimed gun
+											if(!$this->weAreInActivePlayerState())
+											{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+												$this->gamestate->changeActivePlayer($gunHolder); // make that player active so they can aim it
+											}
+
+											$this->gamestate->nextState( "askAimOutOfTurn" );
+
+											return; // if multiple guns need to be aimed out of turn, we need to do one at a time since you can't change active player in askAimOutOfTurn
+									}
+
+		//throw new feException( "after changing active player" );
+						}
+						else
+						{ // there are no special situations we need to handle
+		//throw new feException( "stateName:$stateName" );
+
+								$this->goToStateAfterEquipmentPlay($equipmentId, $stateName);
+						}
 				}
 		}
 
