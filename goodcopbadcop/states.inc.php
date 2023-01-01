@@ -151,7 +151,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeActionEquip",
         "updateGameProgression" => false,
-        "transitions" => array( "askAim" => 27, "discardEquipment" => 12, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askDiscardOutOfTurn" => 35 )
+        "transitions" => array( "askAim" => 27, "discardEquipment" => 12, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askDiscardOutOfTurn" => 35, "choosePlayer" => 41 )
     ),
 
     12 => array(
@@ -356,7 +356,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetPlayerButtonTargets',
     		"possibleactions" => array( "clickPlayer", "clickCancelButton" ),
-    		"transitions" => array( "executeEquipment" => 31, "chooseActiveOrHandEquipmentCard" => 42, "chooseEquipmentToPlayReactEndOfTurn" => 16, "endTurnReaction" => 29 )
+    		"transitions" => array( "executeEquipment" => 31, "chooseActiveOrHandEquipmentCard" => 42, "chooseEquipmentToPlayReactEndOfTurn" => 16, "endTurnReaction" => 29, "chooseEquipmentToPlayStartGame" => 61 )
     ),
 
     44 => array(
@@ -448,7 +448,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must select which Integrity Card you will reveal if you want to return your Equipment to your hand.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "clickMyIntegrityCard", "clickPassOnOptionButton" ),
-    		"transitions" => array( "playerTurn" => 60, "chooseEquipmentToPlayOnYourTurn" => 60, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "chooseEquipmentToPlayReactShoot" => 8, "endTurnReaction" => 29, "chooseEquipmentToPlayReactEndOfTurn" => 29, "allPassedOnReactions" => 30, "askAimOutOfTurn" => 33, "askDiscardOutOfTurn" => 35, "endGame" => 99, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "executeActionBite" => 52, "askBiteReaction" => 51, "askStartGameReaction" => 2 )
+    		"transitions" => array( "playerTurn" => 60, "chooseEquipmentToPlayOnYourTurn" => 60, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "chooseEquipmentToPlayReactShoot" => 8, "endTurnReaction" => 29, "chooseEquipmentToPlayReactEndOfTurn" => 29, "allPassedOnReactions" => 30, "askAimOutOfTurn" => 33, "askDiscardOutOfTurn" => 35, "endGame" => 99, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "executeActionBite" => 52, "askBiteReaction" => 51, "askStartGameReaction" => 2, "chooseEquipmentToPlayStartGame" => 61  )
     ),
 
 

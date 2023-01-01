@@ -4211,7 +4211,7 @@ class goodcopbadcop extends Table
 								return clienttranslate( 'Choose a player to drop their Gun.' );
 
 						case 67: // Weapon Crate
-								return clienttranslate( 'Each player without any hidden Integrity Cards may grab a Gun and/or change their aim. Any player who does so cannot shoot this turn.' );
+								return clienttranslate( 'Each player without any hidden Integrity Cards may grab a Gun and/or change their aim. Any player who grabs a Gun cannot shoot this turn.' );
 
 						case 66: // Machete
 								return clienttranslate( 'Choose a zombie. Exchange any number of their Integrity cards for the same number of revealed Honest or Crooked cards.' );
@@ -7032,7 +7032,7 @@ class goodcopbadcop extends Table
 					{	// someone has been tossed twice
 //throw new feException( "tossed twice");
 
-							self::notifyAllPlayers( "grenadeExplodes", clienttranslate( '${player_name} is holding the Grenade when it explodes.' ), array(
+							self::notifyAllPlayers( "grenadeExplodes", clienttranslate( '${player_name} is holding the <b>Grenade</b> when it explodes.' ), array(
 										'player_name' => $nameOfCurrentPlayer
 							) );
 							$this->shootPlayer($playerWhoseTurnItIs, $playerWhoseTurnItIs, 'equipment');
@@ -7042,7 +7042,7 @@ class goodcopbadcop extends Table
 					else
 					{ // grenade has been tossed only once
 //throw new feException( "tossed once");
-							self::notifyAllPlayers( "grenadeToss2Pre", clienttranslate( '${player_name} must toss the Grenade. It will explode at the end of that player\'s next turn.' ), array(
+							self::notifyAllPlayers( "grenadeToss2Pre", clienttranslate( '${player_name} must toss the <b>Grenade</b>. It will explode at the end of that player\'s next turn.' ), array(
 										'player_name' => $nameOfCurrentPlayer
 							) );
 							$this->gamestate->nextState( "choosePlayer" ); // i need to toss it to someone else
@@ -8313,6 +8313,15 @@ class goodcopbadcop extends Table
 																				 'hasSeen3Bombs' => $hasSeen3Bombs,
 									 											 'hasSeen3Knives' => $hasSeen3Knives
 								) );
+
+							 // update each card to make sure things look right for things like Disguise and Surveillance Camera and Bombs and Knives
+							 $investigatedPlayerIntegrityCards = $this->getIntegrityCardsForPlayer($investigatedPlayerId);
+							 foreach($investigatedPlayerIntegrityCards as $card)
+							 { // go through each of this player's cards
+									 $cardId = $card['card_id'];
+									 //$this->reverseHonestCrooked($cardId);
+									 $this->rePlaceIntegrityCard($cardId);
+							 }
 
 						}
 				}
@@ -10490,7 +10499,7 @@ class goodcopbadcop extends Table
 								$this->makePlayerEquipmentActive($equipmentId, $target1); // activate this card
 								$targetName = $this->getPlayerNameFromPlayerId($target1);
 
-								self::notifyAllPlayers( "grenadeToss1", clienttranslate( '${player_name} is tossing the Grenade for the FIRST time to ${player_name_2} who will toss it to someone at the end of their next turn.' ), array(
+								self::notifyAllPlayers( "grenadeToss1", clienttranslate( '${player_name} is tossing the <b>Grenade</b> for the FIRST time to ${player_name_2} who will toss it to someone at the end of their next turn.' ), array(
 											'player_name' => $nameOfEquipmentCardOwner,
 											'player_name_2' => $targetName
 								) );
@@ -11020,12 +11029,14 @@ class goodcopbadcop extends Table
 								$target1 = $this->getPlayerTarget1($grenadeId);
 								$target2 = $this->getPlayerTarget2($grenadeId);
 
+								$nameOfCurrentPlayer = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
+
 			//throw new feException( "holding grenade");
 								if(!is_null($target2) && $target2 != '')
 								{	// someone has been tossed twice
 			//throw new feException( "tossed twice after aim");
-										$nameOfCurrentPlayer = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
-										self::notifyAllPlayers( "grenadeExplodes", clienttranslate( '${player_name} is holding the Grenade when it explodes.' ), array(
+
+										self::notifyAllPlayers( "grenadeExplodes", clienttranslate( '${player_name} is holding the <b>Grenade</b> when it explodes.' ), array(
 													'player_name' => $nameOfCurrentPlayer
 										) );
 
@@ -11048,7 +11059,7 @@ class goodcopbadcop extends Table
 										if($target2 != $playerId)
 										{ // just clicked on a player because of aiming a gun and now needs to choose a player who gets the grenade
 											//throw new feException( "tossed once after aim");
-												self::notifyAllPlayers( "grenadeToss2Pre", clienttranslate( '${player_name} must toss the Grenade. It will explode at the end of that player\'s next turn.' ), array(
+												self::notifyAllPlayers( "grenadeToss2Pre", clienttranslate( '${player_name} must toss the <b>Grenade</b>. It will explode at the end of that player\'s next turn.' ), array(
 															'player_name' => $nameOfCurrentPlayer
 												) );
 												$this->gamestate->nextState( "chooseAnotherPlayer" ); // i need to toss it to someone else
@@ -11059,7 +11070,7 @@ class goodcopbadcop extends Table
 												//$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
 												$nameOfGrenadeTosser = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
 												$nameOfGrenadeRecipient = $this->getPlayerNameFromPlayerId($playerId);
-												self::notifyAllPlayers( "grenadeToss2", clienttranslate( '${player_name} is tossing the Grenade for the FINAL time to ${player_name_2}. It will explode at the end of their next turn.' ), array(
+												self::notifyAllPlayers( "grenadeToss2", clienttranslate( '${player_name} is tossing the <b>Grenade</b> for the FINAL time to ${player_name_2}. It will explode at the end of their next turn.' ), array(
 															'player_name' => $nameOfGrenadeTosser,
 															'player_name_2' => $nameOfGrenadeRecipient
 												) );
@@ -11103,7 +11114,7 @@ class goodcopbadcop extends Table
 								{	// someone has been tossed twice
 						//throw new feException( "tossed twice after aim");
 										$nameOfCurrentPlayer = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
-										self::notifyAllPlayers( "grenadeExplodes", clienttranslate( '${player_name} is holding the Grenade when it explodes.' ), array(
+										self::notifyAllPlayers( "grenadeExplodes", clienttranslate( '${player_name} is holding the <b>Grenade</b> when it explodes.' ), array(
 													'player_name' => $nameOfCurrentPlayer
 										) );
 										$this->shootPlayer($playerWhoseTurnItIs, $playerWhoseTurnItIs, 'equipment');
@@ -11118,7 +11129,7 @@ class goodcopbadcop extends Table
 												//$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
 												$nameOfGrenadeTosser = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
 												$nameOfGrenadeRecipient = $this->getPlayerNameFromPlayerId($playerId);
-												self::notifyAllPlayers( "grenadeToss2", clienttranslate( '${player_name} is tossing the Grenade for the FINAL time to ${player_name_2}. It will explode at the end of their next turn.' ), array(
+												self::notifyAllPlayers( "grenadeToss2", clienttranslate( '${player_name} is tossing the <b>Grenade</b> for the FINAL time to ${player_name_2}. It will explode at the end of their next turn.' ), array(
 															'player_name' => $nameOfGrenadeTosser,
 															'player_name_2' => $nameOfGrenadeRecipient
 												) );
@@ -11947,16 +11958,10 @@ class goodcopbadcop extends Table
 
 				// reveal the card of the player who armed
 				$integrityCardPositionRevealed = $this->getLastCardPositionRevealed($playerWhoseTurnItIs); // get the card position revealed
-				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getInfectorCardId() == $this->getCardIdFromPlayerAndPosition($playerWhoseTurnItIs, $integrityCardPositionRevealed))
-				{ // the infector was revealed
 
-						$this->infectorFound($playerWhoseTurnItIs, $integrityCardPositionRevealed, $playerWhoseTurnItIs);
-				}
-				else
-				{
-						$this->revealCard($playerWhoseTurnItIs, $integrityCardPositionRevealed); // reveal the integrity card from this player's perspective and notify all players
-						$gun = $this->pickUpGun($playerWhoseTurnItIs, $this->getStateName());
-				}
+				$this->revealCard($playerWhoseTurnItIs, $integrityCardPositionRevealed); // reveal the integrity card from this player's perspective and notify all players
+				$gun = $this->pickUpGun($playerWhoseTurnItIs, $this->getStateName());
+
 //throw new feException( "playerWhoseTurnItIs:$playerWhoseTurnItIs" );
 				$this->setStateAfterTurnAction($playerWhoseTurnItIs);
 		}

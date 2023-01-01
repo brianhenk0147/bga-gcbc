@@ -440,7 +440,7 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-            console.log("onUpdateActionButtons state " + stateName);
+            //console.log("onUpdateActionButtons state " + stateName);
 
 
             if( this.isCurrentPlayerActive() )
@@ -1955,7 +1955,6 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
         addHandPlayerEquipmentToStock(playerLetter, collectorNumber, equipmentId, equipName, equipEffect)
         {
-            console.log('adding collectorNumber '+collectorNumber+' and equipmentId '+equipmentId+' to player equipment stock '+playerLetter);
             switch(playerLetter)
             {
               case 'a':
@@ -1991,7 +1990,6 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
         addBombAndKnifeSymbols: function(playerLetter, cardHolderDiv, cardPosition, hasBombSymbol, hasKnifeSymbol, hasSeen3Bombs, hasSeen3Knives)
         {
-          console.log('addBombAndKnifeSymbols hasBombSymbol:'+hasBombSymbol+' hasKnifeSymbol:'+hasKnifeSymbol);
             var symbolIndex = 0; // 0 for first symbol, 1 for second symbol
             var symbolDiv = 'symbol_player_' + playerLetter + '_integrity_card_' + cardPosition + '_'+symbolIndex;
 
@@ -2013,7 +2011,6 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 if(!document.getElementById(symbolDiv))
                 { // this symbol doesn't already exist
 
-  console.log('placing knife symbol on '+cardHolderDiv);
 
                     // place the KNIFE symbol
                     dojo.place(
@@ -2028,7 +2025,6 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                     // position the symbol based on the location
                     if(playerLetter == 'a' || playerLetter == 'h' || playerLetter == 'c' || playerLetter == 'e')
                     {
-                      console.log('player '+playerLetter+' knife');
                         dojo.addClass(symbolDiv, 'integrity_symbol_vertical'); // put it in the upper-left corner
                     }
                     else if(playerLetter == 'b' || playerLetter == 'g')
@@ -2044,7 +2040,6 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
             if(hasBombSymbol == 1)
             { // has a BOMB symbol on it
-console.log('placing bomb symbol on '+cardHolderDiv);
 
                 if(hasKnifeSymbol == 1)
                 { // it ALSO has a knife symbol
@@ -2067,12 +2062,10 @@ console.log('placing bomb symbol on '+cardHolderDiv);
                     // position the symbol based on the location
                     if(playerLetter == 'a' || playerLetter == 'h' || playerLetter == 'c' || playerLetter == 'e')
                     {
-                                            console.log('player '+playerLetter+' bomb');
                         dojo.addClass(symbolDiv, 'integrity_symbol_vertical'); // put it in the upper-left corner
 
                         if(hasKnifeSymbol == 1)
                         { // it ALSO has a knife symbol
-                                                                      console.log('player '+playerLetter+' second bomb');
                             dojo.addClass(symbolDiv, 'integrity_symbol_vertical_second_symbol'); // put it in the upper-left corner
                         }
                     }
@@ -2120,7 +2113,6 @@ console.log('placing bomb symbol on '+cardHolderDiv);
 
             if(this.gamedatas.bombersTraitorsExpansion == 2)
             { // we are using the Bombers & Traitors expansion
-                //console.log('hasBombSymbol:'+hasBombSymbol+' hasKnifeSymbol:'+hasKnifeSymbol+' playerLetter:'+playerLetter);
 
                 this.addBombAndKnifeSymbols(playerLetter, cardDiv, cardPosition, hasBombSymbol, hasKnifeSymbol, hasSeen3Bombs, hasSeen3Knives);
             }
@@ -3955,7 +3947,6 @@ console.log('placing bomb symbol on '+cardHolderDiv);
 
             if(this.gamedatas.bombersTraitorsExpansion == 2)
             { // we are using the Bombers & Traitors expansion
-              console.log("revealIntegrityCard hasBombSymbol:"+hasBombSymbol+" hasKnifeSymbol:"+hasKnifeSymbol);
                 this.addBombAndKnifeSymbols(playerLetter, integrityCardHtmlId, integrityCardPositionRevealed, hasBombSymbol, hasKnifeSymbol, false, false); // we will do a rePlace right after this so we don't need to specify whether the player has seen 3 symbols
             }
 
@@ -4173,7 +4164,8 @@ console.log('placing bomb symbol on '+cardHolderDiv);
                 woundedLine = '<b>'+ woundedLabel + '</b> '+ woundedText;
             }
 
-            var infectedLine = '';
+            var bombLine = '';
+            var knifeLine = '';
             if(this.gamedatas.bombersTraitorsExpansion == 2)
             { // we are using the Bombers & Traitors expansion
                 bombLine = '<b>'+ bombLabel + '</b> '+ bombText;
@@ -4211,7 +4203,6 @@ console.log('placing bomb symbol on '+cardHolderDiv);
             var hasKnifeSymbol = notif.args.hasKnifeSymbol;
             var hasSeen3Bombs = notif.args.hasSeen3Bombs;
             var hasSeen3Knives = notif.args.hasSeen3Knives;
-            console.log('replace hasSeen3Knives:'+hasSeen3Knives);
 
             var affectedByPlantedEvidence = notif.args.affectedByPlantedEvidence;
             var affectedByDisguise = notif.args.affectedByDisguise;
@@ -4251,7 +4242,6 @@ console.log('placing bomb symbol on '+cardHolderDiv);
 
             if(this.gamedatas.bombersTraitorsExpansion == 2)
             { // we are using the Bombers & Traitors expansion
-              console.log("rePlaceIntegrityCard hasBombSymbol:"+hasBombSymbol+" hasKnifeSymbol:"+hasKnifeSymbol);
                 this.addBombAndKnifeSymbols(playerLetter, idOfCard, cardPosition, hasBombSymbol, hasKnifeSymbol, hasSeen3Bombs, hasSeen3Knives);
             }
 
