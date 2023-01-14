@@ -376,7 +376,9 @@ class goodcopbadcop extends Table
 				);
 
 				if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2)
-				{ // we are using the zombies expansion
+				{ // we are using the Zombies expansion
+
+						// add all equipment from Zombies, whether it is specific to the expansion or not
 						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 60, 'card_location' => 'deck','nbr' => 1)); // Crossbow
 						//array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 61, 'card_location' => 'deck','nbr' => 1)); // Transfusion Tube
 						//array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 62, 'card_location' => 'deck','nbr' => 1)); // Zombie Serum
@@ -386,37 +388,28 @@ class goodcopbadcop extends Table
 						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 66, 'card_location' => 'deck','nbr' => 1)); // Machete
 						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 67, 'card_location' => 'deck','nbr' => 1)); // Weapon Crate
 						//array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 68, 'card_location' => 'deck','nbr' => 1)); // Alarm Clock
-
-						if($this->getGameStateValue('USE_EXTRA_EQUIPMENT') == 2)
-						{ // they want to use all extra equipment
-							// add all the expansion equipment that is not specific to other expansions
-
-								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 18, 'card_location' => 'deck','nbr' => 1)); // Classified Orders
-								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 1)); // Fake ID
-								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)); // Fingerprint Kit
-								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 21, 'card_location' => 'deck','nbr' => 1)); // Grenade
-								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 22, 'card_location' => 'deck','nbr' => 1)); // Holster
-
-						}
 				}
-				else
-				{ // no expansions are being used
 
-						if($this->getGameStateValue('USE_EXTRA_EQUIPMENT') == 2)
-						{ // they want to use all extra equipment
+				if($this->getGameStateValue('ZOMBIES_EXPANSION') != 2 && $this->getGameStateValue('USE_EXTRA_EQUIPMENT') == 2)
+				{ // we are NOT using the Zombies expansion but we are using extra equipment
 
-								// add all the expansion equipment that is not specific to that expansion
-								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 64, 'card_location' => 'deck','nbr' => 1)); // Chainsaw
-								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 60, 'card_location' => 'deck','nbr' => 1)); // Crossbow
-								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 67, 'card_location' => 'deck','nbr' => 1)); // Weapon Crate
-
-								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 18, 'card_location' => 'deck','nbr' => 1)); // Classified Orders
-								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 1)); // Fake ID
-								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)); // Fingerprint Kit
-								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 21, 'card_location' => 'deck','nbr' => 1)); // Grenade
-								array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 22, 'card_location' => 'deck','nbr' => 1)); // Holster
-						}
+						// add all the expansion equipment that is not specific to that expansion
+						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 64, 'card_location' => 'deck','nbr' => 1)); // Chainsaw
+						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 60, 'card_location' => 'deck','nbr' => 1)); // Crossbow
+						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 67, 'card_location' => 'deck','nbr' => 1)); // Weapon Crate
 				}
+
+				if($this->getGameStateValue('BT_EXPANSION') == 2 || $this->getGameStateValue('USE_EXTRA_EQUIPMENT') == 2)
+				{ // we are using the Bombers & Traitors expansion or Extra Equipment
+//throw new feException( "Count:$count");
+						// add in all BT equipment (because it can be used with base game or any other expansions)
+						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 18, 'card_location' => 'deck','nbr' => 1)); // Classified Orders
+						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 1)); // Fake ID
+						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)); // Fingerprint Kit
+						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 21, 'card_location' => 'deck','nbr' => 1)); // Grenade
+						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 22, 'card_location' => 'deck','nbr' => 1)); // Holster
+				}
+
 
 				$this->equipmentCards->createCards( $equipmentCardsList, 'deck' ); // create the deck and override locations to deck
 				$this->equipmentCards->shuffle( 'deck' ); // shuffle it
@@ -2041,6 +2034,40 @@ class goodcopbadcop extends Table
 						{
 								return $card['card_id'];
 						}
+				}
+				else
+				{
+					return 0;
+				}
+		}
+
+		function isGrenadePlaying()
+		{
+				$sql = "SELECT * FROM `equipmentCards` ";
+				$sql .= "WHERE card_location='playing' AND card_type_arg=21 ";
+
+				$grenadeList = self::getObjectListFromDB( $sql );
+
+				if(count($grenadeList) > 0)
+				{ // Grenade is being played
+					return 1;
+				}
+				else
+				{
+					return 0;
+				}
+		}
+
+		function isRiotShieldPlaying()
+		{
+				$sql = "SELECT * FROM `equipmentCards` ";
+				$sql .= "WHERE card_location='playing' AND card_type_arg=44 ";
+
+				$riotShieldList = self::getObjectListFromDB( $sql );
+
+				if(count($riotShieldList) > 0)
+				{ // Riot Shield is being played
+					return 1;
 				}
 				else
 				{
@@ -4602,6 +4629,24 @@ class goodcopbadcop extends Table
 				self::DbQuery( $sqlUpdate );
 		}
 
+		function setEquipmentCardToPlaying($equipmentId)
+		{
+				$sqlUpdate = "UPDATE equipmentCards SET ";
+				$sqlUpdate .= "card_location='playing' WHERE ";
+				$sqlUpdate .= "card_id=$equipmentId";
+
+				self::DbQuery( $sqlUpdate );
+		}
+
+		function setEquipmentCardToActive($equipmentId)
+		{
+				$sqlUpdate = "UPDATE equipmentCards SET ";
+				$sqlUpdate .= "card_location='active' WHERE ";
+				$sqlUpdate .= "card_id=$equipmentId";
+
+				self::DbQuery( $sqlUpdate );
+		}
+
 		// set done selecting for the EQUIPMENT
 		function setDoneSelecting($equipmentId, $newValue)
 		{
@@ -6981,16 +7026,23 @@ class goodcopbadcop extends Table
 		function setStateAfterTurnAction($playerWhoseTurnItIs)
 		{
 			$state = $this->getStateName();
-		//throw new feException( "setStateAfterTurnAction state:$state");
+			//throw new feException( "setStateAfterTurnAction state:$state");
+
+
 			$playersOverEquipmentCardLimit = $this->getPlayersOverEquipmentHandLimit(); // get any players over the equipment card hand limit
 			if ($this->doesPlayerNeedToDiscard($playerWhoseTurnItIs))
 			{ // too many cards in hand
 						//throw new feException( "the player whose turn it is is $playerWhoseTurnItIs" );
 						if(!$this->weAreInActivePlayerState())
 						{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
-								$this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player active so they can aim it (there is a weird case where we actually need to change the person whose turn it should be to the active player)
+								$this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player active so they can aim it (there is a weird case where we actually need to change the person whose turn it should be to the active player... like when riot shield wounds a leader on another player's turn and they have to discard)
+								$this->gamestate->nextState( "discardEquipment" );
 						}
-						$this->gamestate->nextState( "discardEquipment" );
+						else
+						{ // we ARE in an active player state and thus cannot change the active player
+								$this->gamestate->nextState( "determineActivePlayerAfterTurnAction" ); // go to a state where we can safely determine the active player
+						}
+
 			}
 			elseif(count($playersOverEquipmentCardLimit) > 0)
 			{ // someone else is over the equipment card hand limit
@@ -7001,8 +7053,13 @@ class goodcopbadcop extends Table
 					if(!$this->weAreInActivePlayerState())
 					{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
 							$this->gamestate->changeActivePlayer($playerIdOverLimit); // make that player active so they can aim it
+							$this->gamestate->nextState( "askDiscardOutOfTurn" );
 					}
-					$this->gamestate->nextState( "askDiscardOutOfTurn" );
+					else
+					{ // we ARE in an active player state and thus cannot change the active player
+							$this->gamestate->nextState( "determineActivePlayerAfterTurnAction" ); // go to a state where we can safely determine the active player
+					}
+
 			}
 			elseif($this->isPlayerHoldingGun($playerWhoseTurnItIs))
 			{ // this player IS holding a gun
@@ -7036,8 +7093,16 @@ class goodcopbadcop extends Table
 										'player_name' => $nameOfCurrentPlayer
 							) );
 							$this->shootPlayer($playerWhoseTurnItIs, $playerWhoseTurnItIs, 'equipment');
-							$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
-							$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+							if($this->doesGameEnd())
+							{ // the game ends
+
+									$this->gamestate->nextState( "endGame" );
+							}
+							else
+							{ // game does NOT end
+									$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
+									$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+							}
 					}
 					else
 					{ // grenade has been tossed only once
@@ -7046,6 +7111,7 @@ class goodcopbadcop extends Table
 										'player_name' => $nameOfCurrentPlayer
 							) );
 							$this->gamestate->nextState( "choosePlayer" ); // i need to toss it to someone else
+							$this->setEquipmentCardToPlaying(21); // make grenade playing
 					}
 			}
 			else
@@ -11063,6 +11129,7 @@ class goodcopbadcop extends Table
 															'player_name' => $nameOfCurrentPlayer
 												) );
 												$this->gamestate->nextState( "chooseAnotherPlayer" ); // i need to toss it to someone else
+												$this->setEquipmentCardToPlaying(21); // make grenade playing
 										}
 										else
 										{
@@ -11096,8 +11163,11 @@ class goodcopbadcop extends Table
 				{ // we chose a player to target with equipment
 //throw new feException( "clickedPlayer later");
 						$equipmentCardId = $this->getEquipmentCardIdInUse();
-						if($this->isPlayerHoldingGrenade($playerWhoseTurnItIs))
-						{ // this player is holding a Grenade
+						if($this->isPlayerHoldingGrenade($playerWhoseTurnItIs) && $this->isGrenadePlaying() == 1)
+						{ // the player whose turn it is is holding a Grenade and playing it
+
+								$this->setEquipmentCardToActive(21); // move grenade from playing to active state
+
 								if($playerWhoseTurnItIs == $playerId)
 								{
 										throw new BgaUserException( self::_("Please choose someone other than yourself.") );
@@ -11109,6 +11179,8 @@ class goodcopbadcop extends Table
 								$target1 = $this->getPlayerTarget1($grenadeId);
 								$target2 = $this->getPlayerTarget2($grenadeId);
 
+
+
 						//throw new feException( "holding grenade");
 								if(!is_null($target2) && $target2 != '')
 								{	// someone has been tossed twice
@@ -11118,8 +11190,16 @@ class goodcopbadcop extends Table
 													'player_name' => $nameOfCurrentPlayer
 										) );
 										$this->shootPlayer($playerWhoseTurnItIs, $playerWhoseTurnItIs, 'equipment');
-										$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
-										$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+										if($this->doesGameEnd())
+										{ // the game ends
+
+												$this->gamestate->nextState( "endGame" );
+										}
+										else
+										{ // game does NOT end
+												$this->discardActivePlayerEquipmentCard($grenadeId); // discard the grenade
+												$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+										}
 								}
 								else
 								{ // grenade has been tossed only once
@@ -11563,13 +11643,55 @@ class goodcopbadcop extends Table
 		// to go back to and which player is active.
 		function afterDiscardedOutOfTurn()
 		{
-			//throw new feException( "afterDiscardedOutOfTurn" );
-
+				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active because someone might be aiming after picking up a gun off-turn)
 				$playedInState = $this->getEvidenceBagPlayedInState(); // find the state we need to return to after that equipment is resolve
 				//throw new feException( "afterDiscardedOutOfTurn playedInState:$playedInState" );
 
+				// if grenade needs to be passed or explode, do that
+				//throw new feException( "afterDiscardedOutOfTurn" );
+				if($this->isPlayerHoldingGrenade($playerWhoseTurnItIs))
+				{ // this player is holding a Grenade
+					//throw new feException( "holding grenade after turn action");
+						$grenadeId = $this->getEquipmentIdFromCollectorNumber(21);
+
+						//throw new feException( "holding grenade");
+						$target1 = $this->getPlayerTarget1($grenadeId);
+						$target2 = $this->getPlayerTarget2($grenadeId);
+
+						$nameOfCurrentPlayer = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
+
+	//throw new feException( "holding grenade");
+						if(!is_null($target2) && $target2 != '')
+						{	// someone has been tossed twice
+	//throw new feException( "tossed twice");
+
+								self::notifyAllPlayers( "grenadeExplodes", clienttranslate( '${player_name} is holding the <b>Grenade</b> when it explodes.' ), array(
+											'player_name' => $nameOfCurrentPlayer
+								) );
+								$this->shootPlayer($playerWhoseTurnItIs, $playerWhoseTurnItIs, 'equipment');
+								if($this->doesGameEnd())
+								{ // the game ends
+
+										$this->gamestate->nextState( "endGame" );
+								}
+								else
+								{ // game does NOT end
+										$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
+										$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+								}
+						}
+						else
+						{ // grenade has been tossed only once
+	//throw new feException( "tossed once");
+								self::notifyAllPlayers( "grenadeToss2Pre", clienttranslate( '${player_name} must toss the <b>Grenade</b>. It will explode at the end of that player\'s next turn.' ), array(
+											'player_name' => $nameOfCurrentPlayer
+								) );
+								$this->gamestate->nextState( "choosePlayer" ); // i need to toss it to someone else
+								$this->setEquipmentCardToPlaying(21); // make grenade playing
+						}
+				}
+
 				// figure out who the next player should be
-				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active because someone might be aiming after picking up a gun off-turn)
 				if(!$this->weAreInActivePlayerState())
 				{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
 					$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // change to the player it's turn it's supposed to be
@@ -11963,6 +12085,12 @@ class goodcopbadcop extends Table
 				$gun = $this->pickUpGun($playerWhoseTurnItIs, $this->getStateName());
 
 //throw new feException( "playerWhoseTurnItIs:$playerWhoseTurnItIs" );
+				$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+		}
+
+		function determineActivePlayerAfterTurnAction()
+		{
+				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 				$this->setStateAfterTurnAction($playerWhoseTurnItIs);
 		}
 
