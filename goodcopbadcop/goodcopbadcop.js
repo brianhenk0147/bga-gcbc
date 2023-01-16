@@ -415,6 +415,77 @@ function (dojo, declare) {
                 this.resetDie('zombieDie2', 'zombieDie2Result');
                 this.resetDie('zombieDie3', 'zombieDie3Result');
                 break;
+                case 'chooseActiveOrHandEquipmentCard':
+
+                if( this.isCurrentPlayerActive() )
+                {
+                    var possibleHandEquipmentCardTargets = args.args.handEquipmentCardTargets;
+                    console.log('possibleHandEquipmentCardTargets:');
+                    console.log(possibleHandEquipmentCardTargets);
+
+                    const handEquipmentTargets = Object.keys(possibleHandEquipmentCardTargets);
+                    for (const handEquipmentTargetKey of handEquipmentTargets)
+                    { // go through each card in a player hand
+
+                        var playerIdOfEquipmentCardOwner = possibleHandEquipmentCardTargets[handEquipmentTargetKey]['playerIdOfEquipmentCardOwner'];
+                        var playerLetter = this.gamedatas.playerLetters[playerIdOfEquipmentCardOwner].player_letter;
+                        var equipmentId = possibleHandEquipmentCardTargets[handEquipmentTargetKey]['equipmentId'];
+                        var collectorNumber = possibleHandEquipmentCardTargets[handEquipmentTargetKey]['collectorNumber'];
+                        var htmlId = 'player_board_hand_equipment_'+playerLetter+'_item_'+equipmentId;
+                        console.log('htmlId:'+htmlId);
+
+
+                        this.highlightEquipmentTargetOption(htmlId);
+                        //dojo.addClass( htmlId, 'equipmentTargetHighlighted'); // highlight this possible target
+                    }
+
+
+
+                    var possibleActiveEquipmentCardTargets = args.args.activeEquipmentCardTargets;
+                    console.log('possibleActiveEquipmentCardTargets:');
+                    console.log(possibleActiveEquipmentCardTargets);
+
+                    const activeEquipmentTargets = Object.keys(possibleActiveEquipmentCardTargets);
+                    for (const activeEquipmentTargetKey of activeEquipmentTargets)
+                    { // go through each card active in front of a player
+
+                        var playerIdOfEquipmentCardOwner = possibleActiveEquipmentCardTargets[activeEquipmentTargetKey]['playerIdOfEquipmentCardOwner'];
+                        var playerLetter = this.gamedatas.playerLetters[playerIdOfEquipmentCardOwner].player_letter;
+                        var equipmentId = possibleActiveEquipmentCardTargets[activeEquipmentTargetKey]['equipmentId'];
+                        var collectorNumber = possibleActiveEquipmentCardTargets[activeEquipmentTargetKey]['collectorNumber'];
+                        var htmlId = 'player_board_active_equipment_'+playerLetter+'_item_'+collectorNumber;
+                        console.log('htmlId:'+htmlId);
+
+
+                        this.highlightEquipmentTargetOption(htmlId);
+                        //dojo.addClass( htmlId, 'equipmentTargetHighlighted'); // highlight this possible target
+                    }
+                }
+
+                break;
+                case 'chooseIntegrityCards':
+                if( this.isCurrentPlayerActive() )
+                {
+                    var possibleIntegrityCardTargets = args.args.possibleIntegrityCardTargets;
+                    console.log('possibleIntegrityCardTargets:');
+                    console.log(possibleIntegrityCardTargets);
+
+                    const integrityTargets = Object.keys(possibleIntegrityCardTargets);
+                    for (const integrityTargetKey of integrityTargets)
+                    { // go through each integrity card target
+
+                        var playerIdOfIntegrityCardOwner = possibleIntegrityCardTargets[integrityTargetKey]['playerIdOfIntegrityCardOwner'];
+                        var playerLetter = this.gamedatas.playerLetters[playerIdOfIntegrityCardOwner].player_letter;
+                        var cardPosition = possibleIntegrityCardTargets[integrityTargetKey]['cardPosition'];
+                        var htmlId = 'player_'+playerLetter+'_integrity_card_'+cardPosition;
+                        console.log('htmlId:'+htmlId);
+
+                        this.highlightEquipmentTargetOption(htmlId);
+                        //dojo.addClass( htmlId, 'equipmentTargetHighlighted'); // highlight this possible target
+                    }
+                }
+
+                break;
 
             }
         },
@@ -546,6 +617,20 @@ function (dojo, declare) {
                         this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
                     break;
 
+                    case 'chooseLeader':
+                      var validLeaders = args.possibleLeaderTargets;
+
+                      const leaders = Object.keys(validLeaders);
+                      for (const leaderKey of leaders)
+                      { // go through each player
+                          var buttonLabel = validLeaders[leaderKey]['button_label'];
+                          var buttonValue = validLeaders[leaderKey]['button_value'];
+                          this.addActionButton( 'button_' + buttonValue, buttonLabel, 'onClickLeaderButton' ); // the player name does not need to be translated
+                      }
+
+                      this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
+                    break;
+
                     case 'chooseAnotherPlayer':
                     case 'choosePlayer':
                         this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
@@ -583,6 +668,7 @@ function (dojo, declare) {
                     case 'chooseIntegrityCards':
                         this.addActionButton( 'button_done', _('Done Selecting'), 'onClick_DoneSelectingButton' );
                         this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
+
 
                     break;
 
@@ -714,6 +800,25 @@ function (dojo, declare) {
               { // this component exists
                   dojo.addClass( htmlIdOfComponent, 'cardHighlighted');
               }
+          }
+       },
+
+       highlightEquipmentTargetOption: function(htmlIdOfComponent)
+       {
+          if (this.prefs[101].value == 1)
+          { // the user does want components to be highlighted
+              if(document.getElementById(htmlIdOfComponent))
+              { // this component exists
+                  dojo.addClass( htmlIdOfComponent, 'equipmentTargetHighlighted');
+              }
+          }
+       },
+
+       selectComponent: function(htmlIdOfComponent)
+       {
+          if(document.getElementById(htmlIdOfComponent))
+          { // this component exists
+              dojo.addClass( htmlIdOfComponent, 'cardSelected');
           }
        },
 
@@ -3060,9 +3165,13 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             {
                 return _("No");
             }
-            else
+            else if(hasBombSymbol == true || hasBombSymbol == 'true' || hasBombSymbol == 1 || hasBombSymbol == '1')
             {
                 return _("Yes");
+            }
+            else
+            {
+                return _("Unknown");
             }
         },
 
@@ -3072,9 +3181,13 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             {
                 return _("No");
             }
-            else
+            else if(hasKnifeSymbol == true || hasKnifeSymbol == 'true' || hasKnifeSymbol == 1 || hasKnifeSymbol == '1')
             {
                 return _("Yes");
+            }
+            else
+            {
+                return _("Unknown");
             }
         },
 
@@ -3263,7 +3376,8 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
                                     // What to do after the server call if it succeeded
                                     // (most of the time: nothing)
-                                    this.highlightComponent(node);  // highlight the card
+                                    //this.highlightComponent(node);  // highlight the card
+                                    this.selectComponent(node); // show this card is selected
 
                                  }, function( is_error) {
 
@@ -3295,7 +3409,8 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
 
                                     // What to do after the server call if it succeeded
                                     // (most of the time: nothing)
-                                    this.highlightComponent(node);  // highlight the card
+                                    //this.highlightComponent(node);  // highlight the card
+                                    this.selectComponent(node); // show this card is selected
 
                                  }, function( is_error) {
 
@@ -3677,9 +3792,36 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                          } );
         },
 
+        onClickLeaderButton: function( evt )
+        {
+            dojo.stopEvent( evt ); // Preventing default browser reaction
+
+            // Check that this action is possible (see "possibleactions" in states.inc.php)
+            if( ! this.checkAction( 'clickLeader' ) )
+            {   return; }
+
+            var node = evt.currentTarget.id;
+            var leader = node.split('_')[1]; // Agent, Kingpin
+
+            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/clickedLeader.html", {
+                                                                    lock: true,
+                                                                    leader: leader
+                                                                 },
+                         this, function( result ) {
+
+                            // What to do after the server call if it succeeded
+                            // (most of the time: nothing)
+
+                         }, function( is_error) {
+
+                            // What to do after the server call in anyway (success or failure)
+                            // (most of the time: nothing)
+
+                         } );
+        },
+
         onClickPlayerButton: function( evt )
         {
-
             dojo.stopEvent( evt ); // Preventing default browser reaction
 
             // Check that this action is possible (see "possibleactions" in states.inc.php)
@@ -3862,6 +4004,7 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             dojo.subscribe( 'playEquipmentOnTable', this, "notif_playEquipmentOnTable" );
             dojo.subscribe( 'equipmentDeckReshuffled', this, "notif_equipmentDeckReshuffled" );
             dojo.subscribe( 'destroyEquipmentDiscard', this, "notif_destroyEquipmentDiscard" );
+            dojo.subscribe( 'highlightLastUsedIntegrityCard', this, "notif_highlightLastUsedIntegrityCard");
 
             // ZOMBIES
             dojo.subscribe( 'addInfectionToken', this, "notif_addInfectionToken" );
@@ -3950,9 +4093,23 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
                 this.addBombAndKnifeSymbols(playerLetter, integrityCardHtmlId, integrityCardPositionRevealed, hasBombSymbol, hasKnifeSymbol, false, false); // we will do a rePlace right after this so we don't need to specify whether the player has seen 3 symbols
             }
 
+            console.log("integrityCardHtmlId:"+integrityCardHtmlId);
             this.highlightComponent(integrityCardHtmlId); // highlight the card just investigated
 
             this.addIntegrityCardTooltip(integrityCardHtmlId, cardTypeRevealed, 0, playersSeen, integrityCardPositionRevealed, affectedByPlantedEvidence, affectedByDisguise, affectedBySurveillanceCamera, isWounded, hasBombSymbol, hasKnifeSymbol);
+        },
+
+        notif_highlightLastUsedIntegrityCard: function( notif )
+        {
+            var integrityCardPositionRevealed = notif.args.card_position;
+            var ownerPlayerId = notif.args.owner_player_id;
+            var playerLetter = this.gamedatas.playerLetters[ownerPlayerId].player_letter;
+
+            var integrityCardHtmlId = "player_" + playerLetter + "_integrity_card_" + integrityCardPositionRevealed;
+
+            console.log("integrityCardHtmlId:"+integrityCardHtmlId);
+            this.highlightComponent(integrityCardHtmlId); // highlight the card just investigated
+
         },
 
         notif_targetIntegrityCard: function( notif )
@@ -4507,6 +4664,11 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             }
 
             dojo.style( cardHtmlId, 'backgroundPosition', '-0px -0px' ); // hide the card
+
+            dojo.query( '.cardHighlighted' ).removeClass( 'cardHighlighted' ); // remove all card highlights
+            dojo.query( '.cardSelected' ).removeClass( 'cardSelected' ); // remove selected card highlights
+            dojo.query( '.equipmentTargetHighlighted' ).removeClass( 'equipmentTargetHighlighted' ); // remove target option highlights
+
         },
 
         notif_discardEquipmentCard: function( notif )
@@ -4552,6 +4714,9 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
             var equipEffect = notif.args.equipment_effect;
 
             this.playEquipmentCardFromHand(equipmentId, collectorNumber, playerLetter, equipName, equipEffect, playerIdEquipmentOwner);
+
+            dojo.query( '.cardSelected' ).removeClass( 'cardSelected' ); // remove selected card highlights
+            dojo.query( '.equipmentTargetHighlighted' ).removeClass( 'equipmentTargetHighlighted' ); // remove target option highlights
         },
 
         notif_discardActivePlayerEquipmentCard: function( notif )
@@ -4943,9 +5108,12 @@ dojo.style( dieNodeId, 'display', 'block' ); // show the die
         notif_endTurn: function( notif )
         {
             dojo.query( '.cardHighlighted' ).removeClass( 'cardHighlighted' ); // remove all card highlights
+            dojo.query( '.cardSelected' ).removeClass( 'cardSelected' ); // remove selected card highlights
+            dojo.query( '.equipmentTargetHighlighted' ).removeClass( 'equipmentTargetHighlighted' ); // remove target option highlights
+
             if(this.gamedatas.zombieExpansion == 2)
             { // we are using the zombies expansion
-                this.tableDice.removeAll(); // remove all dice
+                  this.tableDice.removeAll(); // remove all dice
             }
         },
 

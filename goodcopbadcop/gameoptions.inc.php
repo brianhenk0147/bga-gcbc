@@ -85,27 +85,36 @@ $game_preferences = array(
               'name' => totranslate('Highlight Last Played Component'),
               'needReload' => true, // after user changes this preference game interface would auto-reload
               'values' => array(
-                      1 => array( 'name' => totranslate( 'On' ), 'cssPref' => 'highlightLastPlayedComponent_On' ),
-                      2 => array( 'name' => totranslate( 'Off' ), 'cssPref' => 'highlightLastPlayedComponent_Off' )
+                      1 => array( 'name' => totranslate( 'Enabled' ), 'cssPref' => 'highlightLastPlayedComponent_On' ),
+                      2 => array( 'name' => totranslate( 'Disabled' ), 'cssPref' => 'highlightLastPlayedComponent_Off' )
+              ),
+              'default' => 1
+        ),
+        101 => array(
+              'name' => totranslate('Highlight Equipment Target Options'),
+              'needReload' => true, // after user changes this preference game interface would auto-reload
+              'values' => array(
+                      1 => array( 'name' => totranslate( 'Enabled' ), 'cssPref' => 'highlightEquipmentTargetOptions_On' ),
+                      2 => array( 'name' => totranslate( 'Disabled' ), 'cssPref' => 'highlightEquipmentTargetOptions_Off' )
               ),
               'default' => 1
         ),
         /*
-        101 => array(
+        102 => array(
                 'name' => totranslate('Skip Unplayable Reactions'),
                 'needReload' => false, // after user changes this preference game interface would auto-reload
                 'values' => array(
-                        1 => array( 'name' => totranslate( 'On' ), 'cssPref' => 'skipUnplayableReactions_On' ),
-                        2 => array( 'name' => totranslate( 'Off' ), 'cssPref' => 'skipUnplayableReactions_Off' )
+                        1 => array( 'name' => totranslate( 'Enabled' ), 'cssPref' => 'skipUnplayableReactions_On' ),
+                        2 => array( 'name' => totranslate( 'Disabled' ), 'cssPref' => 'skipUnplayableReactions_Off' )
                 ),
                 'default' => 1
         ),
-        102 => array(
+        103 => array(
                 'name' => totranslate('Skip Investigate Reactions'),
                 'needReload' => false, // after user changes this preference game interface would auto-reload
                 'values' => array(
-                        1 => array( 'name' => totranslate( 'On' ), 'cssPref' => 'skipInvestigateReactions_On' ),
-                        2 => array( 'name' => totranslate( 'Off' ), 'cssPref' => 'skipInvestigateReactions_Off' )
+                        1 => array( 'name' => totranslate( 'Enabled' ), 'cssPref' => 'skipInvestigateReactions_On' ),
+                        2 => array( 'name' => totranslate( 'Disabled' ), 'cssPref' => 'skipInvestigateReactions_Off' )
                 ),
                 'default' => 1
         ),

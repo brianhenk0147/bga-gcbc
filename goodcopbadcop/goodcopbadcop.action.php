@@ -158,6 +158,18 @@ class action_goodcopbadcop extends APP_GameAction
         self::ajaxResponse( );
     }
 
+    public function clickedLeader()
+    {
+        self::setAjaxMode();
+
+        // Retrieve arguments
+        $leader = self::getArg( "leader", AT_alphanum, true ); // Agent, Kingpin
+
+        $this->game->clickedLeader( $leader );
+
+        self::ajaxResponse( );
+    }
+
     public function clickedToggle()
     {
         self::setAjaxMode();
