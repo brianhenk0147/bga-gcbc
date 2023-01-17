@@ -105,6 +105,7 @@ $machinestates = array(
     		"description" => clienttranslate('${actplayer} is choosing a card to reveal.'),
     		"descriptionmyturn" => clienttranslate('${you} must select which Integrity Card you will reveal.'),
     		"type" => "activeplayer",
+        'args' => 'argGetPossibleArmEquipTargets',
     		"possibleactions" => array( "clickMyIntegrityCard", "clickCancelButton" ),
     		"transitions" => array( "executeArm" => 7, "playerAction" => 60 )
     ),
@@ -141,6 +142,7 @@ $machinestates = array(
     		"description" => clienttranslate('${actplayer} is choosing a card to reveal.'),
     		"descriptionmyturn" => clienttranslate('${you} must select which Integrity Card you will reveal.'),
     		"type" => "activeplayer",
+        'args' => 'argGetPossibleArmEquipTargets',
     		"possibleactions" => array( "clickMyIntegrityCard", "clickCancelButton" ),
     		"transitions" => array( "executeEquip" => 11, "cancelAction" => 60, "playerAction" => 60 )
     ),

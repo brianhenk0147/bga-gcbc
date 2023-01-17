@@ -3857,7 +3857,7 @@ class goodcopbadcop extends Table
 							 $collectorNumber == 37 ||
 							 $collectorNumber == 18)
 							 {
-								 throw new feException( "collectorNumber:$collectorNumber");
+								 //throw new feException( "collectorNumber:$collectorNumber");
 								 return false;
 							 }
 				}
@@ -12088,6 +12088,13 @@ class goodcopbadcop extends Table
 				);
 		}
 
+		function argGetPossibleArmEquipTargets()
+		{
+				return array(
+						'possibleArmEquipTargets' => self::getPossibleArmEquipTargets()
+				);
+		}
+
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state actions
 ////////////
@@ -12283,6 +12290,29 @@ class goodcopbadcop extends Table
 				}
 
 				return $targetList;
+		}
+
+		function getPossibleArmEquipTargets()
+		{
+				$targetList = array(); // we will return this at the end
+				$activePlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
+
+				$targetQuery = self::getObjectListFromDB( "SELECT *
+																									FROM integrityCards
+																									WHERE card_type_arg=0 AND card_location=$activePlayer" );
+
+				$integrityCardIndex = 0;
+				foreach( $targetQuery as $target )
+				{ // go through all the possible integrity cards that could be targeted
+
+						$targetList[$integrityCardIndex] = array();
+						$targetList[$integrityCardIndex]['playerIdOfIntegrityCardOwner'] = $target['card_location']; // the player ID who is playing the equipment card
+						$targetList[$integrityCardIndex]['cardPosition'] = $target['card_location_arg'];
+						$integrityCardIndex++;
+				}
+
+				return $targetList;
+
 		}
 
 		function getPossibleIntegrityCardTargets()

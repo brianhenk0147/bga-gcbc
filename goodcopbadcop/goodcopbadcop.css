@@ -81,6 +81,7 @@
 box-shadow:inset 0px 0px 0px 4px #ffffff !important;
 */
 border-color: #ffffff !important; /* simple white border */
+border-width: 2px !important; /* make the border a little thicker */
 }
 
 .cardHighlighted
