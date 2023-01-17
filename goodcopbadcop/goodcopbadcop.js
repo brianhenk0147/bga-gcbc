@@ -357,6 +357,11 @@ function (dojo, declare) {
                 this.zombifyPlayer(zombiePlayerId, letterOfPlayerWhoWasZombie); // add green to player area
             }
 
+            this.resetDie('infectionDie', 'infectionDieResult');
+            this.resetDie('zombieDie1', 'zombieDie1Result');
+            this.resetDie('zombieDie2', 'zombieDie2Result');
+            this.resetDie('zombieDie3', 'zombieDie3Result');
+
 
 
             // First Param: css class to target
