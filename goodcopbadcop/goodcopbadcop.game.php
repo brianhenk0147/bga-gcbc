@@ -7263,7 +7263,7 @@ class goodcopbadcop extends Table
 							}
 					}
 					$equipmentId = $this->getEquipmentIdFromCollectorNumber(68);
-					$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
+					$this->discardActivePlayerEquipmentCard($equipmentId); // discard the alarm clock now that it is resolved
 					$this->setStateAfterTurnAction($playerWhoseTurnItIs);
 			}
 			elseif($this->isPlayerHoldingGrenade($playerWhoseTurnItIs))
@@ -11254,91 +11254,131 @@ class goodcopbadcop extends Table
 						$gunHolderPlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 						$aimedAtPlayer = $this->getPlayerIdFromLetterOrder($gunHolderPlayer, $playerPosition); // get the player ID of the player being aimed at
 
-
 						$this->aimGun($gunHolderPlayer, $aimedAtPlayer); // update the gun in the database for who it is now aimed at
 //throw new feException( "rolledvalue:".$this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") );
 //throw new feException( "isinfectorhidden:".$this->isInfectorHidden() );
-						if($stateName == "askAimOutOfTurn")
-						{ // we're choosing our aim potentially out of turn because we just got a gun from an equipment
-//throw new feException( "asking" );
-								$this->gamestate->nextState("afterAimedOutOfTurn"); // possibly change the active player
-						}
-						elseif($this->isPlayerHoldingGrenade($playerWhoseTurnItIs))
-						{ // this player is holding a Grenade
-											//throw new feException( "holding grenade clicked player");
-								if($playerWhoseTurnItIs == $playerId)
-								{
-										throw new BgaUserException( self::_("Please choose someone other than yourself.") );
-								}
-								$grenadeId = $this->getEquipmentIdFromCollectorNumber(21);
 
-								//throw new feException( "holding grenade");
-								$target1 = $this->getPlayerTarget1($grenadeId);
-								$target2 = $this->getPlayerTarget2($grenadeId);
+						if($gunHolderPlayer == $playerWhoseTurnItIs)
+						{ // the player is aiming on their turn
 
-								$nameOfCurrentPlayer = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
-
-			//throw new feException( "holding grenade");
-								if(!is_null($target2) && $target2 != '')
-								{	// someone has been tossed twice
-			//throw new feException( "tossed twice after aim");
-
-										self::notifyAllPlayers( "grenadeExplodes", clienttranslate( '${player_name} is holding the <b>Grenade</b> when it explodes.' ), array(
-													'player_name' => $nameOfCurrentPlayer
-										) );
-
-										$this->shootPlayer($playerWhoseTurnItIs, $playerWhoseTurnItIs, 'equipment');
-										if($this->doesGameEnd())
-										{ // the game ends
-
-												$this->gamestate->nextState( "endGame" );
+								if($this->isPlayerHoldingGrenade($playerWhoseTurnItIs))
+								{ // this player is holding a Grenade
+													//throw new feException( "holding grenade clicked player");
+										if($playerWhoseTurnItIs == $playerId)
+										{
+												throw new BgaUserException( self::_("Please choose someone other than yourself.") );
 										}
-										else
-										{ // game does NOT end
-												$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
+										$grenadeId = $this->getEquipmentIdFromCollectorNumber(21);
 
-												$this->setStateAfterTurnAction($playerWhoseTurnItIs);
-										}
-								}
-								else
-								{ // grenade has been tossed only once
+										//throw new feException( "holding grenade");
+										$target1 = $this->getPlayerTarget1($grenadeId);
+										$target2 = $this->getPlayerTarget2($grenadeId);
 
-										if($target2 != $playerId)
-										{ // just clicked on a player because of aiming a gun and now needs to choose a player who gets the grenade
-											//throw new feException( "tossed once after aim");
-												self::notifyAllPlayers( "grenadeToss2Pre", clienttranslate( '${player_name} must toss the <b>Grenade</b>. It will explode at the end of that player\'s next turn.' ), array(
+										$nameOfCurrentPlayer = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
+
+					//throw new feException( "holding grenade");
+										if(!is_null($target2) && $target2 != '')
+										{	// someone has been tossed twice
+					//throw new feException( "tossed twice after aim");
+
+												self::notifyAllPlayers( "grenadeExplodes", clienttranslate( '${player_name} is holding the <b>Grenade</b> when it explodes.' ), array(
 															'player_name' => $nameOfCurrentPlayer
 												) );
-												$this->gamestate->nextState( "chooseAnotherPlayer" ); // i need to toss it to someone else
-												$this->setEquipmentCardToPlaying($grenadeId); // make grenade playing
+
+												$this->shootPlayer($playerWhoseTurnItIs, $playerWhoseTurnItIs, 'equipment');
+												if($this->doesGameEnd())
+												{ // the game ends
+
+														$this->gamestate->nextState( "endGame" );
+												}
+												else
+												{ // game does NOT end
+														$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
+
+														$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+												}
 										}
 										else
-										{
-											//throw new feException( "tossed once after choosing player who gets grenade");
-												//$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
-												$nameOfGrenadeTosser = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
-												$nameOfGrenadeRecipient = $this->getPlayerNameFromPlayerId($playerId);
-												self::notifyAllPlayers( "grenadeToss2", clienttranslate( '${player_name} is tossing the <b>Grenade</b> for the FINAL time to ${player_name_2}. It will explode at the end of their next turn.' ), array(
-															'player_name' => $nameOfGrenadeTosser,
-															'player_name_2' => $nameOfGrenadeRecipient
-												) );
-												$this->setEquipmentPlayerTarget($grenadeId, $playerId); // set this as a target for the equipment card
-												$this->makePlayerEquipmentActive($grenadeId, $playerId); // activate this card
-												$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
+										{ // grenade has been tossed only once
+
+												if($target2 != $playerId)
+												{ // just clicked on a player because of aiming a gun and now needs to choose a player who gets the grenade
+													//throw new feException( "tossed once after aim");
+														self::notifyAllPlayers( "grenadeToss2Pre", clienttranslate( '${player_name} must toss the <b>Grenade</b>. It will explode at the end of that player\'s next turn.' ), array(
+																	'player_name' => $nameOfCurrentPlayer
+														) );
+														$this->gamestate->nextState( "chooseAnotherPlayer" ); // i need to toss it to someone else
+														$this->setEquipmentCardToPlaying($grenadeId); // make grenade playing
+												}
+												else
+												{
+													//throw new feException( "tossed once after choosing player who gets grenade");
+														//$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
+														$nameOfGrenadeTosser = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
+														$nameOfGrenadeRecipient = $this->getPlayerNameFromPlayerId($playerId);
+														self::notifyAllPlayers( "grenadeToss2", clienttranslate( '${player_name} is tossing the <b>Grenade</b> for the FINAL time to ${player_name_2}. It will explode at the end of their next turn.' ), array(
+																	'player_name' => $nameOfGrenadeTosser,
+																	'player_name_2' => $nameOfGrenadeRecipient
+														) );
+														$this->setEquipmentPlayerTarget($grenadeId, $playerId); // set this as a target for the equipment card
+														$this->makePlayerEquipmentActive($grenadeId, $playerId); // activate this card
+														$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
+												}
 										}
 								}
+								elseif($this->isPlayerHoldingAlarmClock($playerWhoseTurnItIs))
+								{ // the player is holding an alarm clock
+
+										// all unarmed players arm
+										$unarmedPlayers = $this->getUnarmedPlayers(); // get each unarmed player without any hidden integrity cards
+
+										// give them a gun
+										foreach($unarmedPlayers as $player)
+										{
+												$armerPlayerId = $player['player_id'];
+												if(!$this->isPlayerEliminated($armerPlayerId) && !$this->isPlayerZombie($armerPlayerId))
+												{ // player is not eliminated (because they can't arm) and they are not a zombie (because they don't need to Arm)
+														$gun = $this->pickUpGun($armerPlayerId, $this->getStateName());
+												}
+										}
+
+										// all players aim at alarm clock holder
+										$allGuns = $this->getAllGuns();
+										foreach( $allGuns as $gun )
+										{ // go through each gun
+												$gunId = $gun['gun_id'];
+												$gunState = $gun['gun_state'];
+												$gunHeldBy = $gun['gun_held_by'];
+
+												if(!is_null($gunHeldBy) && $gunHeldBy != '')
+												{ // this gun is held by someone
+														$this->aimGun($gunHeldBy, $playerWhoseTurnItIs); // aim the gun at the target (this will take care of notifications too)
+												}
+										}
+										$equipmentId = $this->getEquipmentIdFromCollectorNumber(68);
+										$this->discardActivePlayerEquipmentCard($equipmentId); // discard the alarm clock now that it is resolved
+										$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+								}
+								else
+								{ // the usual case
+										//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+										//{ // we are using the zombies expansion and the Infector is hidden
+										//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+										//}
+										//else
+										//{
+												$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
+										//}
+								}
+
 						}
 						else
-						{ // the usual case
-								//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-								//{ // we are using the zombies expansion and the Infector is hidden
-								//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-								//}
-								//else
-								//{
-										$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-								//}
+						{	// the player is aiming on another player's turn
+								$this->gamestate->nextState("afterAimedOutOfTurn"); // possibly change the active player
 						}
+
+
+
 				}
 				elseif($stateName == "choosePlayer" || $stateName == "chooseAnotherPlayer" || $stateName == "choosePlayerNoCancel")
 				{ // we chose a player to target with equipment
@@ -11897,7 +11937,7 @@ class goodcopbadcop extends Table
 								}
 						}
 						$equipmentId = $this->getEquipmentIdFromCollectorNumber(68);
-						$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
+						$this->discardActivePlayerEquipmentCard($equipmentId); // discard the alarm clock now that it is resolved
 						$this->setStateAfterTurnAction($playerWhoseTurnItIs);
 				}
 				elseif($this->isPlayerHoldingGrenade($playerWhoseTurnItIs))
@@ -11941,57 +11981,60 @@ class goodcopbadcop extends Table
 								$this->setEquipmentCardToPlaying($grenadeId); // make grenade playing
 						}
 				}
-
-				// figure out who the next player should be
-				if(!$this->weAreInActivePlayerState())
-				{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
-					$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // change to the player it's turn it's supposed to be
-				}
-
-				if($playedInState == "chooseEquipmentToPlayOnYourTurn")
-				{
-						$this->gamestate->nextState("playerTurn"); // go back to that state
-				}
-				elseif($playedInState == "chooseEquipmentToPlayStartGame")
-				{ // they are choosing an equipment card to use before the game begins
-						$this->setEquipmentHoldersToActive("askStartGameReaction"); // set anyone holding equipment to active
-				}
-				elseif($playedInState == "chooseEquipmentToPlayReactInvestigate")
-				{
-						$this->setEquipmentHoldersToActive("askInvestigateReaction"); // set anyone holding equipment to active
-						//$this->gamestate->nextState("askInvestigateReaction"); // go back to that state
-				}
-				elseif($playedInState == "chooseEquipmentToPlayReactShoot")
-				{
-						$this->setEquipmentHoldersToActive("askShootReaction"); // set anyone holding equipment to active
-						//$this->gamestate->nextState("askShootReaction"); // go back to that state
-				}
-				elseif($playedInState == "chooseEquipmentToPlayReactBite")
-				{
-						$this->setEquipmentHoldersToActive("askBiteReaction"); // set anyone holding equipment to active
-						//$this->gamestate->nextState("askBiteReaction"); // go back to that state
-				}
-				elseif($playedInState == "chooseEquipmentToPlayReactEndOfTurn")
-				{
-						//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-						//{ // we are using the zombies expansion and the Infector is hidden
-						//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-						//}
-						//else
-						//{
-								$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-						//}
-				}
 				else
-				{ // we shouldn't get here
-						//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
-						//{ // we are using the zombies expansion and the Infector is hidden
-						//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
-						//}
-						//else
-						//{
-								$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
-						//}
+				{ // no end of turn equipments trigger
+
+						// figure out who the next player should be
+						if(!$this->weAreInActivePlayerState())
+						{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+							$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // change to the player it's turn it's supposed to be
+						}
+
+						if($playedInState == "chooseEquipmentToPlayOnYourTurn")
+						{
+								$this->gamestate->nextState("playerTurn"); // go back to that state
+						}
+						elseif($playedInState == "chooseEquipmentToPlayStartGame")
+						{ // they are choosing an equipment card to use before the game begins
+								$this->setEquipmentHoldersToActive("askStartGameReaction"); // set anyone holding equipment to active
+						}
+						elseif($playedInState == "chooseEquipmentToPlayReactInvestigate")
+						{
+								$this->setEquipmentHoldersToActive("askInvestigateReaction"); // set anyone holding equipment to active
+								//$this->gamestate->nextState("askInvestigateReaction"); // go back to that state
+						}
+						elseif($playedInState == "chooseEquipmentToPlayReactShoot")
+						{
+								$this->setEquipmentHoldersToActive("askShootReaction"); // set anyone holding equipment to active
+								//$this->gamestate->nextState("askShootReaction"); // go back to that state
+						}
+						elseif($playedInState == "chooseEquipmentToPlayReactBite")
+						{
+								$this->setEquipmentHoldersToActive("askBiteReaction"); // set anyone holding equipment to active
+								//$this->gamestate->nextState("askBiteReaction"); // go back to that state
+						}
+						elseif($playedInState == "chooseEquipmentToPlayReactEndOfTurn")
+						{
+								//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+								//{ // we are using the zombies expansion and the Infector is hidden
+								//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+								//}
+								//else
+								//{
+										$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
+								//}
+						}
+						else
+						{ // we shouldn't get here
+								//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
+								//{ // we are using the zombies expansion and the Infector is hidden
+								//		$this->gamestate->nextState( "rollInfectionDie" ); // player must roll the infection die
+								//}
+								//else
+								//{
+										$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
+								//}
+						}
 				}
 		}
 
