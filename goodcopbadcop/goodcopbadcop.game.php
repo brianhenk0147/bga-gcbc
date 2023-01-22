@@ -10260,6 +10260,7 @@ class goodcopbadcop extends Table
 
 								$newGunId = $gun['gun_id'];
 								$this->setGunCanShoot($newGunId, 0); // make sure player cannot shoot the gun this turn
+								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
 
 						break;
 
@@ -11261,7 +11262,40 @@ class goodcopbadcop extends Table
 						if($gunHolderPlayer == $playerWhoseTurnItIs)
 						{ // the player is aiming on their turn
 
-								if($this->isPlayerHoldingGrenade($playerWhoseTurnItIs))
+							if($this->isPlayerHoldingAlarmClock($playerWhoseTurnItIs))
+							{ // the player is holding an alarm clock
+
+									// all unarmed players arm
+									$unarmedPlayers = $this->getUnarmedPlayers(); // get each unarmed player without any hidden integrity cards
+
+									// give them a gun
+									foreach($unarmedPlayers as $player)
+									{
+											$armerPlayerId = $player['player_id'];
+											if(!$this->isPlayerEliminated($armerPlayerId) && !$this->isPlayerZombie($armerPlayerId))
+											{ // player is not eliminated (because they can't arm) and they are not a zombie (because they don't need to Arm)
+													$gun = $this->pickUpGun($armerPlayerId, $this->getStateName());
+											}
+									}
+
+									// all players aim at alarm clock holder
+									$allGuns = $this->getAllGuns();
+									foreach( $allGuns as $gun )
+									{ // go through each gun
+											$gunId = $gun['gun_id'];
+											$gunState = $gun['gun_state'];
+											$gunHeldBy = $gun['gun_held_by'];
+
+											if(!is_null($gunHeldBy) && $gunHeldBy != '')
+											{ // this gun is held by someone
+													$this->aimGun($gunHeldBy, $playerWhoseTurnItIs); // aim the gun at the target (this will take care of notifications too)
+											}
+									}
+									$equipmentId = $this->getEquipmentIdFromCollectorNumber(68);
+									$this->discardActivePlayerEquipmentCard($equipmentId); // discard the alarm clock now that it is resolved
+									$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+							}
+							elseif($this->isPlayerHoldingGrenade($playerWhoseTurnItIs))
 								{ // this player is holding a Grenade
 													//throw new feException( "holding grenade clicked player");
 										if($playerWhoseTurnItIs == $playerId)
@@ -11325,39 +11359,6 @@ class goodcopbadcop extends Table
 														$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
 												}
 										}
-								}
-								elseif($this->isPlayerHoldingAlarmClock($playerWhoseTurnItIs))
-								{ // the player is holding an alarm clock
-
-										// all unarmed players arm
-										$unarmedPlayers = $this->getUnarmedPlayers(); // get each unarmed player without any hidden integrity cards
-
-										// give them a gun
-										foreach($unarmedPlayers as $player)
-										{
-												$armerPlayerId = $player['player_id'];
-												if(!$this->isPlayerEliminated($armerPlayerId) && !$this->isPlayerZombie($armerPlayerId))
-												{ // player is not eliminated (because they can't arm) and they are not a zombie (because they don't need to Arm)
-														$gun = $this->pickUpGun($armerPlayerId, $this->getStateName());
-												}
-										}
-
-										// all players aim at alarm clock holder
-										$allGuns = $this->getAllGuns();
-										foreach( $allGuns as $gun )
-										{ // go through each gun
-												$gunId = $gun['gun_id'];
-												$gunState = $gun['gun_state'];
-												$gunHeldBy = $gun['gun_held_by'];
-
-												if(!is_null($gunHeldBy) && $gunHeldBy != '')
-												{ // this gun is held by someone
-														$this->aimGun($gunHeldBy, $playerWhoseTurnItIs); // aim the gun at the target (this will take care of notifications too)
-												}
-										}
-										$equipmentId = $this->getEquipmentIdFromCollectorNumber(68);
-										$this->discardActivePlayerEquipmentCard($equipmentId); // discard the alarm clock now that it is resolved
-										$this->setStateAfterTurnAction($playerWhoseTurnItIs);
 								}
 								else
 								{ // the usual case
