@@ -319,7 +319,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "afterDiscardedOutOfTurn",
         "updateGameProgression" => false,
-        "transitions" => array( "playerTurn" => 60, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askStartGameReaction" => 2, "discardEquipment" => 12 )
+        "transitions" => array( "playerTurn" => 60, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askStartGameReaction" => 2, "discardEquipment" => 12, "askAim" => 27 )
     ),
 
     40 => array(
@@ -359,7 +359,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetPlayerButtonTargets',
     		"possibleactions" => array( "clickPlayer", "clickCancelButton" ),
-    		"transitions" => array( "executeEquipment" => 31, "chooseActiveOrHandEquipmentCard" => 42, "chooseEquipmentToPlayReactEndOfTurn" => 16, "endTurnReaction" => 29, "chooseEquipmentToPlayStartGame" => 61, "chooseEquipmentToPlayReactShoot" => 18, "chooseEquipmentToPlayOnYourTurn" => 15, "chooseEquipmentTargetOutOfTurn" => 32 )
+    		"transitions" => array( "executeEquipment" => 31, "chooseActiveOrHandEquipmentCard" => 42, "chooseEquipmentToPlayReactEndOfTurn" => 16, "endTurnReaction" => 29, "chooseEquipmentToPlayStartGame" => 61, "chooseEquipmentToPlayReactShoot" => 18, "chooseEquipmentToPlayOnYourTurn" => 15, "chooseEquipmentTargetOutOfTurn" => 32, "playerTurn" => 60 )
     ),
 
     44 => array(
