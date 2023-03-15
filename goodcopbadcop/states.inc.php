@@ -237,7 +237,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetGunTargets',
     		"possibleactions" => array( "clickPlayer", "clickEndTurnButton" ),
-    		"transitions" => array( "aimAtPlayer" => 28, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askAimMustReaim" => 26, "askAim" => 27, "endGame" => 99, "allPassedOnReactions" => 30, "askStartGameReaction" => 2, "chooseAnotherPlayer" => 43, "discardEquipment" => 12 )
+    		"transitions" => array( "aimAtPlayer" => 28, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askAimMustReaim" => 26, "askAim" => 27, "endGame" => 99, "allPassedOnReactions" => 30, "askStartGameReaction" => 2, "chooseAnotherPlayer" => 43, "discardEquipment" => 12, "afterAimedOutOfTurn" => 34 )
     ),
 
     28 => array(
