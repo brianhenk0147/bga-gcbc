@@ -10308,7 +10308,9 @@ class goodcopbadcop extends Table
 
 								$newGunId = $gun['gun_id'];
 								$this->setGunCanShoot($newGunId, 0); // make sure player cannot shoot the gun this turn
-								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
+
+								//20230319 - removed this because otherwise we don't know in afterAimedOutOfTurn that a taser was played and we might need to let the player who used it take their turn action
+								//$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
 
 						break;
 
@@ -11415,11 +11417,17 @@ class goodcopbadcop extends Table
 									{ // there are still unaimed guns
 											$this->gamestate->nextState("afterAimedOutOfTurn"); // possibly change the active player
 									}
+									//elseif($this->wasArmingEquipmentWasJustPlayed())
+									//{ // an equipment card that lets you arm was just played on the player's turn
+										  	// get the state in which it was played
+												// set us to that state
+									//}
 									else
 									{ // the usual case
 
-												// SWITCHED TO afterAimedOutOfTurn BECAUSE WEAPON CRATE WOULD OTHERWISE NOT ALLOW ALL PLAYERS TO RE-AIM
-												$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
+												// SWITCHED TO afterAimedOutOfTurn BECAUSE WEAPON CRATE WOULD OTHERWISE NOT ALLOW ALL PLAYERS TO RE-AIM AND TASER WOULD SKIP YOUR TURN IF YOU USED IT ON YOUR TURN BEFORE TAKING AN ACTION
+												$this->gamestate->nextState("afterAimedOutOfTurn"); // possibly change the active player
+												//$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active
 									}
 						}
 						else
