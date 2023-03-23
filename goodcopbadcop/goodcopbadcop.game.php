@@ -2713,16 +2713,19 @@ class goodcopbadcop extends Table
 				return self::getCollectionFromDb( $sql );
 		}
 
-		function getAllNonInfectorZombies()
+		function getAllZombiesExceptPlayerId($playerIdToSkip)
 		{
 				$allNonInfectorZombies = array();
 				$allZombies = $this->getAllZombies();
 				foreach($allZombies as $zombie)
 				{
 						$zombiePlayerId = $zombie['player_id'];
-						if(!$this->isLeaderOrInfectorPlayer($zombiePlayerId))
-						{ // not the Infector
-								array_push($allNonInfectorZombies, $zombie); // add this zombie to the array
+						if($zombiePlayerId != $playerIdToSkip)
+						{ // this isn't a player we are ignoring (likely the person who played a zombie-related equipment)
+								if(!$this->isLeaderOrInfectorPlayer($zombiePlayerId))
+								{ // not the Infector
+										array_push($allNonInfectorZombies, $zombie); // add this zombie to the array
+								}
 						}
 				}
 
@@ -3459,21 +3462,6 @@ class goodcopbadcop extends Table
 				{ // player is NOT a zombie
 						return false;
 				}
-		}
-
-		function isPlayerNonInfectorZombie($playerId)
-		{
-				$nonInfectorZombiePlayers = $this->getAllNonInfectorZombies();
-				foreach($nonInfectorZombiePlayers as $zombie)
-				{
-						$thisZombieId = $zombie['player_id'];
-						if($thisZombieId == $playerId)
-						{
-								return true;
-						}
-				}
-
-				return false;
 		}
 
 		function isPlayerIdToLeftOrRightOfPlayerId($player1, $player2)
@@ -4215,6 +4203,22 @@ class goodcopbadcop extends Table
 				}
 		}
 
+		function getSurveillanceCameraOwnerId()
+		{
+				$equipmentOwner = self::getUniqueValueFromDb( "SELECT equipment_owner FROM equipmentCards
+																													 WHERE card_type_arg=13 LIMIT 1" );
+
+				if(is_null($equipmentOwner) || $equipmentOwner == '')
+				{ // for some reason, this query is returning empty when it shouldn't be and I don't know why
+						return self::getUniqueValueFromDb( "SELECT card_location_arg FROM equipmentCards
+																								WHERE card_type_arg=13 LIMIT 1" );
+				}
+				else
+				{ // not empty so it's doing what it's supposed to be doing
+						return $equipmentOwner;
+				}
+		}
+
 		function getEquipmentCardLocation($equipmentCardId)
 		{
 				return self::getUniqueValueFromDb("SELECT card_location FROM equipmentCards WHERE card_id=$equipmentCardId LIMIT 1");
@@ -4396,13 +4400,13 @@ class goodcopbadcop extends Table
 								return clienttranslate( 'Choose a player who cannot be investigated for the rest of the game.' );
 
 						case 45: // Walkie Talkie
-								return clienttranslate( 'Choose a player. All players holding a Gun aim at them.' );
+								return clienttranslate( 'Choose a player. All armed players aim at them.' );
 
 						case 9: // Polygraph
 								return clienttranslate( 'Investigate all of a player\'s Integrity Cards. They investigate all of yours.' );
 
 						case 13: // Surveillance Camera
-								return clienttranslate( 'Choose a player. Each time one of their Integrity Cards is investigated, they must reveal it.' );
+								return clienttranslate( 'Choose a player. Each time one of their Integrity cards is investigated, you may investigate it too.' );
 
 						case 7: // Metal Detector
 								return clienttranslate( 'Investigate each player who is holding a Gun.' );
@@ -5271,8 +5275,8 @@ class goodcopbadcop extends Table
 
 						case 3: // Defibrillator
 							$eliminatedPlayers = $this->getEliminatedPlayers($ownerOfEquipment);
-							$nonInfectorZombiePlayers = $this->getAllNonInfectorZombies();
-							if(count($eliminatedPlayers) > 0 || count($nonInfectorZombiePlayers) > 0)
+							$zombiePlayers = $this->getAllZombiesExceptPlayerId($ownerOfEquipment);
+							if(count($eliminatedPlayers) > 0 || count($zombiePlayers) > 0)
 							{ // at least one player is eliminated or a zombie
 									return true;
 							}
@@ -5784,12 +5788,25 @@ class goodcopbadcop extends Table
 						return true;
 						break;
 						case 3: // Defibrillator
-								if($this->isPlayerEliminated($playerId))
+								$ownerOfDefibrillator = $this->getEquipmentCardOwner($equipmentCardId);
+								if($playerId == $ownerOfDefibrillator)
+								{ // they are trying to give an equipment card to themselves
+
+										if($throwErrors)
+										{
+												throw new BgaUserException( self::_("You must choose a player other than yourself.") );
+										}
+										else
+										{
+												return false;
+										}
+								}
+								elseif($this->isPlayerEliminated($playerId))
 								{ // they are trying to target an eliminated player
 										return true;
 								}
-								elseif($this->isPlayerNonInfectorZombie($playerId))
-								{ // they are targeting a non-infector Zombie
+								elseif($this->isPlayerZombie($playerId))
+								{ // they are targeting a Zombie
 										return true;
 								}
 								else
@@ -7991,6 +8008,19 @@ class goodcopbadcop extends Table
 				self::DbQuery( $sqlUpdate );
 		}
 
+		// Overwrites whatever is in player_target_2 with this value. (normally you want to use
+		// setEquipmentPlayerTarget() instead)
+		function setEquipmentPlayerTarget2($equipmentCardId, $target)
+		{
+				$sqlUpdate = "UPDATE equipmentCards SET ";
+				$sqlUpdate .= "player_target_2='$target' WHERE ";
+				$sqlUpdate .= "card_id=$equipmentCardId";
+
+				//var_dump( $sqlUpdate );
+				//die('ok');
+				self::DbQuery( $sqlUpdate );
+		}
+
 		function setEquipmentGunTarget($equipmentCardId, $target)
 		{
 				$sqlUpdate = "UPDATE equipmentCards SET ";
@@ -8546,7 +8576,14 @@ class goodcopbadcop extends Table
 								// if the investigated player has Surveillance camera active, reveal the card
 								if($viewOnly == false && $this->hasSurveillanceCamera($investigatedPlayerId))
 								{ // this is a real investigation (not just a card view) and the player investigated has survillance camera active in front of them
-										$this->revealCard($investigatedPlayerId, $cardPosition);
+										//$this->revealCard($investigatedPlayerId, $cardPosition);
+										$surveillanceCameraEquipmentId = $this->getEquipmentIdFromCollectorNumber(13); // get the equipment ID for Surveillance Camera
+										$surveillanceCameraOwnerId = $this->getPlayerTarget2($surveillanceCameraEquipmentId);
+										//throw new feException( "camCardId: $surveillanceCameraEquipmentId camOwnerId:$surveillanceCameraOwnerId" );
+										if($surveillanceCameraOwnerId != $playerInvestigating)
+										{ // the surveillance camera owner isn't the one investigating (otherwise it will cause an endless loop)
+												$this->investigateCard($cardId, $surveillanceCameraOwnerId, false);
+										}
 								}
 
 								$isWounded = $this->isCardWounded($cardId);
@@ -10416,6 +10453,7 @@ class goodcopbadcop extends Table
 								}
 								$this->makePlayerEquipmentActive($equipmentId, $target1); // activate this card
 								$this->rePlacePlayerHiddenCards($target1); // make this player's hidden cards glow
+								$this->setEquipmentPlayerTarget2($equipmentId, $equipmentCardOwner); // save the owner of Surveillance Camera so you know who gets the benefit of free investigations
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 								if(!$this->weAreInActivePlayerState())
