@@ -319,7 +319,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "afterDiscardedOutOfTurn",
         "updateGameProgression" => false,
-        "transitions" => array( "playerTurn" => 60, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askStartGameReaction" => 2, "discardEquipment" => 12, "askAim" => 27 )
+        "transitions" => array( "playerTurn" => 60, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askStartGameReaction" => 2, "discardEquipment" => 12, "askAim" => 27, "choosePlayer" => 41 )
     ),
 
     40 => array(
