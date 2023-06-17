@@ -1914,11 +1914,6 @@ class goodcopbadcop extends Table
 				return $cardArray;
 		}
 
-		function getFingerprintKitCardId()
-		{
-				return self::getUniqueValueFromDb("SELECT card_id FROM equipmentCards WHERE card_type_arg=20 LIMIT 1");
-		}
-
 		function getDiscardedByOfCardId($cardId)
 		{
 				return self::getUniqueValueFromDb("SELECT discarded_by FROM equipmentCards WHERE card_id=$cardId LIMIT 1");
@@ -2148,7 +2143,8 @@ class goodcopbadcop extends Table
 				$cardIdArray = array();
 
 				$sql = "SELECT card_id FROM `equipmentCards` ";
-				$sql .= "WHERE equipment_owner=$playerId AND equipment_is_active=1 AND player_target_1 IS NOT NULL AND player_target_1 <> ''";
+				$sql .= "WHERE equipment_owner=$playerId AND equipment_is_active=1 AND player_target_1 IS NOT NULL AND player_target_1 <> ''"; // why are we saying the player_target_1 can't be null?
+				//$sql .= "WHERE equipment_owner=$playerId AND equipment_is_active=1";
 
 				//var_dump( $sql );
 				//die('ok');
@@ -2849,6 +2845,72 @@ class goodcopbadcop extends Table
 				return true;
 		}
 
+		function isThisASurveillanceCameraInvestigation()
+		{
+				// equipment_target_1 will be set to 'in progress' when the owner of Surveillance Camera is investigated
+				// equipment_target_1 will be set to 'completed' when the owner of Surveillance Camera has completed their free investigation
+				// equipment_target_1 will be rest to '' at the end of the round
+				$stateOfSurveillance = self::getUniqueValueFromDb("SELECT equipment_target_1 FROM equipmentCards WHERE card_type_arg=13 LIMIT 1");
+//throw new feException( "stateOfSurveillance:$stateOfSurveillance");
+				if($stateOfSurveillance == 'in progress')
+				{
+						return true;
+				}
+				else
+				{
+						return false;
+				}
+		}
+
+		function hasTheSurveillanceCameraInvestigationCompleted()
+		{
+				// equipment_target_1 will be set to 'in progress' when the owner of Surveillance Camera is investigated
+				// equipment_target_1 will be set to 'completed' when the owner of Surveillance Camera has completed their free investigation
+				// equipment_target_1 will be rest to '' at the end of the round
+				$stateOfSurveillance = self::getUniqueValueFromDb("SELECT equipment_target_1 FROM equipmentCards WHERE card_type_arg=13 LIMIT 1");
+
+				if($stateOfSurveillance == 'completed')
+				{
+						return true;
+				}
+				else
+				{
+						return false;
+				}
+		}
+
+		function markSurveillanceCameraInvestigationInProgress($target)
+		{
+				$sql = "UPDATE equipmentCards SET equipment_target_1='in progress', equipment_target_8=$target WHERE card_type_arg=13";
+				self::DbQuery( $sql );
+		}
+
+		function markSurveillanceCameraInvestigationComplete()
+		{
+				$sql = "UPDATE equipmentCards SET equipment_target_1='complete' WHERE card_type_arg=13";
+				self::DbQuery( $sql );
+		}
+
+		function resetSurveillanceCameraInvestigationState()
+		{
+				$sql = "UPDATE equipmentCards SET equipment_target_1='', equipment_target_8='' WHERE card_type_arg=13";
+				self::DbQuery( $sql );
+		}
+
+		function getSurveillanceCameraValidTarget()
+		{
+				// equipment_target_8 holds the player who investigated them and thus the player they are allowed to investigate using Suveillance Camera
+				return self::getUniqueValueFromDb("SELECT equipment_target_8 FROM equipmentCards WHERE card_type_arg=13 LIMIT 1");
+		}
+
+		// When a player uses Fingerprint Kit and then brings it back into their hand, we need to reset it so it looks just like
+		// it has never been used. If we don't, it may fail when they try to use it again.
+		function resetFingerprintKitAfterReturnToHand()
+		{
+				$sql = "UPDATE equipmentCards SET equipment_target_1='', equipment_is_active=0, equipment_played_on_turn='', equipment_played_in_state='' WHERE card_type_arg=20";
+				self::DbQuery( $sql );
+		}
+
 		function getCardIdFromPlayerAndPosition($playerId, $positionId)
 		{
 				return self::getUniqueValueFromDb("SELECT card_id FROM integrityCards WHERE card_location=$playerId AND card_location_arg=$positionId LIMIT 1");
@@ -2925,8 +2987,11 @@ class goodcopbadcop extends Table
 
 		function setVisibilityOfIntegrityCard($cardId, $playerId, $seenValue)
 		{
-				$sql = "UPDATE playerCardVisibility SET is_seen=$seenValue WHERE card_id=$cardId AND player_id=$playerId";
-				self::DbQuery( $sql );
+				if($cardId)
+				{ // cardId is valid
+						$sql = "UPDATE playerCardVisibility SET is_seen=$seenValue WHERE card_id=$cardId AND player_id=$playerId";
+						self::DbQuery( $sql );
+				}
 		}
 
 		function isAffectedByPlantedEvidence($cardId)
@@ -2954,7 +3019,9 @@ class goodcopbadcop extends Table
 		function isAffectedBySurveillanceCamera($cardId)
 		{
 				$integrityCardOwner = $this->getIntegrityCardOwner($cardId);
+
 				$hasSurveillanceCamera = $this->hasSurveillanceCamera($integrityCardOwner);
+//throw new feException( "hasSurveillanceCamera:$hasSurveillanceCamera integrityCardOwner:$integrityCardOwner");
 
 				return $hasSurveillanceCamera;
 		}
@@ -3427,6 +3494,11 @@ class goodcopbadcop extends Table
 
 		function hasPlayerQuit($playerId)
 		{
+				if(is_null($playerId) || $playerId == '')
+				{
+						return false;
+				}
+
 				$sql = "SELECT player_zombie FROM `player` ";
 				$sql .= "WHERE player_id=$playerId LIMIT 1";
 
@@ -4074,7 +4146,22 @@ class goodcopbadcop extends Table
 
 		function getEquipmentCardIdInUse()
 		{
-				return self::getUniqueValueFromDb("SELECT card_id FROM equipmentCards WHERE card_location='playing' LIMIT 1 ");
+				$cardsInUse = self::getObjectListFromDB( "SELECT card_id FROM equipmentCards WHERE card_location='playing'" );
+				$cardId = 0;
+
+				// create an array for each player with display information
+				foreach( $cardsInUse as $card )
+				{
+						$cardId = $card['card_id'];
+				}
+
+				$currentState = $this->getStateName();
+				if($cardId == 0 && $currentState == "chooseIntegrityCardFromPlayer")
+				{ // we didn't find one in use but Surveillance Camera is active
+						$cardId = $this->getEquipmentIdFromCollectorNumber(13);
+				}
+
+				return $cardId;
 		}
 
 		function isTurnOrderClockwise()
@@ -4142,7 +4229,7 @@ class goodcopbadcop extends Table
 		// Return true if this player has Surveillance Camera played on them, false otherwise.
 		function hasSurveillanceCamera($playerId)
 		{
-				$sql = "SELECT card_id FROM equipmentCards WHERE card_type_arg=13 && equipment_is_active=1 && player_target_1=$playerId LIMIT 1 ";
+				$sql = "SELECT card_id FROM equipmentCards WHERE card_type_arg=13 && equipment_is_active=1 && equipment_owner=$playerId LIMIT 1 ";
         $matches = self::getCollectionFromDb( $sql );
 
 				if(count($matches) > 0)
@@ -4406,7 +4493,7 @@ class goodcopbadcop extends Table
 								return clienttranslate( 'Investigate all of a player\'s Integrity Cards. They investigate all of yours.' );
 
 						case 13: // Surveillance Camera
-								return clienttranslate( 'Choose a player. Each time one of their Integrity cards is investigated, you may investigate it too.' );
+								return clienttranslate( 'For the rest of the game, investigate anyone who investigates you.' );
 
 						case 7: // Metal Detector
 								return clienttranslate( 'Investigate each player who is holding a Gun.' );
@@ -4828,6 +4915,15 @@ class goodcopbadcop extends Table
 		{
 				$sqlUpdate = "UPDATE equipmentCards SET ";
 				$sqlUpdate .= "equipment_played_in_state='$stateName',card_location='playing',equipment_played_on_turn=$activePlayerId WHERE ";
+				$sqlUpdate .= "card_id=$equipmentId";
+
+				self::DbQuery( $sqlUpdate );
+		}
+
+		function setEquipmentCardStateOnly($equipmentId, $stateName)
+		{
+				$sqlUpdate = "UPDATE equipmentCards SET ";
+				$sqlUpdate .= "equipment_played_in_state='$stateName' WHERE ";
 				$sqlUpdate .= "card_id=$equipmentId";
 
 				self::DbQuery( $sqlUpdate );
@@ -5887,22 +5983,7 @@ class goodcopbadcop extends Table
 								return true; // there are no other restrictions on the player chosen (you can even choose yourself if you want)
 						break;
 						case 13: // Surveillance Camera
-								if($this->isPlayerEliminated($playerId))
-								{ // they are trying to target an eliminated player
-
-										if($throwErrors)
-										{
-												throw new BgaUserException( self::_("Please target a player who has not been eliminated.") );
-										}
-										else
-										{
-												return false;
-										}
-								}
-								else
-								{ // they are targeting a living player
-										return true;
-								}
+								return true; // this is always played on the equipment owner and is thus always valid
 						break;
 						case 17: // Deliriant
 								return true; // there are no restrictions on the player chosen
@@ -6983,15 +7064,7 @@ class goodcopbadcop extends Table
 								}
 						break;
 						case 13: // Surveillance Camera
-								$target1 = $this->getPlayerTarget1($equipmentCardId);
-								if(is_null($target1) || $target1 == '')
-								{ // we do NOT have all we need for this equipment card
-										return false;
-								}
-								else
-								{ // we have all we need for this equipment card
-									return true;
-								}
+								return true; // it doesn't need any input
 						break;
 						case 7: // Metal Detector
 								if($this->doneSelecting($equipmentCardId))
@@ -7216,16 +7289,80 @@ class goodcopbadcop extends Table
 				}
 		}
 
+		// The player has not yet taken their action for their turn because something happened before
+		// they took their action, like they used an investigating Equipment card and then someone got a free Surveillance Camera
+		// investigation during the equipment usage.
+		function setStateBeforeTurnAction($playerWhoseTurnItIs)
+		{
+				$fingerprintKitEquipmentId = $this->getEquipmentIdFromCollectorNumber(20);
+				$state = $this->getStateName();
+				if($this->isEquipmentActive($fingerprintKitEquipmentId))
+				{ // fingerprint kit was used and the owner of it has not yet chosen whether they will reveal to keep it
+
+						$this->gamestate->nextState( "chooseCardToRevealToReturnEquipmentToHand" );
+				}
+				elseif($state == "chooseIntegrityCardFromPlayer")
+				{ // we just finished a free investigation
+
+						$this->gamestate->nextState( "playerTurn" ); // let the player take their turn
+				}
+				else
+				{ // something else happened
+
+						$this->gamestate->nextState( "playerTurn" ); // let the player take their turn
+				}
+		}
+
 		// The player has just completed their action for their turn so we need to figure out
 		// which state is next.
-		function setStateAfterTurnAction($playerWhoseTurnItIs)
+		function setStateAfterTurnAction($playerWhoseTurnItIs, $reciprocateInvestigation)
 		{
 			$state = $this->getStateName();
-			//throw new feException( "setStateAfterTurnAction state:$state");
+			//throw new feException( "reciprocateInvestigation3:$reciprocateInvestigation");
 
 
 			$playersOverEquipmentCardLimit = $this->getPlayersOverEquipmentHandLimit(); // get any players over the equipment card hand limit
-			if ($this->doesPlayerNeedToDiscard($playerWhoseTurnItIs))
+			$fingerprintKitEquipmentId = $this->getEquipmentIdFromCollectorNumber(20);
+			if($this->isEquipmentActive($fingerprintKitEquipmentId))
+			{ // fingerprint kit was used and the owner of it has not yet chosen whether they will reveal to keep it
+//throw new feException( "state:$state");
+					$this->gamestate->nextState( "chooseCardToRevealToReturnEquipmentToHand" );
+			}
+			elseif($state == "chooseIntegrityCardFromPlayer")
+			{ // we just finished a free investigation (which would have occurred because the current player played an investigation equipment during their turn action with Use Equipment and investigated someone with Surveillance Camera)
+
+					// we need to get back to the the current player's turn now instead of the Surveillance Camera player
+					if(!$this->weAreInActivePlayerState())
+					{ // we are in a state where we are allowed to change the active player
+							$this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // make that player active so they can investigate
+							//$this->gamestate->nextState( "chooseCardToInvestigate" ); // let them investigate
+							$this->gamestate->nextState( "playerTurn" ); // let them investigate
+					}
+					else
+					{ // we ARE in an active player state and thus cannot change the active player
+							$this->gamestate->nextState( "determineActivePlayerAfterTurnAction" ); // go to a state where we can safely determine the active player
+					}
+			}
+			elseif($reciprocateInvestigation)
+			{ // we want to allow the player with Surveillance Camera to investigate a card
+
+					$surveillanceCameraEquipmentId = $this->getEquipmentIdFromCollectorNumber(13); // get the equipment ID for Surveillance Camera
+					$surveillanceCameraOwnerId = $this->getEquipmentCardOwner($surveillanceCameraEquipmentId);
+
+					if(!$this->weAreInActivePlayerState())
+					{ // we are in a state where we are allowed to change the active player
+							$this->gamestate->changeActivePlayer($surveillanceCameraOwnerId); // make that player active so they can investigate
+							//$this->gamestate->nextState( "chooseCardToInvestigate" ); // let them investigate
+							$this->gamestate->nextState( "chooseIntegrityCardFromPlayer" ); // let them investigate
+					}
+					else
+					{ // we ARE in an active player state and thus cannot change the active player
+							$this->gamestate->nextState( "determineActivePlayerAfterTurnAction" ); // go to a state where we can safely determine the active player
+					}
+
+					//throw new feException( "surveillance camera played" );
+			}
+			elseif ($this->doesPlayerNeedToDiscard($playerWhoseTurnItIs))
 			{ // too many cards in hand
 						//throw new feException( "the player whose turn it is is $playerWhoseTurnItIs" );
 						if(!$this->weAreInActivePlayerState())
@@ -7268,7 +7405,8 @@ class goodcopbadcop extends Table
 						}
 						else
 						{ // we ARE in an active player state and thus cannot change the active player
-								$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+								//$this->setStateAfterTurnAction($playerWhoseTurnItIs, $reciprocateInvestigation);
+								$this->gamestate->nextState( "determineActivePlayerAfterTurnAction" ); // go to a state where we can safely determine the active player
 						}
 
 					}
@@ -7308,7 +7446,7 @@ class goodcopbadcop extends Table
 					}
 					$equipmentId = $this->getEquipmentIdFromCollectorNumber(68);
 					$this->discardActivePlayerEquipmentCard($equipmentId); // discard the alarm clock now that it is resolved
-					$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+					$this->setStateAfterTurnAction($playerWhoseTurnItIs, $reciprocateInvestigation);
 			}
 			elseif($this->isPlayerHoldingGrenade($playerWhoseTurnItIs))
 			{ // this player is holding a Grenade
@@ -7338,7 +7476,7 @@ class goodcopbadcop extends Table
 							else
 							{ // game does NOT end
 									$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
-									$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+									$this->setStateAfterTurnAction($playerWhoseTurnItIs, $reciprocateInvestigation);
 							}
 					}
 					else
@@ -7572,14 +7710,8 @@ class goodcopbadcop extends Table
 								}
 						break;
 						case 13: // Surveillance Camera
-								if($this->isAllInputAcquiredForEquipment($equipmentId))
-								{ // the player has been targeted
-										$this->gamestate->nextState( "executeEquipment" ); // use the equipment
-								}
-								else
-								{ // the player has not yet been targeted
-										$this->gamestate->nextState( "choosePlayer" ); // ask them to target a player
-								}
+								$this->gamestate->nextState( "executeEquipment" ); // use the equipment
+
 						break;
 						case 7: // Metal Detector
 								if($this->isAllInputAcquiredForEquipment($equipmentId))
@@ -7849,7 +7981,7 @@ class goodcopbadcop extends Table
 								return false; // chosen by equipment player
 						break;
 						case 13: // Surveillance Camera
-							return false; // chosen by equipment player
+							return false; // no targets need to be chosen
 						break;
 						case 7: // Metal Detector
 								return false; // chosen by equipment player
@@ -7974,6 +8106,28 @@ class goodcopbadcop extends Table
 				self::DbQuery( $sqlUpdate );
 		}
 
+		function setEquipmentCardTarget2($equipmentCardId, $target)
+		{
+				$sqlUpdate = "UPDATE equipmentCards SET ";
+				$sqlUpdate .= "equipment_target_2='$target' WHERE ";
+				$sqlUpdate .= "card_id=$equipmentCardId";
+
+				//var_dump( $sqlUpdate );
+				//die('ok');
+				self::DbQuery( $sqlUpdate );
+		}
+
+		function setEquipmentCardTarget8($equipmentCardId, $target)
+		{
+				$sqlUpdate = "UPDATE equipmentCards SET ";
+				$sqlUpdate .= "equipment_target_8='$target' WHERE ";
+				$sqlUpdate .= "card_id=$equipmentCardId";
+
+				//var_dump( $sqlUpdate );
+				//die('ok');
+				self::DbQuery( $sqlUpdate );
+		}
+
 		function setEquipmentPlayerTarget($equipmentCardId, $target)
 		{
 				$sqlUpdate = "UPDATE equipmentCards SET ";
@@ -8020,6 +8174,8 @@ class goodcopbadcop extends Table
 				//die('ok');
 				self::DbQuery( $sqlUpdate );
 		}
+
+
 
 		function setEquipmentGunTarget($equipmentCardId, $target)
 		{
@@ -8535,6 +8691,8 @@ class goodcopbadcop extends Table
 
 		function investigateCard($cardId, $playerInvestigating, $viewOnly)
 		{
+				$reciprocateInvestigation = false;
+
 				$this->setVisibilityOfIntegrityCard($cardId, $playerInvestigating, 1); // show that this player has seen this card
 				$investigatingPlayerName = $this->getPlayerNameFromPlayerId($playerInvestigating); // name of the player conducting the investigation
 
@@ -8572,19 +8730,6 @@ class goodcopbadcop extends Table
 						{ // target is NOT disguised
 
 								$cardPositionText = $this->convertCardPositionToText($cardPosition);
-
-								// if the investigated player has Surveillance camera active, reveal the card
-								if($viewOnly == false && $this->hasSurveillanceCamera($investigatedPlayerId))
-								{ // this is a real investigation (not just a card view) and the player investigated has survillance camera active in front of them
-										//$this->revealCard($investigatedPlayerId, $cardPosition);
-										$surveillanceCameraEquipmentId = $this->getEquipmentIdFromCollectorNumber(13); // get the equipment ID for Surveillance Camera
-										$surveillanceCameraOwnerId = $this->getPlayerTarget2($surveillanceCameraEquipmentId);
-										//throw new feException( "camCardId: $surveillanceCameraEquipmentId camOwnerId:$surveillanceCameraOwnerId" );
-										if($surveillanceCameraOwnerId != $playerInvestigating)
-										{ // the surveillance camera owner isn't the one investigating (otherwise it will cause an endless loop)
-												$this->investigateCard($cardId, $surveillanceCameraOwnerId, false);
-										}
-								}
 
 								$isWounded = $this->isCardWounded($cardId);
 								$isInfected = $this->isCardInfected($cardId);
@@ -8678,9 +8823,93 @@ class goodcopbadcop extends Table
 								 'card_position' => $cardPosition
 							 ) );
 
+						} // not disguised
+						//$hasSurv = $this->hasSurveillanceCamera($investigatedPlayerId);
+//throw new feException( "investigatedPlayerId:$investigatedPlayerId viewOnly:$viewOnly hasSurv:$hasSurv");
+						// if the investigated player has Surveillance camera active, reveal the card
+
+						$numberSeen = $this->countIntegrityCardsPlayerHasSeenOfPlayer($investigatedPlayerId, $playerInvestigating);
+//throw new feException( "numberSeen:$numberSeen");
+						if($viewOnly == false && $this->isThisASurveillanceCameraInvestigation())
+						{ // this is the free investigation the investigator got from Surveillance Camera
+							//throw new feException( "numberSeen1:$numberSeen");
+
+								$this->markSurveillanceCameraInvestigationComplete();
+								$reciprocateInvestigation = false;
+								//throw new feException( "reciprocateInvestigation:$reciprocateInvestigation");
+						}
+						elseif($viewOnly == false && $this->hasSurveillanceCamera($investigatedPlayerId))
+						{ // this is a real investigation (not just a card view) and the player investigated has survillance camera active in front of them
+//throw new feException( "numberSeen2:$numberSeen");
+								//$surveillanceCameraEquipmentId = $this->getEquipmentIdFromCollectorNumber(13); // get the equipment ID for Surveillance Camera
+								//$surveillanceCameraOwnerId = $this->getPlayerTarget2($surveillanceCameraEquipmentId);
+								//throw new feException( "camCardId: $surveillanceCameraEquipmentId camOwnerId:$surveillanceCameraOwnerId" );
+
+//throw new feException( "reciprocateInvestigation:$reciprocateInvestigation");
+
+								if($numberSeen < 3)
+								{ // we haven't seen all of this player's cards yet
+										$reciprocateInvestigation = true; // let anyone calling this function know the player with Surveillance Camera now gets a free investigation
+										$this->markSurveillanceCameraInvestigationInProgress($playerInvestigating);
+										$nameOfPlayerInvestigating = $this->getPlayerNameFromPlayerId($playerInvestigating);
+
+										self::notifyPlayer( $investigatedPlayerId, 'reciprocateInvestigation', clienttranslate( 'You may investigate ${player_name} because of Surveillance Camera.' ), array(
+																				 'player_name' => $nameOfPlayerInvestigating
+										) );
+								}
+
+								$equipmentId = $this->getEquipmentCardIdInUse();
+								$equipmentCardInUsePreviousState = $this->getEquipmentPlayedInState($equipmentId);
+								$surveillanceCameraEquipmentId = $this->getEquipmentIdFromCollectorNumber(13); // get the equipment ID for Surveillance Camera
+
+								if($equipmentCardInUsePreviousState == "unknown")
+								{ // no equipment card is currently being played
+
+										// use the surveillance camera state
+										$usedInState = $this->getStateName(); // get the name of the current state
+
+										$this->setEquipmentCardStateOnly($surveillanceCameraEquipmentId, $usedInState);
+								}
+								else
+								{ // an equipment card is being played
+
+										// set surveillance camera's state to that of the equipment being used because that is where we will want to return
+										$this->setEquipmentCardStateOnly($surveillanceCameraEquipmentId, $equipmentCardInUsePreviousState);
+								}
+						}
+
+
+						//throw new feException( "reciprocateInvestigation6:$reciprocateInvestigation");
+
+				} // for loop
+
+				return $reciprocateInvestigation;
+		}
+
+		function countIntegrityCardsPlayerHasSeenOfPlayer($playerLooking, $playerTargeting)
+		{
+				$numberSeen = 0; // a count of the number of integrity cards this player has seen of the player investigating them
+				$playerCards = $this->getIntegrityCardsForPlayer($playerTargeting);
+				foreach($playerCards as $card)
+				{ // go through each of this player's cards
+						$cardId = $card['card_id'];
+						$cardNumber = $card['card_location_arg'];
+
+						$isSeen = $this->isSeen($playerLooking, $playerTargeting, $cardNumber);
+						//if($cardNumber != 1 && $cardNumber != 2)
+						//	throw new feException( "cardId:$cardId cardNumber:$cardNumber isSeen:$isSeen");
+
+						$isRevealed = $card['card_type_arg'];
+
+						if($isRevealed != 0 || $isSeen)
+						{ // this card is hidden
+								$numberSeen++;
 						}
 				}
+
+				return $numberSeen;
 		}
+
 
 		function infectorFound($infectorPlayerId, $infectorCardPosition, $finderOfInfectorPlayerId)
 		{
@@ -8728,9 +8957,10 @@ class goodcopbadcop extends Table
 						return;
 				}
 
-
+				//throw new feException( "playerDrawingId:$playerDrawingId" );
 				$cardId = 0;
 				$cards = $this->equipmentCards->pickCards( $numberToDraw, 'deck', $playerDrawingId ); // draw a card
+
 				foreach($cards as $card)
 				{ // go through each card (should only be 1)
 						$cardId = $card['id'];
@@ -9114,7 +9344,8 @@ class goodcopbadcop extends Table
 				) );
 		}
 
-		// Play an Equipment that is NOT active and discard it.
+		// Finish playing an equipment card that is NOT active and discard it.
+		// Use discardActivePlayerEquipmentCard instead if it IS active.
 		function playEquipmentOnTable($cardId)
 		{
 				$this->equipmentCards->moveCard( $cardId, 'discard'); // move the card to the discard pile
@@ -9142,6 +9373,8 @@ class goodcopbadcop extends Table
 				$this->resetEquipmentAfterDiscard($cardId); // set this equipment back to defaults in the database
 		}
 
+		// Finish playing an equipment card that IS active.
+		// Use playEquipmentOnTable instead if it is NOT active.
 		function discardActivePlayerEquipmentCard($equipmentCardId)
 		{
 			//throw new feException("cardId:$equipmentCardId");
@@ -10097,6 +10330,7 @@ class goodcopbadcop extends Table
 
 		function resolveEquipment($equipmentId)
 		{
+				$reciprocateInvestigation = false; // will be set to true if a player is investigated who has Surveillance Camera
 				$collectorNumber = $this->getCollectorNumberFromId($equipmentId); // get the type of equipment card we're using
 				$equipmentCardOwner = $this->getEquipmentCardOwner($equipmentId); // get the player ID who is playing the equipment card
 				$nameOfEquipmentCardOwner = $this->getPlayerNameFromPlayerId($equipmentCardOwner); // get the name of the player playing the equipment
@@ -10236,7 +10470,12 @@ class goodcopbadcop extends Table
 										$integrityCardOwner = $this->getIntegrityCardOwner($target1); // get the player who owns the integrity card targeted
 										$cardPosition = $this->getIntegrityCardPosition($target1); // get the position of the integrity card targeted
 										$cardId = $this->getCardIdFromPlayerAndPosition($integrityCardOwner, $cardPosition);
-										$this->investigateCard($cardId, $equipmentCardOwner, false); // investigate this card and notify players
+
+										if($this->investigateCard($cardId, $equipmentCardOwner, false))
+										{
+												$reciprocateInvestigation = true;
+										}
+
 								}
 
 
@@ -10247,8 +10486,12 @@ class goodcopbadcop extends Table
 									  $integrityCardOwner2 = $this->getIntegrityCardOwner($target2); // get the player who owns the integrity card targeted
 										$cardPosition2 = $this->getIntegrityCardPosition($target2); // get the position of the integrity card targeted
 										$cardId2 = $this->getCardIdFromPlayerAndPosition($integrityCardOwner2, $cardPosition2);
-										$this->investigateCard($cardId2, $equipmentCardOwner, false); // investigate this card and notify players
+										if($this->investigateCard($cardId2, $equipmentCardOwner, false))
+										{
+												$reciprocateInvestigation = true;
+										}
 								}
+
 
 
 								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
@@ -10427,14 +10670,20 @@ class goodcopbadcop extends Table
 								$hiddenCardsOfEquipmentOwner = $this->getHiddenCardsFromPlayer($equipmentCardOwner);
 								foreach($hiddenCardsOfEquipmentOwner as $card)
 								{
-												$this->investigateCard($card['card_id'], $target1, false);
+												if($this->investigateCard($card['card_id'], $target1, false))
+												{
+														$reciprocateInvestigation = true;
+												}
 								}
 
 								// allow equipment owner look at all of target's cards
 								$hiddenCardsOfTarget = $this->getHiddenCardsFromPlayer($target1);
 								foreach($hiddenCardsOfTarget as $card)
 								{
-												$this->investigateCard($card['card_id'], $equipmentCardOwner, false);
+												if($this->investigateCard($card['card_id'], $equipmentCardOwner, false))
+												{
+														$reciprocateInvestigation = true;
+												}
 								}
 
 								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
@@ -10446,14 +10695,12 @@ class goodcopbadcop extends Table
 								}
 						break;
 						case 13: // Surveillance Camera
-								$target1 = $this->getPlayerTarget1($equipmentId);
-								if($target1 == '')
-								{
-										throw new BgaUserException( self::_("We do not have a valid target for this Equipment.") );
-								}
-								$this->makePlayerEquipmentActive($equipmentId, $target1); // activate this card
-								$this->rePlacePlayerHiddenCards($target1); // make this player's hidden cards glow
-								$this->setEquipmentPlayerTarget2($equipmentId, $equipmentCardOwner); // save the owner of Surveillance Camera so you know who gets the benefit of free investigations
+
+								$this->makePlayerEquipmentActive($equipmentId, $equipmentCardOwner); // activate this card
+								$this->setEquipmentPlayerTarget($equipmentId, $equipmentCardOwner); // set player_target_1 because that is required to keep it showing on player board for some reason
+
+								$this->rePlacePlayerHiddenCards($equipmentCardOwner); // make this player's hidden cards glow
+								$this->setEquipmentCardTarget8($equipmentId, $equipmentCardOwner); // save the owner of Surveillance Camera so you know who gets the benefit of free investigations
 
 								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 								if(!$this->weAreInActivePlayerState())
@@ -10465,47 +10712,75 @@ class goodcopbadcop extends Table
 								$target1 = $this->getEquipmentTarget1($equipmentId);
 								if(!is_null($target1) && $target1 != '')
 								{
-										$this->investigateCard($target1, $equipmentCardOwner, false); // investigate this card
+										if($this->investigateCard($target1, $equipmentCardOwner, false))
+										{
+												$reciprocateInvestigation = true;
+										}
 								}
 
 								$target2 = $this->getEquipmentTarget2($equipmentId);
 								if(!is_null($target2) && $target2 != '')
 								{
-										$this->investigateCard($target2, $equipmentCardOwner, false); // investigate this card
+										if($this->investigateCard($target2, $equipmentCardOwner, false))
+										{
+												$reciprocateInvestigation = true;
+										}
 								}
 
 								$target3 = $this->getEquipmentTarget3($equipmentId);
 								if(!is_null($target3) && $target3 != '')
 								{
-										$this->investigateCard($target3, $equipmentCardOwner, false); // investigate this card
+										if($this->investigateCard($target3, $equipmentCardOwner, false))
+										{
+												$reciprocateInvestigation = true;
+										}
 								}
 
 								$target4 = $this->getEquipmentTarget4($equipmentId);
 								if(!is_null($target4) && $target4 != '')
 								{
-										$this->investigateCard($target4, $equipmentCardOwner, false); // investigate this card
+										if($this->investigateCard($target4, $equipmentCardOwner, false))
+										{
+												$reciprocateInvestigation = true;
+										}
 								}
 
 								$target5 = $this->getEquipmentTarget5($equipmentId);
 								if(!is_null($target5) && $target5 != '')
 								{
-										$this->investigateCard($target5, $equipmentCardOwner, false); // investigate this card
+										if($this->investigateCard($target5, $equipmentCardOwner, false))
+										{
+												$reciprocateInvestigation = true;
+										}
 								}
 
 								$target6 = $this->getEquipmentTarget6($equipmentId);
 								if(!is_null($target6) && $target6 != '')
 								{
-										$this->investigateCard($target6, $equipmentCardOwner, false); // investigate this card
+										if($this->investigateCard($target6, $equipmentCardOwner, false))
+										{
+												$reciprocateInvestigation = true;
+										}
 								}
 
 								$target7 = $this->getEquipmentTarget7($equipmentId);
 								if(!is_null($target7) && $target7 != '')
 								{
-										$this->investigateCard($target7, $equipmentCardOwner, false); // investigate this card
+										if($this->investigateCard($target7, $equipmentCardOwner, false))
+										{
+												$reciprocateInvestigation = true;
+										}
 								}
 
 
 								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
+
+								$playerWhoseTurnItWas = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+									$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
+								}
+
 						break;
 						case 17: // Deliriant
 								$target1 = $this->getPlayerTarget1($equipmentId);
@@ -10818,10 +11093,23 @@ class goodcopbadcop extends Table
 										$integrityCardOwner = $this->getIntegrityCardOwner($target1); // get the player who owns the integrity card targeted
 										$cardPosition = $this->getIntegrityCardPosition($target1); // get the position of the integrity card targeted
 										$cardId = $this->getCardIdFromPlayerAndPosition($integrityCardOwner, $cardPosition);
-										$this->investigateCard($cardId, $equipmentCardOwner, false); // investigate this card and notify players
+										if($this->investigateCard($cardId, $equipmentCardOwner, false))
+										{
+												$reciprocateInvestigation = true;
+										}
 								}
 
-								$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
+								$hiddenCards = $hiddenCards = $this->getHiddenCardsFromPlayer($equipmentCardOwner); // get all this player's hidden integrity cards
+								if(count($hiddenCards) < 1)
+								{ // the player does not have any cards they can reveal to bring it back
+
+										//$this->discardActivePlayerEquipmentCard($equipmentId); // discard it since they have auto-passed
+										$this->playEquipmentOnTable($equipmentId); // discard the equipment card now that it is resolved
+								}
+								else
+								{ // the player has at least one hidden card they can reveal
+										$this->makePlayerEquipmentActive($equipmentId, $equipmentCardOwner); // activate this card until they decline their reveal option
+								}
 						break;
 
 						case 21: // Grenade
@@ -10874,6 +11162,10 @@ class goodcopbadcop extends Table
 						'i18n' => array( 'equipment_name' ),
 						'equipment_name' => $equipmentCardName
 				) );
+
+
+//throw new feException( "reciprocateInvestigation3: $reciprocateInvestigation" );
+				return $reciprocateInvestigation;
 
 		}
 
@@ -10940,26 +11232,7 @@ class goodcopbadcop extends Table
 				$equipmentId = $this->getEquipmentCardIdInUse();
 
 				$stateName = $this->getStateName(); // get the name of the current state
-				if($stateName == "chooseCardToInfect1" ||
-					$stateName == "chooseCardToInfect2")
-				{ // we are choosing a card to infect
-
-							// clear out any selected cards
-							$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
-							foreach($players as $player)
-							{
-									$playerId = $player['player_id'];
-									$this->setInfectTarget($playerId, 1, 0); // set the saved infection target to 0 in case the Infect action was used
-									$this->setInfectTarget($playerId, 2, 0); // set the saved infection target to 0 in case the Infect action was used
-							}
-
-							$this->gamestate->nextState( "playerAction" ); // go back to start of turn
-				}
-				elseif($stateName == "chooseTokenToDiscardForZombieEquip")
-				{ // a zombie clicked Equip but now does not want to Equip anymore
-						$this->gamestate->nextState( "playerAction" ); // go back to start of turn
-				}
-				elseif($stateName == "chooseIntegrityCards" ||
+				if($stateName == "chooseIntegrityCards" ||
 					 $stateName == "choosePlayer" ||
 					 $stateName == "chooseAnotherPlayer" ||
 					 $stateName == "chooseActiveOrHandEquipmentCard" )
@@ -10968,6 +11241,7 @@ class goodcopbadcop extends Table
 
 
 						$this->gamestate->nextState( $previousState ); // TODO: THE TRANSITION PROBABLY DOESN'T MATCH THE STATE NAME SO CHANGE $previousState TO GO TO THE CORRECT TRANSITION BASED ON THE NAME or update states.inc.php with a transition matching the name
+						$this->resetEquipmentCardAfterCancel($equipmentId); // since we had set this equipment up in a playing state, we need to reset it now that it's back in hand and not being played (this MUST come before nextState)
 				}
 				elseif($stateName == "chooseEquipmentToPlayStartGame" ||
 							 $stateName == "chooseEquipmentToPlayReactEndOfTurn" ||
@@ -10976,13 +11250,102 @@ class goodcopbadcop extends Table
 							 $stateName == "chooseEquipmentToPlayReactBite" )
 				{ // cancelling using equipment
 						$this->gamestate->nextState( "cancelEquipmentUse" ); // this will send us back to the correct state no matter whether it is from a investigate/shoot/end of turn reaction
+						$this->resetEquipmentCardAfterCancel($equipmentId); // since we had set this equipment up in a playing state, we need to reset it now that it's back in hand and not being played (this MUST come before nextState)
+				}
+				elseif($stateName == "chooseIntegrityCardFromPlayer")
+				{ // this is from an investigate action or choosing a free investigate card from Surveillance Camera
+					$surveillanceCameraEquipmentId = $this->getEquipmentIdFromCollectorNumber(13); // get the equipment ID for Surveillance Camera
+
+					$surveillancePreviousState = $this->getEquipmentPlayedInState($surveillanceCameraEquipmentId);	// get the saved state for this equipment card
+					if(!$this->weAreInActivePlayerState())
+					{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+							//throw new feException( "we are in active state");
+							$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the player using the equipment to the active player (this cannot be done in an activeplayer game state)
+
+							$this->gamestate->nextState( $surveillancePreviousState );
+					}
+					else
+					{ // we ARE in an active player state and thus cannot change the active player
+
+							// Surveillance Player could be investigated:
+							// - after an investigate (go to end turn reaction)
+							// - in reaction to an equipment used in reaction to a shoot (back to current player's main action)
+							// - in reaction to an equipment used on a player's turn (back to current player's main action)
+							// - in reaction to an equipment used at the end of a player's turn (go to end turn reaction)
+					//throw new feException( "surveillancePreviousState:$surveillancePreviousState");
+							if($surveillancePreviousState == "playerTurn" || $surveillancePreviousState == "executeActionInvestigate")
+							{ // player was investigated from a turn action
+								//throw new feException( "reciprocateInvestigation:$reciprocateInvestigation");
+									$this->setStateAfterTurnAction($playerWhoseTurnItIs, $reciprocateInvestigation); //go to end turn reaction
+							}
+							elseif($surveillancePreviousState == "chooseEquipmentToPlayOnYourTurn")
+							{ // player was investigated from an equipment used on a player's turn
+								//throw new feException( "determineActivePlayerBeforeTurnAction");
+									$this->gamestate->nextState( "determineActivePlayerBeforeTurnAction" ); // go to a state where we can safely determine the active player
+							}
+							else
+							{ // player was investigated by an equipment card (either during a player turn or in reaction to an action)
+								//throw new feException( "determineActivePlayerBeforeTurnAction");
+
+
+									$equipmentId = $this->getEquipmentCardIdInUse();
+									$equipmentCardInUsePreviousState = $this->getEquipmentPlayedInState($equipmentId);
+									if($equipmentCardInUsePreviousState == "unknown")
+									{ // there is no equipment card still being played (likely)
+											$this->goToStateAfterEquipmentPlay($equipmentId, $surveillancePreviousState, false);
+									}
+									else
+									{
+										$this->gamestate->nextState( "determineActivePlayerAfterTurnAction" ); // go to a state where we can safely determine the active player
+											$this->goToStateAfterEquipmentPlay($equipmentId, $equipmentCardInUsePreviousState, false);
+									}
+
+							}
+
+							//$this->goToStateAfterEquipmentPlay($equipmentId, $stateName, $reciprocateInvestigation);
+
+							//$this->setStateAfterTurnAction($playerWhoseTurnItIs, $reciprocateInvestigation);
+
+							//$this->gamestate->nextState( "determineActivePlayerAfterTurnAction" ); // go to a state where we can safely determine the active player
+					}
+
+/*
+						$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+						$playerNameWhoseTurnItIs = $this->getPlayerNameFromPlayerId($playerWhoseTurnItIs);
+
+								$surveillanceCameraEquipmentId = $this->getEquipmentIdFromCollectorNumber(13); // get the equipment ID for Surveillance Camera
+								$surveillanceCameraOwnerId = $this->getEquipmentCardOwner($surveillanceCameraEquipmentId);
+								$surveillanceCameraOwnerName = $this->getPlayerNameFromPlayerId($surveillanceCameraOwnerId);
+								$previousState = $this->getEquipmentPlayedInState($surveillanceCameraEquipmentId);	// go to the saved state for this equipment card
+
+								// notify everyone of what happened
+								self::notifyAllPlayers( "cancelFreeInvestigate", clienttranslate( '${player_name} chose not to investigate ${player_name_2} using Surveillance Camera.' ), array(
+										'player_name' => $surveillanceCameraOwnerName,
+										'player_name_2' => $playerNameWhoseTurnItIs
+								) );
+
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+										//throw new feException( "we are in active state");
+										$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the player using the equipment to the active player (this cannot be done in an activeplayer game state)
+
+										$this->gamestate->nextState( $previousState );
+								}
+								else
+								{ // we ARE in an active player state and thus cannot change the active player
+										$this->setStateAfterTurnAction($playerWhoseTurnItIs, false);
+
+//TODO: cannot use this here because it could happen when a player investigates with an equipment card as their turn action and would thus skip their actionName
+//i think we need to check the played in state of surveillance camera and go to that state
+
+								}
+*/
 				}
 				else
 				{
 						$this->gamestate->nextState( "playerAction" ); // go back to start of turn
+						$this->resetEquipmentCardAfterCancel($equipmentId); // since we had set this equipment up in a playing state, we need to reset it now that it's back in hand and not being played (this MUST come before nextState)
 				}
-
-				$this->resetEquipmentCardAfterCancel($equipmentId); // since we had set this equipment up in a playing state, we need to reset it now that it's back in hand and not being played (this MUST come before nextState)
 
 		}
 
@@ -11052,6 +11415,10 @@ class goodcopbadcop extends Table
 				}
 		}
 
+		// There are 3 branches of code in this method:
+		//    - Choosing an integrity card due to a passive equipment ability. (like Surveillance Camera)
+		//    - Choosing an integrity card during an investigation action.
+		//    - Choosing an integrity card as you use an equipment.
 		function clickedOpponentIntegrityCard($playerPosition, $cardPosition)
 		{
 				self::checkAction( 'clickOpponentIntegrityCard' ); // make sure we can take this action from this state
@@ -11060,9 +11427,90 @@ class goodcopbadcop extends Table
 				$playerAsking = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 				$integrityCardOwner = $this->getPlayerIdFromLetterOrder($playerAsking, $playerPosition); // get the player ID of the player being investigated
 				$integrityCardId = $this->getIntegrityCardId($integrityCardOwner, $cardPosition); // get the unique id for this integrity card
-
 				$stateName = $this->getStateName(); // get the name of the current state
-				if($stateName == "chooseCardToInvestigate")
+
+				//$isSurveillanceCameraInvestigation = $this->isThisASurveillanceCameraInvestigation();
+
+				//if($isSurveillanceCameraInvestigation)
+				if($stateName == "chooseIntegrityCardFromPlayer")
+				{ // this is a free, reciprocating investigation using Surveillance Camera
+
+						// VALIDATE TARGET
+						$validPlayerToInvestigate = $this->getSurveillanceCameraValidTarget(); // get the valid players we can target
+//throw new feException( "integrityCardOwner: $integrityCardOwner validPlayerToInvestigate:$validPlayerToInvestigate" );
+						if($integrityCardOwner != $validPlayerToInvestigate)
+						{
+								throw new BgaUserException( self::_("You can only investigate the player who investigated you.") );
+						}
+
+						// GET DATA
+						$surveillanceCameraEquipmentId = $this->getEquipmentIdFromCollectorNumber(13); // get the equipment ID for Surveillance Camera
+						$surveillanceCameraOwnerId = $this->getEquipmentCardOwner($surveillanceCameraEquipmentId);
+
+						// COMPLETE THE FREE INVESTIGATION
+						$reciprocateInvestigation = $this->investigateCard($integrityCardId, $surveillanceCameraOwnerId, false); // investigate this card and notify players
+		//throw new feException( "reciprocateInvestigation4:$reciprocateInvestigation");
+
+						// GO TO NEXT STATE
+						//$this->setStateAfterTurnAction($playerWhoseTurnItIs, $reciprocateInvestigation); // see which state we go into after completing this turn action
+						//$this->setEquipmentHoldersToActive("askInvestigateReaction"); // set anyone holding equipment to active
+						//$equipmentCardId = $this->getEquipmentCardIdInUse();
+						//$this->setStateForEquipment($equipmentCardId);
+						$surveillancePreviousState = $this->getEquipmentPlayedInState($surveillanceCameraEquipmentId);	// get the saved state for this equipment card
+						if(!$this->weAreInActivePlayerState())
+						{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+								//throw new feException( "we are in active state");
+								$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the player using the equipment to the active player (this cannot be done in an activeplayer game state)
+
+								$this->gamestate->nextState( $surveillancePreviousState );
+						}
+						else
+						{ // we ARE in an active player state and thus cannot change the active player
+
+								// Surveillance Player could be investigated:
+								// - after an investigate (go to end turn reaction)
+								// - in reaction to an equipment used in reaction to a shoot (back to current player's main action)
+								// - in reaction to an equipment used on a player's turn (back to current player's main action)
+								// - in reaction to an equipment used at the end of a player's turn (go to end turn reaction)
+//throw new feException( "surveillancePreviousState:$surveillancePreviousState");
+								if($surveillancePreviousState == "playerTurn" || $surveillancePreviousState == "executeActionInvestigate")
+								{ // player was investigated from a turn action
+									//throw new feException( "reciprocateInvestigation:$reciprocateInvestigation");
+										$this->setStateAfterTurnAction($playerWhoseTurnItIs, $reciprocateInvestigation); //go to end turn reaction
+								}
+								elseif($surveillancePreviousState == "chooseEquipmentToPlayOnYourTurn")
+								{ // player was investigated from an equipment used on a player's turn
+										$this->gamestate->nextState( "determineActivePlayerBeforeTurnAction" ); // go to a state where we can safely determine the active player
+								}
+								else
+								{ // player was investigated by an equipment card (either during a player turn or in reaction to an action)
+									//throw new feException( "determineActivePlayerBeforeTurnAction");
+
+										$fingerprintKitEquipmentId = $this->getEquipmentIdFromCollectorNumber(20);
+										$equipmentId = $this->getEquipmentCardIdInUse();
+										$equipmentCardInUsePreviousState = $this->getEquipmentPlayedInState($equipmentId);
+										//throw new feException( "equipmentCardInUsePreviousState:$equipmentCardInUsePreviousState equipmentId:$equipmentId");
+										if($equipmentCardInUsePreviousState == "unknown")
+										{ // there is no equipment card still being played (likely)
+												$this->goToStateAfterEquipmentPlay($equipmentId, $surveillancePreviousState, false);
+										}
+										else
+										{
+												$this->gamestate->nextState( "determineActivePlayerAfterTurnAction" ); // go to a state where we can safely determine the active player
+												//$this->goToStateAfterEquipmentPlay($equipmentId, $equipmentCardInUsePreviousState, false);
+										}
+
+								}
+
+								//$this->goToStateAfterEquipmentPlay($equipmentId, $stateName, $reciprocateInvestigation);
+
+								//$this->setStateAfterTurnAction($playerWhoseTurnItIs, $reciprocateInvestigation);
+
+								//$this->gamestate->nextState( "determineActivePlayerAfterTurnAction" ); // go to a state where we can safely determine the active player
+						}
+
+				}
+				elseif($stateName == "chooseCardToInvestigate")
 				{ // if we're in chooseCardToInvestigate state, investigate
 
 						$isValid = $this->validateInvestigatePlayer($playerAsking, $integrityCardOwner); // throw an error if this investigation is invalid
@@ -11092,27 +11540,7 @@ class goodcopbadcop extends Table
 
 						}
 				}
-				elseif($stateName == "chooseTokenToDiscardForZombieEquip")
-				{ // we clicked on an infection token to discard for a zombie Equip action
-//throw new feException( "set card position to " . $cardPosition );
-
-						$isInfected = $this->isCardInfected($integrityCardId); // 1 if it is infected
-						if($isInfected == 0)
-						{ // this card is NOT infected
-								throw new BgaUserException( self::_("Please choose a card with an Infection Token on it.") );
-						}
-
-						$isZombie = $this->isPlayerZombie($integrityCardOwner); // true if they are a zombie
-						if($isZombie)
-						{ // they are trying to remove it from a zombie
-								throw new BgaUserException( self::_("Please choose a token from a non-Zombie.") );
-						}
-
-						$this->setLastPlayerInvestigated($playerWhoseTurnItIs, $integrityCardOwner); // save the player we are targeting
-						$this->setLastCardPositionRevealed($playerWhoseTurnItIs, $cardPosition); // save the card position targeted (maybe change this to use last_card_id_targeted_1 once everyone has the new schema)
-						$this->gamestate->nextState( "executeEquip" );
-				}
-				elseif($stateName == "chooseIntegrityCards")
+				elseif($stateName == "chooseIntegrityCards" || $stateName == "chooseIntegrityCardFromPlayer")
 				{ // if we're in chooseIntegrityCards for equipment usage
 						$equipmentCardId = $this->getEquipmentCardIdInUse();
 
@@ -11122,47 +11550,10 @@ class goodcopbadcop extends Table
 						{
 								$this->setEquipmentCardTarget($equipmentCardId, $integrityCardId); // set this as a target for the equipment card
 						}
-
+//throw new feException( "equipmentCardId: $equipmentCardId" );
 						// validate to see if we are ready to execute the equipment
 						$this->setStateForEquipment($equipmentCardId);
 //throw new feException( "set state" );
-				}
-				elseif($stateName == "chooseCardToInfect1")
-				{ // if we're infecting an integrity card
-
-						$isInfected = $this->isCardInfected($integrityCardId); //1 if it is infected
-						if($isInfected == 1)
-						{ // hey... this card has already been infected
-								throw new BgaUserException( self::_("Choose a card that has not already been infected.") );
-						}
-	//throw new feException( "set state" );
-
-						$this->setInfectTarget($playerWhoseTurnItIs, 1, $integrityCardId); // save the card we targeted for infection
-
-						$this->gamestate->nextState( "chooseCardToInfect2" ); // stay in this same state where they will choose another card to infect
-
-				}
-				elseif($stateName == "chooseCardToInfect2")
-				{ // if we're infecting an integrity card
-
-						$isInfected = $this->isCardInfected($integrityCardId); //1 if it is infected
-						if($isInfected == 1)
-						{ // hey... this card has already been infected
-								throw new BgaUserException( self::_("Choose a card that has not already been infected.") );
-						}
-	//throw new feException( "set state" );
-
-						$cardIdTarget1 = $this->getInfectTarget($playerWhoseTurnItIs, 1); // get the first card we targeted
-						$firstPlayerTargeted = $this->getIntegrityCardOwner($cardIdTarget1); // get the owner of the first card we targeted
-						if($firstPlayerTargeted == $integrityCardOwner)
-						{ // they are trying to target the same player again
-								throw new BgaUserException( self::_("Choose a different player than you targeted with your first token.") );
-						}
-
-						$this->setInfectTarget($playerWhoseTurnItIs, 2, $integrityCardId); // save the card we targeted for infection
-						$this->gamestate->nextState( "executeInfect" ); // go to the state where the infection tokens will be added
-
-						$this->setStateAfterTurnAction($playerAsking);
 				}
 				else
 				{
@@ -11179,7 +11570,11 @@ class goodcopbadcop extends Table
 				$integrityCardId = $this->getIntegrityCardId($playerRevealing, $cardPosition); // get the unique id for this integrity card
 
 				$stateName = $this->getStateName(); // get the name of the current state
-				if($stateName == "chooseCardToRevealForEquip")
+				if($stateName == "chooseIntegrityCardFromPlayer")
+				{
+						throw new BgaUserException( self::_("You can only investigate the player who investigated you.") );
+				}
+				elseif($stateName == "chooseCardToRevealForEquip")
 				{
 						if($this->getCardRevealedStatus($integrityCardId) == 1)
 						{ // card not hidden
@@ -11192,35 +11587,6 @@ class goodcopbadcop extends Table
 				{ // a zombie is trying to remove a token from their own card to Equip
 
 						throw new BgaUserException( self::_("Please choose a token from a non-Zombie.") );
-				}
-				elseif($stateName == "chooseCardToInfect1")
-				{ // if we're infecting an integrity card
-
-						$isInfected = $this->isCardInfected($integrityCardId); //1 if it is infected
-						if($isInfected == 1)
-						{ // hey... this card has already been infected
-								throw new BgaUserException( self::_("Choose a card that has not already been infected.") );
-						}
-	//throw new feException( "set state" );
-
-						$this->setInfectTarget($playerWhoseTurnItIs, 1, $integrityCardId); // save the card we targeted for infection
-
-						$this->gamestate->nextState( "chooseCardToInfect2" ); // stay in this same state where they will choose another card to infect
-				}
-				elseif($stateName == "chooseCardToInfect2")
-				{ // if we're infecting an integrity card
-
-						$isInfected = $this->isCardInfected($integrityCardId); //1 if it is infected
-						if($isInfected == 1)
-						{ // hey... this card has already been infected
-								throw new BgaUserException( self::_("Choose a card that has not already been infected.") );
-						}
-	//throw new feException( "set state" );
-
-						$this->setInfectTarget($playerWhoseTurnItIs, 2, $integrityCardId); // save the card we targeted for infection
-						$this->gamestate->nextState( "executeInfect" ); // go to the state where the infection tokens will be added
-
-						$this->setStateAfterTurnAction($playerRevealing);
 				}
 				elseif($stateName == "chooseCardToRevealForArm")
 				{ // execute arm
@@ -11254,21 +11620,25 @@ class goodcopbadcop extends Table
 						}
 						else
 						{ // the selected card is hidden
-								$equipmentCardId = $this->getFingerprintKitCardId();
+
+								$equipmentCardId = $this->getEquipmentIdFromCollectorNumber(20); // get the equipment ID of Fingerprint Kit
+								//throw new feException( "equipmentCardId:$equipmentCardId" );
 								$collectorNumber = $this->getCollectorNumberFromId($equipmentCardId);
-								$equipmentCardOwner = $this->getDiscardedByOfCardId($equipmentCardId);
-//throw new feException( "equipmentCardId:$equipmentCardId" );
+								//$equipmentCardOwner = $this->getDiscardedByOfCardId($equipmentCardId);
+								$equipmentCardOwner = $this->getEquipmentCardOwner($equipmentCardId);
+//throw new feException( "equipmentCardOwner:$equipmentCardOwner" );
 								//throw new feException( "equipmentowner:$equipmentCardOwner" );
 
 								// return the card to the player's hand
 								$this->equipmentCards->insertCardOnExtremePosition($equipmentCardId, 'deck', true); // put last-used equipment card on top of the deck
 								$this->revealCard($playerRevealing, $cardPosition); // set the selected integrity card to revealed
 
-								$this->drawEquipmentCard($equipmentCardOwner, 1);
-								$this->destroyEquipmentDiscard($collectorNumber);
+								$this->drawEquipmentCard($equipmentCardOwner, 1); // draw fingerprint kit back into their hand
+								$this->destroyEquipmentDiscard($collectorNumber); // tell the client side to remove Fingerprint Kit since it's back in the player's hand now
 
 								// go to whichever state we were in when the card was used
-								$previousState = $this->getEquipmentPlayedInState($equipmentCardId);	// go to the saved state for this equipment card
+								$previousState = $this->getEquipmentPlayedInState($equipmentCardId);	// get the state in which this card was used so we can go back to it
+								$this->resetFingerprintKitAfterReturnToHand(); // reset Fingerprint Kit so it looks just like it has never been used so it works when they try to use it again
 
 								$this->gamestate->nextState( $previousState );
 						}
@@ -11335,14 +11705,16 @@ class goodcopbadcop extends Table
 
 		function clickedPlayer($playerPosition, $playerId)
 		{
+			//throw new feException( "clickedPlayer before checkaction" );
 				self::checkAction( 'clickPlayer' ); // make sure we can take this action from this state
-
+//throw new feException( "clickedPlayer after checkaction" );
 				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 				$chainsawEquipmentId = $this->getEquipmentIdFromCollectorNumber(64); // get the equipment ID for Chainsaw
 
 				$stateName = $this->getStateName(); // get the name of the current state
 				if($stateName == "askAim" || $stateName == "askAimOutOfTurn" || $stateName == "askAimMustReaim")
 				{ // we chose a player to aim at
+
 						$gunHolderPlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 						$aimedAtPlayer = $this->getPlayerIdFromLetterOrder($gunHolderPlayer, $playerPosition); // get the player ID of the player being aimed at
 
@@ -11383,8 +11755,10 @@ class goodcopbadcop extends Table
 												}
 										}
 										$equipmentId = $this->getEquipmentIdFromCollectorNumber(68);
+
 										$this->discardActivePlayerEquipmentCard($equipmentId); // discard the alarm clock now that it is resolved
-										$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+										//throw new feException( "holding alarmclock playerWhoseTurnItIs:$playerWhoseTurnItIs" );
+										$this->setStateAfterTurnAction($playerWhoseTurnItIs, false);
 								}
 								elseif($this->isPlayerHoldingGrenade($playerWhoseTurnItIs))
 									{ // this player is holding a Grenade
@@ -11420,7 +11794,7 @@ class goodcopbadcop extends Table
 													{ // game does NOT end
 															$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
 
-															$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+															$this->setStateAfterTurnAction($playerWhoseTurnItIs, false);
 													}
 											}
 											else
@@ -11518,7 +11892,7 @@ class goodcopbadcop extends Table
 										else
 										{ // game does NOT end
 												$this->discardActivePlayerEquipmentCard($grenadeId); // discard the grenade
-												$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+												$this->setStateAfterTurnAction($playerWhoseTurnItIs, false);
 										}
 								}
 								else
@@ -11551,7 +11925,7 @@ class goodcopbadcop extends Table
 								}
 								else
 								{ // game does NOT end
-										$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+										$this->setStateAfterTurnAction($playerWhoseTurnItIs, false);
 								}
 						}
 						else
@@ -11711,7 +12085,7 @@ class goodcopbadcop extends Table
 				{ // we have clicked on this Equipment to discard it
 						$this->discardEquipmentCard($equipmentIdClicked);
 
-						$this->setStateAfterTurnAction($activePlayerId); // see which state we go into after completing this turn action
+						$this->setStateAfterTurnAction($activePlayerId, false); // see which state we go into after completing this turn action
 				}
 				elseif($stateName == "discardOutOfTurn")
 				{ // we are discarding potentially out of turn
@@ -11821,16 +12195,21 @@ class goodcopbadcop extends Table
 				self::checkAction( 'clickPassOnOptionButton' ); // make sure we can take this action from this state
 
 				$currentPlayerId = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
+				$fingerprintKitEquipmentId = $this->getEquipmentIdFromCollectorNumber(20);
+				$collectorNumber = $this->getCollectorNumberFromId($fingerprintKitEquipmentId);
+				$equipmentCardOwner = $this->getDiscardedByOfCardId($fingerprintKitEquipmentId);
 
-				$equipmentCardId = $this->getFingerprintKitCardId();
-				$collectorNumber = $this->getCollectorNumberFromId($equipmentCardId);
-				$equipmentCardOwner = $this->getDiscardedByOfCardId($equipmentCardId);
+				if($this->isEquipmentActive($fingerprintKitEquipmentId))
+				{ // fingerprint kit was used and the owner of it has not yet chosen whether they will reveal to keep it
+
+						$this->discardActivePlayerEquipmentCard($fingerprintKitEquipmentId); // discard it since they have now passed
+				}
+
 //throw new feException( "equipmentCardId:$equipmentCardId" );
 				//throw new feException( "equipmentowner:$equipmentCardOwner" );
 
-				$stateName = $this->getEquipmentPlayedInState($equipmentCardId);
-
-				$this->goToStateAfterEquipmentPlay($equipmentCardId, $stateName);
+				$stateName = $this->getEquipmentPlayedInState($fingerprintKitEquipmentId);
+				$this->goToStateAfterEquipmentPlay($fingerprintKitEquipmentId, $stateName, false);
 		}
 
 		// The active player is asking to end their turn.
@@ -11857,7 +12236,7 @@ class goodcopbadcop extends Table
 				) );
 
 				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-				$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+				$this->setStateAfterTurnAction($playerWhoseTurnItIs, false);
 
 				//if($this->getGameStateValue('ZOMBIES_EXPANSION') == 2 && $this->getGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN") == 0 && $this->isInfectorHidden())
 				//{ // we are using the zombies expansion and the Infector is hidden
@@ -11891,6 +12270,7 @@ class goodcopbadcop extends Table
 					 $stateName == "askAimOutOfTurn" ||
 					 $stateName == "discardOutOfTurn" ||
 					 $stateName == "chooseIntegrityCards" ||
+					 $stateName == "chooseIntegrityCardFromPlayer" ||
 					 $stateName == "choosePlayer" ||
 					 $stateName == "chooseActiveOrHandEquipmentCard" ||
 					 $stateName == "chooseAnotherPlayer" ||
@@ -12034,7 +12414,7 @@ class goodcopbadcop extends Table
 						}
 						$equipmentId = $this->getEquipmentIdFromCollectorNumber(68);
 						$this->discardActivePlayerEquipmentCard($equipmentId); // discard the alarm clock now that it is resolved
-						$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+						$this->setStateAfterTurnAction($playerWhoseTurnItIs, false);
 				}
 				elseif($this->isPlayerHoldingGrenade($playerWhoseTurnItIs))
 				{ // this player is holding a Grenade
@@ -12064,7 +12444,7 @@ class goodcopbadcop extends Table
 								else
 								{ // game does NOT end
 										$this->discardActivePlayerEquipmentCard($grenadeId); // discard the card in front of them
-										$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+										$this->setStateAfterTurnAction($playerWhoseTurnItIs, false);
 								}
 						}
 						else
@@ -12214,8 +12594,14 @@ class goodcopbadcop extends Table
 
 		function argGetPossibleIntegrityCardTargets()
 		{
+				$surveillanceCameraEquipmentTarget8 = $this->getSurveillanceCameraValidTarget(); // get the value of equipment_target_8 for Surveillance Camera because that is who you get to investigate for free
+				$surveillanceCameraTargetName = $this->getPlayerNameFromPlayerId($surveillanceCameraEquipmentTarget8);
+
+				// BGA Note: you can use ${otherplayer} to refer to some other player if you want this to be shown in player's color, but you must provide otherplayer_id as argument (along with otherplayer) to specify this player's id in this case or game won't load.
 				return array(
-						'possibleIntegrityCardTargets' => self::getPossibleIntegrityCardTargets()
+						'possibleIntegrityCardTargets' => self::getPossibleIntegrityCardTargets(),
+						'otherplayer_id' => $surveillanceCameraEquipmentTarget8,
+						'otherplayer' => $surveillanceCameraTargetName
 				);
 		}
 
@@ -12272,8 +12658,6 @@ class goodcopbadcop extends Table
 						) );
 				}
 
-				$this->setGameStateValue("ROLLED_INFECTION_DIE_THIS_TURN", 0); // reset whether we rolled the infection die this turn
-
 				//throw new feException( "currentPlayer:$playerWhoseTurnItWas" );
 				// set the current active player to the one whose turn it should be right now
 				if(!$this->weAreInActivePlayerState())
@@ -12281,14 +12665,7 @@ class goodcopbadcop extends Table
 					$this->gamestate->changeActivePlayer( $playerWhoseTurnItWas ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
 				}
 
-				$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
-				foreach($players as $player)
-				{
-						$playerId = $player['player_id'];
-						$this->setInfectTarget($playerId, 1, 0); // set the saved infection target to 0 in case the Infect action was used
-						$this->setInfectTarget($playerId, 2, 0); // set the saved infection target to 0 in case the Infect action was used
-						$this->setDoneSelectingPlayer($playerId, 0); // set whether we are done selecting our infection targets
-				}
+				$this->resetSurveillanceCameraInvestigationState(); // reset the state of Surveillance Camera (it doesn't really matter if someone has it active or not)
 
 				$guns = $this->getAllGuns(); // get the guns that are currently shooting (should just be 1)
 				foreach( $guns as $gun )
@@ -12461,6 +12838,10 @@ class goodcopbadcop extends Table
 				$collectorNumber = $this->getCollectorNumberFromId($equipmentCardIdBeingPlayed);
 				$integrityCardTargetType = $this->getEquipmentCardTargetType($collectorNumber);
 				$equipmentCardOwner = $this->getEquipmentCardOwner($equipmentCardIdBeingPlayed);
+				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+
+				//if($integrityCardTargetType != "allHiddenOfGunHolder")
+					//throw new feException( "integrityCardTargetType:$integrityCardTargetType" );
 
 				switch($integrityCardTargetType)
 				{
@@ -12506,6 +12887,12 @@ class goodcopbadcop extends Table
 																									WHERE ic.card_type_arg=0" );
 						break;
 
+						case 'allHiddenCurrentTurnPlayer': // only hidden cards of current turn player
+						$targetQuery = self::getObjectListFromDB( "SELECT *
+																									FROM integrityCards
+																									WHERE card_type_arg=0 AND card_location=$playerWhoseTurnItIs" );
+						break;
+
 						default: // no integrity cards are valid targets
 							return $targetList;
 						break;
@@ -12535,6 +12922,9 @@ class goodcopbadcop extends Table
 
 						case 7: // Metal Detector
 							return 'allHiddenOfGunHolder';
+
+						case 13: // Surveillance Camera
+							return 'allHiddenCurrentTurnPlayer';
 
 						case 15: // Truth Serum
 							return 'allHidden';
@@ -12627,9 +13017,9 @@ class goodcopbadcop extends Table
 //throw new feException( "playerInvestigated:$playerInvestigated positionOfCardInvestigated:$positionOfCardInvestigated" );
 				$cardId = $this->getCardIdFromPlayerAndPosition($playerInvestigated, $positionOfCardInvestigated);
 
-				$this->investigateCard($cardId, $playerWhoseTurnItIs, false); // investigate this card and notify players
-
-				$this->setStateAfterTurnAction($playerWhoseTurnItIs); // see which state we go into after completing this turn action
+				$reciprocateInvestigation = $this->investigateCard($cardId, $playerWhoseTurnItIs, false); // investigate this card and notify players
+//throw new feException( "reciprocateInvestigation4:$reciprocateInvestigation");
+				$this->setStateAfterTurnAction($playerWhoseTurnItIs, $reciprocateInvestigation); // see which state we go into after completing this turn action
 
 		}
 
@@ -12663,7 +13053,7 @@ class goodcopbadcop extends Table
 				}
 
 
-				$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+				$this->setStateAfterTurnAction($playerWhoseTurnItIs, false);
 		}
 
 
@@ -12679,130 +13069,30 @@ class goodcopbadcop extends Table
 				$gun = $this->pickUpGun($playerWhoseTurnItIs, $this->getStateName());
 
 //throw new feException( "playerWhoseTurnItIs:$playerWhoseTurnItIs" );
-				$this->setStateAfterTurnAction($playerWhoseTurnItIs);
+				$this->setStateAfterTurnAction($playerWhoseTurnItIs, false);
+		}
+
+		function determineActivePlayerBeforeTurnAction()
+		{
+				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+				$this->gamestate->changeActivePlayer($playerWhoseTurnItIs); // added 2023/06/04 so free investigate actions work when an equipment investigate card is used on a surveillance camera holder during a shoot action
+				$this->setStateBeforeTurnAction($playerWhoseTurnItIs);
 		}
 
 		function determineActivePlayerAfterTurnAction()
 		{
-				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-				$this->setStateAfterTurnAction($playerWhoseTurnItIs);
-		}
+				$activePlayerShouldBe = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 
-		function executeActionInfect()
-		{
-				$playerInfecting = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-				$playerNameInfecting = $this->getPlayerNameFromPlayerId($playerInfecting); // get name of player who is infecting
+				$fingerprintKitEquipmentId = $this->getEquipmentIdFromCollectorNumber(20);
+				if($this->isEquipmentActive($fingerprintKitEquipmentId))
+				{ // someone has used Fingerprint Kit but not yet decided whether they will reveal a card to bring it back yet
 
-				$cardIdTarget1 = $this->getInfectTarget($playerInfecting, 1); // get the first card we targeted
-				if($cardIdTarget1 != 0)
-				{ // at least 1 card was targeted for infection
-						$integrityCardOwner1 = $this->getIntegrityCardOwner($cardIdTarget1);
-						$playerNameTarget1 = $this->getPlayerNameFromPlayerId($integrityCardOwner1);
-						$cardPosition1 = $this->getIntegrityCardPosition($cardIdTarget1);
-
-						self::notifyAllPlayers( 'infectActionExecuted', clienttranslate( '${player_name} is taking the Infect action targeting ${player_name_2}.' ), array(
-								 'player_name' => $playerNameInfecting,
-								 'player_name_2' => $playerNameTarget1
-						) );
-
+						$activePlayerShouldBe = $this->getEquipmentCardOwner($fingerprintKitEquipmentId); // we need the player owning fingerprint kit to be active so they can decide if they want to reveal to bring it back
 				}
 
-				$cardIdTarget2 = $this->getInfectTarget($playerInfecting, 2); // get the second card we targeted
-				if($cardIdTarget2 != 0)
-				{ // a second card was also targeted for infection
-						$integrityCardOwner2 = $this->getIntegrityCardOwner($cardIdTarget2);
-						$playerNameTarget2 = $this->getPlayerNameFromPlayerId($integrityCardOwner2);
-						$cardPosition2 = $this->getIntegrityCardPosition($cardIdTarget2);
+				$this->gamestate->changeActivePlayer($activePlayerShouldBe); // added 2023/06/04 so free investigate actions work when an equipment investigate card is used on a surveillance camera holder during a shoot action
 
-						self::notifyAllPlayers( 'infectActionExecuted', clienttranslate( '${player_name} is taking the Infect action targeting ${player_name_2}.' ), array(
-								 'player_name' => $playerNameInfecting,
-								 'player_name_2' => $playerNameTarget2
-						) );
-				}
-
-
-
-				$this->setStateAfterTurnAction($playerInfecting);
-		}
-
-		function executeActionBite()
-		{
-			// if non-wounded leader
-			//     they are wounded
-			// if wounded leader
-			//     game over
-			// if non-leader
-			//     they become a zombie
-
-
-				$initialStateName = $this->getStateName();
-				$diceRolled = $this->getZombieDiceRolled();
-				$playerBiting = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-				$armId = $this->getGunIdHeldByPlayer($playerBiting); // get the ID of the arms
-				//throw new feException( "armId:$armId" );
-				$playerBeingBitten = $this->getPlayerIdOfGunTarget($armId); // the player targeted by arms
-				$isTargetALeader = $this->isPlayerALeader($playerBeingBitten); // see if the player turning into a zombie was a LEADER
-				//throw new feException( "playerBeingBitten:$playerBeingBitten" );
-
-				$zombieFaceRolled = false;
-				$biterReaimsRolled = false;
-				$numberOfInfectionTokensAdded = 0;
-				foreach( $diceRolled as $die )
-				{
-						$dieId = $die['die_id']; // internal id
-						$dieValue = $die['die_value']; // the face rolled
-
-						switch($dieValue)
-						{
-								case 6: // turn into a zombie
-										$zombieFaceRolled = true;
-
-								break;
-
-								case 7: // biter re-aims arms
-								case 8: // biter re-aims arms
-										$biterReaimsRolled = true;
-								break;
-
-								case 9: // blank
-								case 10: // blank
-										// do nothing
-								break;
-
-								case 11: // add extra infection token
-								break;
-						}
-				}
-
-				// ELIMINATE A NON-ZOMBIE IF THEY WERE BITTEN
-//				if($zombieFaceRolled && !$isTargetALeader)
-				if($zombieFaceRolled)
-				{ // we are zombifying a NON-leader
-
-						$this->setEliminatedBy($playerBeingBitten, $playerBiting); // set in the DB the player who eliminated them because it's needed to determine a game winner (only set eliminator to someone else if shot with a gun per Bombers & Traitors rules)
-						$this->eliminatePlayer($playerBeingBitten); // turn into a zombie, notify everyone, reveal all cards, drop guns
-				}
-
-				// SEE WHICH STATE WE END UP IN
-				if($zombieFaceRolled && $isTargetALeader)
-				{ // we are zombifying a LEADER
-						//$this->endGameCleanup('team_win', 'zombie');
-						$this->gamestate->nextState( "endGame" );
-				}
-				elseif($biterReaimsRolled)
-				{ // the biter must re-aim
-					if(!$this->weAreInActivePlayerState())
-					{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
-						$this->gamestate->changeActivePlayer( $playerBiting ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
-					}
-
-					$this->gamestate->nextState( "askAimMustReaim" ); // ask the player to aim their arms
-				}
-				else
-				{ // the game is NOT ending and the zombie does NOT need to reaim
-						$this->setStateAfterTurnAction($playerBiting); // see which state we go into after completing this turn action
-				}
-
+				$this->setStateAfterTurnAction($activePlayerShouldBe, false);
 		}
 
 		// All equipment cards have been resolved in reaction to a SHOOT action so it's time to
@@ -12818,7 +13108,7 @@ class goodcopbadcop extends Table
 						) );
 
 						$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
-						$this->setStateAfterTurnAction($playerWhoseTurnItIs); // see which state we go into after completing this turn action
+						$this->setStateAfterTurnAction($playerWhoseTurnItIs, false); // see which state we go into after completing this turn action
 				}
 
 				foreach( $guns as $gun )
@@ -12862,7 +13152,7 @@ class goodcopbadcop extends Table
 								$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
 								//throw new feException("playerWhoseTurnItIs:$playerWhoseTurnItIs");
 
-								$this->setStateAfterTurnAction($playerWhoseTurnItIs); // see which state we go into after completing this turn action
+								$this->setStateAfterTurnAction($playerWhoseTurnItIs, false); // see which state we go into after completing this turn action
 						}
 				}
 		}
@@ -12966,7 +13256,8 @@ class goodcopbadcop extends Table
 				$collectorNumber = $this->getCollectorNumberFromId($equipmentId);
 
 				$stateName = $this->getEquipmentPlayedInState($equipmentId); // get the state in which this equipment was played (DO THIS BEFORE RESOLVING BECAUSE DISCARDING WILL CLEAR IT)
-				$this->resolveEquipment($equipmentId); // take all the input saved in the database and resolve the equipment card
+				$reciprocateInvestigation = $this->resolveEquipment($equipmentId); // take all the input saved in the database and resolve the equipment card
+				//throw new feException( "reciprocateInvestigation2:$reciprocateInvestigation" );
 				$stateAfterEquipmentResolution = $this->getStateName();
 //throw new feException( "stateAfterEquipmentResolution:$stateAfterEquipmentResolution" );
 				$unaimedGuns = $this->getHeldUnaimedGuns(); // see if we have an unaimed guns held by a player
@@ -12989,7 +13280,23 @@ class goodcopbadcop extends Table
 						$equipmentUserHiddenCards = $this->getHiddenCardsFromPlayer($playerUsingEquipment);
 						//$countPlayers = count($equipmentUserHiddenCards);
 						//throw new feException( "equipmentUserHiddenCards:$countPlayers" );
-						if($collectorNumber == 20 && count($equipmentUserHiddenCards) > 0)
+						if($reciprocateInvestigation)
+						{ // player gets a free investigate from Surveillance Camera
+
+								$surveillanceCameraEquipmentId = $this->getEquipmentIdFromCollectorNumber(13); // get the equipment ID for Surveillance Camera
+								$surveillanceCameraOwnerId = $this->getEquipmentCardOwner($surveillanceCameraEquipmentId);
+								if(!$this->weAreInActivePlayerState())
+								{ // we are in a state where we are allowed to change the active player
+										$this->gamestate->changeActivePlayer($surveillanceCameraOwnerId); // make that player active so they can investigate
+										//$this->gamestate->nextState( "chooseCardToInvestigate" ); // let them investigate
+										$this->gamestate->nextState( "chooseIntegrityCardFromPlayer" ); // let them investigate
+								}
+								else
+								{ // we ARE in an active player state and thus cannot change the active player
+										$this->gamestate->nextState( "determineActivePlayerAfterTurnAction" ); // go to a state where we can safely determine the active player
+								}
+						}
+						elseif($collectorNumber == 20 && count($equipmentUserHiddenCards) > 0)
 						{ // fingerprint kit was just played and the player who played it has at least 1 hidden card
 
 								// send to a special state where they can choose if they want to reveal a card to put it back in their hand
@@ -13040,19 +13347,32 @@ class goodcopbadcop extends Table
 						{ // there are no special situations we need to handle
 		//throw new feException( "stateName:$stateName" );
 
-								$this->goToStateAfterEquipmentPlay($equipmentId, $stateName);
+								$this->goToStateAfterEquipmentPlay($equipmentId, $stateName, $reciprocateInvestigation);
 						}
 				}
 		}
 
-		function goToStateAfterEquipmentPlay($equipmentId, $stateName)
+		function goToStateAfterEquipmentPlay($equipmentId, $stateName, $reciprocateInvestigation)
 		{
+				$surveillanceCameraEquipmentId = $this->getEquipmentIdFromCollectorNumber(13); // get the equipment ID for Surveillance Camera
+				$surveillanceCameraOwnerId = $this->getEquipmentCardOwner($surveillanceCameraEquipmentId);
 
-				if($stateName == "chooseEquipmentToPlayOnYourTurn" || $stateName == "playerTurn")
+				if($reciprocateInvestigation && !$this->weAreInActivePlayerState())
+				{ // we want to allow the player with Surveillance Camera to investigate a card
+
+
+
+						// NOTE: we make sure we are not in an active player state in the IF statement above
+						$this->gamestate->changeActivePlayer($surveillanceCameraOwnerId); // make that player active so they can investigate
+						$this->gamestate->nextState( "chooseCardToInvestigate" ); // let them investigate
+
+						//throw new feException( "surveillance camera played" );
+				}
+				elseif($stateName == "playerTurn" || $stateName == "chooseEquipmentToPlayOnYourTurn")
 				{ // this was NOT played in reaction to something
-//throw new feException( "tester5" );
-						// do NOT set players to multiactive because we are just going back to their turn
-						$this->gamestate->nextState( "playerTurn" ); // go back to player action state
+
+						// we need to change the active player and then go to that player's turn action
+						$this->gamestate->nextState( "playerTurn" );
 				}
 				elseif($stateName == "askEndTurnReaction" || $stateName == "chooseEquipmentToPlayReactEndOfTurn")
 				{
@@ -13068,6 +13388,11 @@ class goodcopbadcop extends Table
 				elseif($stateName == "askStartGameReaction" || $stateName == "chooseEquipmentToPlayStartGame")
 				{ // the equipment was played before the game began
 						$this->setEquipmentHoldersToActive("askStartGameReaction"); // set anyone holding equipment to active
+				}
+				elseif($stateName == "executeActionInvestigate")
+				{ // likely came from Surveillance Camera free investigate where we need to update active player and then go to end turn reaction state
+
+						$this->gamestate->nextState( "determineActivePlayerAfterTurnAction" );
 				}
 				elseif($stateName == "chooseEquipmentToPlayReactInvestigate")
 				{
@@ -13095,8 +13420,13 @@ class goodcopbadcop extends Table
 								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
 									$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // set the active player (this cannot be done in an activeplayer game state) to the one whose turn it was
 								}
+								else
+								{
+									$this->gamestate->nextState( "determineActivePlayerAfterTurnAction" );
+								}
 	//throw new feException( "yes you can re-choose action $playerWhoseTurnItIs" );
 								$this->gamestate->nextState( "playerTurn" ); // go back to player action state
+
 						}
 						else
 						{ // this equipment affects the shoot but it doesn't let you choose a new action (like Riot Shield, Restraining Order, Mobile Detonator)

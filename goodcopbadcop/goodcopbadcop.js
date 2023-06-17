@@ -52,13 +52,6 @@ function (dojo, declare) {
 
             this.EXTRA_DESCRIPTION_TEXT = ''; // this is only set when playing equipment to give specific direction to the player
 
-            this.honestTranslated = _("HONEST");
-            this.crookedTranslated = _("CROOKED");
-            this.agentTranslated = _("AGENT");
-            this.kingpinTranslated = _("KINGPIN");
-            this.infectorTranslated = _("INFECTOR");
-            this.skipEquipmentTranslated = _("Skip Equipment Reactions");
-            this.skipEquipmentTranslated = _("Equipment Reference");
         },
 
         /*
@@ -373,6 +366,15 @@ function (dojo, declare) {
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
+
+            // these aren't used but they are here to make sure we have translated versions of these strings to use in the TPL and elsewhere
+            this.honestTranslated = _("HONEST");
+            this.crookedTranslated = _("CROOKED");
+            this.agentTranslated = _("AGENT");
+            this.kingpinTranslated = _("KINGPIN");
+            this.infectorTranslated = _("INFECTOR");
+            this.skipEquipmentTranslated = _("Skip Equipment Reactions");
+            this.equipmentReferenceTranslated = _("Equipment Reference");
         },
 
 
@@ -443,6 +445,7 @@ function (dojo, declare) {
                 }
 
                 break;
+                case 'chooseIntegrityCardFromPlayer':
                 case 'chooseIntegrityCards':
                 if( this.isCurrentPlayerActive() )
                 {
@@ -511,7 +514,7 @@ function (dojo, declare) {
         //
         onUpdateActionButtons: function( stateName, args )
         {
-            console.log("onUpdateActionButtons state " + stateName);
+            //console.log("onUpdateActionButtons state " + stateName);
 
 
             if( this.isCurrentPlayerActive() )
@@ -611,7 +614,9 @@ function (dojo, declare) {
                     case 'chooseCardToInvestigate':
                         this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
                     break;
-
+                    case 'chooseIntegrityCardFromPlayer':
+                        this.addActionButton( 'button_cancel', _('Pass'), 'onClickCancelButton', null, false, 'red' );
+                    break;
                     case 'chooseCardToRevealForArm':
                     case 'chooseCardToRevealForEquip':
                         this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );

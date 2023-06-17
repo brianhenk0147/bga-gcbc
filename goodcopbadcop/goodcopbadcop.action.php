@@ -152,7 +152,7 @@ class action_goodcopbadcop extends APP_GameAction
         // Retrieve arguments
         $playerPosition = self::getArg( "letterAim", AT_alphanum, true ); // a, b, c, etc.
         $playerId = self::getArg( "player", AT_alphanum, true ); // player ID
-
+//throw new feException( "clickedPlayer action 2" );
         $this->game->clickedPlayer( $playerPosition, $playerId );
 
         self::ajaxResponse( );
