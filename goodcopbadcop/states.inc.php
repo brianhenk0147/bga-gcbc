@@ -121,9 +121,10 @@ $machinestates = array(
 
     8 => array(
     		"name" => "askShootReaction",
-    		"description" => clienttranslate('Other players are deciding if they will use Equipment as a reaction to the Shoot or Bite action.'),
-    		"descriptionmyturn" => clienttranslate('${you} may use Equipment as a reaction to the Shoot or Bite action.'),
+    		"description" => clienttranslate('${player_name} is attempting to ${action} ${otherplayer}.'),
+    		"descriptionmyturn" => clienttranslate('${player_name} is attempting to ${action} ${otherplayer}.'),
     		"type" => "multipleactiveplayer",
+        'args' => 'argGetShootBiteTargets',
     		"possibleactions" => array( "clickUseEquipmentButton", "clickPassOnUseEquipmentButton", "clickEquipmentCard" ),
     		"transitions" => array( "useEquipment" => 18, "allPassedOnReactions" => 9, "askShootReaction" => 8 )
     ),

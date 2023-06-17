@@ -12605,6 +12605,55 @@ class goodcopbadcop extends Table
 				);
 		}
 
+		function argGetShootBiteTargets()
+		{
+				// set some default values for what will be returned
+				$actionName = "shoot or bite";
+				$shootingPlayerId = $this->getGameStateValue("CURRENT_PLAYER");
+				$shootingPlayerName = "A player";
+				$targetPlayerId = $this->getGameStateValue("CURRENT_PLAYER");
+				$targetPlayerName = "another player";
+
+				$guns = $this->getGunsShooting(); // get all the guns and arms shooting/biting (should just be 1)
+				if(is_null($guns) || count($guns) < 1)
+				{ // something happened where the player who was shooting no longer has a gun
+						$shootingPlayerId = $this->getGameStateValue("CURRENT_PLAYER");
+						$shootingPlayerName = "A player";
+						$targetPlayerId = $this->getGameStateValue("CURRENT_PLAYER");
+						$targetPlayerName = "another player";
+				}
+				else
+				{ // there is at least 1 gun/arm shooting/biting
+
+						foreach( $guns as $gun )
+						{ // go through each gun or arm that is currently shooting/biting (should just be 1)
+								$targetPlayerId = $gun['gun_aimed_at']; // get the PLAYER ID of the target of this gun/arms
+								$targetPlayerName = $this->getPlayerNameFromPlayerId($targetPlayerId);
+								$gunId = $gun['gun_id'];
+								$gunType = $gun['gun_type']; // gun or arms
+								$shootingPlayerId = $gun['gun_held_by']; // get the player shooting
+								$shootingPlayerName = $this->getPlayerNameFromPlayerId($shootingPlayerId);
+		//throw new feException( "gunType:$gunType" );
+
+								if($gunType == 'gun')
+								{ // this is a gun shooting
+										$actionName = "shoot";
+								}
+								else
+								{ // this is a zombie biting
+										$actionName = "bite";
+								}
+						}
+
+				}
+				return array(
+						'action' => $actionName,
+						'otherplayer_id' => $targetPlayerId,
+						'otherplayer' => $targetPlayerName,
+						'player_name' => $shootingPlayerName
+				);
+		}
+
 		function argGetLeaderButtonTargets()
 		{
 
