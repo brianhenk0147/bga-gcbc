@@ -145,8 +145,8 @@ $gameinfos = array(
 'tags' => array( 2,11,25,200,205,217 ),
 
 'custom_buy_button' => array(
-   'url' => 'https://t2m.io/j3Bnv1o1',
-   'label' => 'Gamefound'
+   'url' => 'https://t2m.io/Hao1jrCh',
+   'label' => 'Amazon'
 ),
 
 
