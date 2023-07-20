@@ -7836,6 +7836,7 @@ class goodcopbadcop extends Table
 
 						case 18: // classified orders
 								$target1 = $this->getPlayerTarget1($equipmentId);
+
 								if(is_null($target1) || $target1 === '')
 								{ // the owner of classified orders needs to target a player who will change the aim
 
@@ -11051,10 +11052,11 @@ class goodcopbadcop extends Table
 
 								$this->makePlayerEquipmentActive($equipmentId, $target2); // activate this card
 
-								if($this->countPlayersWhoCanUseEquipment() > 0)
-								{ // if there are any players who can use equipment (it will double-shoot in cases where no one has active equipment)
-										$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active so they can react after this equipment was used
-								}
+								// COMMENTING THE FOLLOWING OUT BECAUSE IT BREAKS WHEN HOLSTER IS USED AND THEN THIS IS USED... WE SHOULD NOT BE CHANGING STATE IN THIS METHOD ANYWAY
+								//if($this->countPlayersWhoCanUseEquipment() > 0)
+								//{ // if there are any players who can use equipment (it will double-shoot in cases where no one has active equipment)
+								//		$this->setEquipmentHoldersToActive("endTurnReaction"); // set anyone holding equipment to active so they can react after this equipment was used
+								//}
 
 
 						break;
