@@ -238,7 +238,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetGunTargets',
     		"possibleactions" => array( "clickPlayer", "clickEndTurnButton" ),
-    		"transitions" => array( "aimAtPlayer" => 28, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askAimMustReaim" => 26, "askAim" => 27, "endGame" => 99, "allPassedOnReactions" => 30, "askStartGameReaction" => 2, "chooseAnotherPlayer" => 43, "discardEquipment" => 12, "afterAimedOutOfTurn" => 34, "determineActivePlayerAfterTurnAction"=> 63, "playerTurn" => 60 )
+    		"transitions" => array( "aimAtPlayer" => 28, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askAimMustReaim" => 26, "askAim" => 27, "endGame" => 99, "allPassedOnReactions" => 30, "askStartGameReaction" => 2, "chooseAnotherPlayer" => 43, "chooseAnotherPlayerNoCancel" => 48, "discardEquipment" => 12, "afterAimedOutOfTurn" => 34, "determineActivePlayerAfterTurnAction"=> 63, "playerTurn" => 60 )
     ),
 
     28 => array(
@@ -360,7 +360,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetPlayerBoardEquipment',
     		"possibleactions" => array( "clickEquipmentCardToTarget", "clickEquipmentCard", "clickCancelButton" ),
-    		"transitions" => array( "executeEquipment" => 31, "chooseAnotherPlayer" => 43, "playerAction" => 60, "playerTurn" => 60, "chooseEquipmentToPlayReactEndOfTurn" => 16, "chooseEquipmentToPlayReactInvestigate" => 17, "chooseEquipmentToPlayReactShoot" => 18, "chooseEquipmentToPlayOnYourTurn" => 15, "chooseEquipmentToPlayStartGame" => 61 )
+    		"transitions" => array( "executeEquipment" => 31, "chooseAnotherPlayer" => 43, "chooseAnotherPlayerNoCancel" => 48, "playerAction" => 60, "playerTurn" => 60, "chooseEquipmentToPlayReactEndOfTurn" => 16, "chooseEquipmentToPlayReactInvestigate" => 17, "chooseEquipmentToPlayReactShoot" => 18, "chooseEquipmentToPlayOnYourTurn" => 15, "chooseEquipmentToPlayStartGame" => 61 )
     ),
 
     43 => array(
@@ -408,6 +408,16 @@ $machinestates = array(
         "action" => "executeActionInfect",
         "updateGameProgression" => false,
         "transitions" => array( "askAim" => 27, "endTurnReaction" => 29, "allPassedOnReactions" => 30 )
+    ),
+
+    48 => array(
+    		"name" => "chooseAnotherPlayerNoCancel",
+    		"description" => clienttranslate('${actplayer} is choosing an Equipment target.'),
+    		"descriptionmyturn" => clienttranslate('${you} must select another player to target with the Equipment.'),
+    		"type" => "activeplayer",
+        'args' => 'argGetPlayerButtonTargets',
+    		"possibleactions" => array( "clickPlayer", "clickCancelButton" ),
+    		"transitions" => array( "executeEquipment" => 31, "chooseActiveOrHandEquipmentCard" => 42, "chooseEquipmentToPlayReactEndOfTurn" => 16, "endTurnReaction" => 29, "chooseEquipmentToPlayStartGame" => 61, "chooseEquipmentToPlayReactShoot" => 18, "chooseEquipmentToPlayOnYourTurn" => 15, "chooseEquipmentTargetOutOfTurn" => 32, "playerTurn" => 60 )
     ),
 
     50 => array(

@@ -7485,7 +7485,7 @@ class goodcopbadcop extends Table
 							self::notifyAllPlayers( "grenadeToss2Pre", clienttranslate( '${player_name} must toss the <b>Grenade</b>. It will explode at the end of that player\'s next turn.' ), array(
 										'player_name' => $nameOfCurrentPlayer
 							) );
-							$this->gamestate->nextState( "choosePlayer" ); // i need to toss it to someone else
+							$this->gamestate->nextState( "chooseAnotherPlayerNoCancel" ); // i need to toss it to someone else
 
 							$this->setEquipmentCardToPlaying($grenadeId); // make grenade playing
 					}
@@ -9582,6 +9582,7 @@ class goodcopbadcop extends Table
 				$eliminatedLeader = $this->getEliminatedLeader();
 				if($eliminatedLeader)
 				{ // a leader is eliminated
+//throw new feException( "leader eliminated" );
 
 						$doesTraitorExist = $this->doesTraitorExist(); // see if there is a living traitor in the game
 
@@ -11237,7 +11238,7 @@ class goodcopbadcop extends Table
 				if($stateName == "chooseIntegrityCards" ||
 					 $stateName == "choosePlayer" ||
 					 $stateName == "chooseAnotherPlayer" ||
-					 $stateName == "chooseActiveOrHandEquipmentCard" )
+					 $stateName == "chooseActiveOrHandEquipmentCard")
 				{ // we're using an equipment card that requires choosing integrity cards
 						$previousState = $this->getEquipmentPlayedInState($equipmentId);	// go to the saved state for this equipment card
 
@@ -11808,7 +11809,7 @@ class goodcopbadcop extends Table
 															self::notifyAllPlayers( "grenadeToss2Pre", clienttranslate( '${player_name} must toss the <b>Grenade</b>. It will explode at the end of that player\'s next turn.' ), array(
 																		'player_name' => $nameOfCurrentPlayer
 															) );
-															$this->gamestate->nextState( "chooseAnotherPlayer" ); // i need to toss it to someone else
+															$this->gamestate->nextState( "chooseAnotherPlayerNoCancel" ); // i need to toss it to someone else
 															$this->setEquipmentCardToPlaying($grenadeId); // make grenade playing
 													}
 													else
@@ -11852,7 +11853,7 @@ class goodcopbadcop extends Table
 
 
 				}
-				elseif($stateName == "choosePlayer" || $stateName == "chooseAnotherPlayer" || $stateName == "choosePlayerNoCancel")
+				elseif($stateName == "choosePlayer" || $stateName == "chooseAnotherPlayer" || $stateName == "choosePlayerNoCancel" || $stateName == "chooseAnotherPlayerNoCancel")
 				{ // we chose a player to target with equipment
 //throw new feException( "clickedPlayer later");
 
@@ -12276,7 +12277,8 @@ class goodcopbadcop extends Table
 					 $stateName == "choosePlayer" ||
 					 $stateName == "chooseActiveOrHandEquipmentCard" ||
 					 $stateName == "chooseAnotherPlayer" ||
-					 $stateName == "choosePlayerNoCancel")
+					 $stateName == "choosePlayerNoCancel" ||
+					 $stateName == "chooseAnotherPlayerNoCancel")
 				{ // activeplayer state
 						return true;
 				}
@@ -12455,7 +12457,7 @@ class goodcopbadcop extends Table
 								self::notifyAllPlayers( "grenadeToss2Pre", clienttranslate( '${player_name} must toss the <b>Grenade</b>. It will explode at the end of that player\'s next turn.' ), array(
 											'player_name' => $nameOfCurrentPlayer
 								) );
-								$this->gamestate->nextState( "choosePlayer" ); // i need to toss it to someone else
+								$this->gamestate->nextState( "chooseAnotherPlayerNoCancel" ); // i need to toss it to someone else
 								$this->setEquipmentCardToPlaying($grenadeId); // make grenade playing
 						}
 				}
@@ -13665,6 +13667,10 @@ class goodcopbadcop extends Table
 
 								case "chooseAnotherPlayer":
 										$this->gamestate->nextState( "executeEquipment" );
+								break;
+
+								case "chooseAnotherPlayerNoCancel":
+										$this->gamestate->nextState( "chooseAnotherPlayerNoCancel" );
 								break;
 
                 default:

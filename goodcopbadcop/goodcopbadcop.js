@@ -640,6 +640,7 @@ function (dojo, declare) {
                     case 'choosePlayer':
                         this.addActionButton( 'button_cancel', _('Cancel'), 'onClickCancelButton', null, false, 'red' );
                     case 'choosePlayerNoCancel':
+                    case 'chooseAnotherPlayerNoCancel':
                     case 'askAimOutOfTurn':
                     case 'askAim':
                     case 'askAimMustReaim':
