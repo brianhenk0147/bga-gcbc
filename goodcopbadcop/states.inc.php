@@ -97,7 +97,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeActionInvestigate",
         "updateGameProgression" => false,
-        "transitions" => array( "askAim" => 27, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "discardEquipment" => 12, "askDiscardOutOfTurn" => 35, "choosePlayer" => 41, "chooseCardToInvestigate" => 3, "determineActivePlayerAfterTurnAction"=> 63, "chooseIntegrityCardFromPlayer" => 39 )
+        "transitions" => array( "askAim" => 27, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "discardEquipment" => 12, "askDiscardOutOfTurn" => 35, "choosePlayer" => 41, "chooseCardToInvestigate" => 3, "determineActivePlayerAfterTurnAction"=> 63, "chooseIntegrityCardFromPlayer" => 39, "chooseAnotherPlayerNoCancel" => 48 )
     ),
 
     6 => array(
@@ -135,7 +135,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeActionShoot",
         "updateGameProgression" => false,
-        "transitions" => array( "endTurnReaction" => 29, "allPassedOnReactions" => 30, "endGame" => 99, "rollInfectionDie" => 50, "askAim" => 27, "askAimMustReaim" => 26, "discardEquipment" => 12, "askBiteReaction" => 51, "askDiscardOutOfTurn" => 35, "choosePlayer" => 41 )
+        "transitions" => array( "endTurnReaction" => 29, "allPassedOnReactions" => 30, "endGame" => 99, "rollInfectionDie" => 50, "askAim" => 27, "askAimMustReaim" => 26, "discardEquipment" => 12, "askBiteReaction" => 51, "askDiscardOutOfTurn" => 35, "choosePlayer" => 41, "chooseAnotherPlayerNoCancel" => 48 )
     ),
 
     10 => array(
@@ -154,7 +154,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeActionEquip",
         "updateGameProgression" => false,
-        "transitions" => array( "askAim" => 27, "discardEquipment" => 12, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askDiscardOutOfTurn" => 35, "choosePlayer" => 41, "endGame" => 99 )
+        "transitions" => array( "askAim" => 27, "discardEquipment" => 12, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askDiscardOutOfTurn" => 35, "choosePlayer" => 41, "endGame" => 99, "chooseAnotherPlayerNoCancel" => 48 )
     ),
 
     12 => array(
@@ -164,7 +164,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetPlayerTurnDiscardToDiscardButtonList',
     		"possibleactions" => array( "clickEquipmentCard" ),
-    		"transitions" => array( "askAim" => 27, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askDiscardOutOfTurn" => 35, "askStartGameReaction" => 2, "choosePlayer" => 41, "determineActivePlayerAfterTurnAction"=> 63, "endGame" => 99 )
+    		"transitions" => array( "askAim" => 27, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askDiscardOutOfTurn" => 35, "askStartGameReaction" => 2, "choosePlayer" => 41, "determineActivePlayerAfterTurnAction"=> 63, "endGame" => 99, "chooseAnotherPlayerNoCancel" => 48 )
     ),
 
     13 => array(
@@ -191,7 +191,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('${you} must select which Equipment in your hand you will play.'),
         "type" => "activeplayer",
         "possibleactions" => array( "clickEquipmentCard", "clickCancelButton" ),
-        "transitions" => array( "cancelEquipmentUse" => 29, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "chooseActiveOrHandEquipmentCard" => 42, "executeEquipment" => 31, "chooseLeader" => 64 )
+        "transitions" => array( "cancelEquipmentUse" => 29, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "chooseActiveOrHandEquipmentCard" => 42, "executeEquipment" => 31, "chooseLeader" => 64, "chooseEquipmentTargetOutOfTurn" => 32 )
     ),
 
     17 => array(
@@ -256,7 +256,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('${you} may use Equipment at the end of this player turn.'),
         "type" => "multipleactiveplayer",
         "possibleactions" => array( "clickPassOnUseEquipmentButton", "clickUseEquipmentButton", "clickEquipmentCard" ),
-        "transitions" => array( "allPassedOnReactions" => 30, "endTurnReaction" => 29, "useEquipment" => 16, "askShootReaction" => 8 )
+        "transitions" => array( "allPassedOnReactions" => 30, "endTurnReaction" => 29, "useEquipment" => 16, "askShootReaction" => 8, "askDiscardOutOfTurn" => 35 )
     ),
 
     30 => array(
@@ -320,7 +320,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "afterDiscardedOutOfTurn",
         "updateGameProgression" => false,
-        "transitions" => array( "playerTurn" => 60, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askStartGameReaction" => 2, "discardEquipment" => 12, "askAim" => 27, "choosePlayer" => 41 )
+        "transitions" => array( "playerTurn" => 60, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askStartGameReaction" => 2, "discardEquipment" => 12, "askAim" => 27, "choosePlayer" => 41, "chooseAnotherPlayerNoCancel" => 48 )
     ),
 
     39 => array(
@@ -454,7 +454,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetPlayerTurnButtonList',
     		"possibleactions" => array( "clickInvestigateButton", "clickArmButton", "clickShootButton", "clickEquipButton", "clickEquipmentCard", "clickSkipButton", "clickUseEquipmentButton", "clickInfectButton" ),
-    		"transitions" => array( "investigateChooseCard" => 3, "armChooseCard" => 6, "askShootReaction" => 8, "equipChooseCard" => 10, "useEquipment" => 15, "executeEquip" => 11, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "executeArm" => 7, "executeEquipment" => 31, "chooseTokenToDiscardForZombieEquip" => 13, "rollInfectionDie" => 50, "askAim" => 27, "discardEquipment" => 12, "askDiscardOutOfTurn" => 35, "chooseCardToInfect1" => 45, "chooseActiveOrHandEquipmentCard" => 42, "playerTurn" => 60, "chooseLeader" => 64, "determineActivePlayerAfterTurnAction"=> 63)
+    		"transitions" => array( "investigateChooseCard" => 3, "armChooseCard" => 6, "askShootReaction" => 8, "equipChooseCard" => 10, "useEquipment" => 15, "executeEquip" => 11, "chooseIntegrityCards" => 40, "choosePlayer" => 41, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "executeArm" => 7, "executeEquipment" => 31, "chooseTokenToDiscardForZombieEquip" => 13, "rollInfectionDie" => 50, "askAim" => 27, "discardEquipment" => 12, "askDiscardOutOfTurn" => 35, "chooseCardToInfect1" => 45, "chooseActiveOrHandEquipmentCard" => 42, "playerTurn" => 60, "chooseLeader" => 64, "determineActivePlayerAfterTurnAction"=> 63, "chooseAnotherPlayerNoCancel" => 48)
     ),
 
     61 => array(

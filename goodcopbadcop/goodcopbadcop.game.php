@@ -12457,6 +12457,12 @@ class goodcopbadcop extends Table
 								self::notifyAllPlayers( "grenadeToss2Pre", clienttranslate( '${player_name} must toss the <b>Grenade</b>. It will explode at the end of that player\'s next turn.' ), array(
 											'player_name' => $nameOfCurrentPlayer
 								) );
+
+								if(!$this->weAreInActivePlayerState())
+								{ // we are NOT in an activeplayer state so we are safe to changeActivePlayer
+									$this->gamestate->changeActivePlayer( $playerWhoseTurnItIs ); // make the player holding the grenade the active player instead of the discarding player so they can choose who to toss it to
+								}
+
 								$this->gamestate->nextState( "chooseAnotherPlayerNoCancel" ); // i need to toss it to someone else
 								$this->setEquipmentCardToPlaying($grenadeId); // make grenade playing
 						}
