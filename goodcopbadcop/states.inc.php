@@ -320,7 +320,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "afterDiscardedOutOfTurn",
         "updateGameProgression" => false,
-        "transitions" => array( "playerTurn" => 60, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askStartGameReaction" => 2, "discardEquipment" => 12, "askAim" => 27, "choosePlayer" => 41, "chooseAnotherPlayerNoCancel" => 48 )
+        "transitions" => array( "playerTurn" => 60, "askInvestigateReaction" => 4, "executeActionInvestigate" => 5, "askShootReaction" => 8, "endTurnReaction" => 29, "allPassedOnReactions" => 30, "rollInfectionDie" => 50, "askStartGameReaction" => 2, "discardEquipment" => 12, "askAim" => 27, "choosePlayer" => 41, "chooseAnotherPlayerNoCancel" => 48, "endGame" => 99 )
     ),
 
     39 => array(
@@ -380,7 +380,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetPlayerButtonTargets',
     		"possibleactions" => array( "clickPlayer" ),
-    		"transitions" => array( "executeEquipment" => 31, "choosePlayer" => 41, "chooseActiveOrHandEquipmentCard" => 42, "playerTurn" => 60, "chooseEquipmentToPlayReactEndOfTurn" => 16, "chooseEquipmentToPlayReactInvestigate" => 17, "chooseEquipmentToPlayReactShoot" => 18, "chooseEquipmentToPlayOnYourTurn" => 15, "chooseEquipmentToPlayReactBite" => 19, "discardEquipment" => 12, "determineActivePlayerAfterTurnAction"=> 63, "chooseEquipmentToPlayStartGame" => 61, "endTurnReaction" => 29, "chooseEquipmentTargetOutOfTurn" => 32, "askAim" => 27 )
+    		"transitions" => array( "executeEquipment" => 31, "choosePlayer" => 41, "chooseActiveOrHandEquipmentCard" => 42, "playerTurn" => 60, "chooseEquipmentToPlayReactEndOfTurn" => 16, "chooseEquipmentToPlayReactInvestigate" => 17, "chooseEquipmentToPlayReactShoot" => 18, "chooseEquipmentToPlayOnYourTurn" => 15, "chooseEquipmentToPlayReactBite" => 19, "discardEquipment" => 12, "determineActivePlayerAfterTurnAction"=> 63, "chooseEquipmentToPlayStartGame" => 61, "endTurnReaction" => 29, "chooseEquipmentTargetOutOfTurn" => 32, "askAim" => 27, "endGame" => 99 )
     ),
 
     45 => array(

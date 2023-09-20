@@ -310,7 +310,7 @@ class goodcopbadcop extends Table
 		{
 				// TABLE STATS
 				self::initStat( 'table', 'turns_number', 0 );
-				self::initStat( 'table', 'winning_team', 0 );
+				self::initStat( 'table', 'winning_team', 0 ); // default to honest winning
 				self::initStat( 'table', 'honest_at_start', 0 );
 				self::initStat( 'table', 'crooked_at_start', 0 );
 				self::initStat( 'table', 'honest_at_end', 0 );
@@ -9673,6 +9673,8 @@ class goodcopbadcop extends Table
 						self::notifyAllPlayers( 'playerWinsGame', '', array(
 																 'winner_player_id' => $agentKingpin
 						) );
+
+						self::setStat( 5, 'winning_team' ); // solo win
 				}
 				else
 				{ // team win
@@ -9681,6 +9683,13 @@ class goodcopbadcop extends Table
 							{ // both the bomber and traitor teams win
 									$winningTeam = 'bomber';
 									$winningTeam2 = 'traitor';
+
+									self::setStat( 6, 'winning_team' ); // both Bomber and Traitor teams win
+							}
+							else
+							{ // it was a win by honest, crooked, bomber, traitor, or zombie
+									$winningTeamAsInt = $this->convertPlayerTeamToInt($winningTeam);
+									self::setStat( $winningTeamAsInt, 'winning_team' );
 							}
 
 							$players = $this->getPlayersDeets(); // get player details, mainly to use for notification purposes
@@ -9704,6 +9713,8 @@ class goodcopbadcop extends Table
 									{ // this player LOST
 
 									}
+
+
 							}
 				}
 		}
@@ -11232,6 +11243,8 @@ class goodcopbadcop extends Table
 		{
 				self::checkAction( 'clickCancelButton' ); // make sure we can take this action from this state
 
+				$playerWhoseTurnItIs = $this->getGameStateValue("CURRENT_PLAYER"); // get the player whose real turn it is now (not necessarily who is active)
+
 				$equipmentId = $this->getEquipmentCardIdInUse();
 
 				$stateName = $this->getStateName(); // get the name of the current state
@@ -11279,7 +11292,7 @@ class goodcopbadcop extends Table
 							if($surveillancePreviousState == "playerTurn" || $surveillancePreviousState == "executeActionInvestigate")
 							{ // player was investigated from a turn action
 								//throw new feException( "reciprocateInvestigation:$reciprocateInvestigation");
-									$this->setStateAfterTurnAction($playerWhoseTurnItIs, $reciprocateInvestigation); //go to end turn reaction
+									$this->setStateAfterTurnAction($playerWhoseTurnItIs, false); //go to end turn reaction
 							}
 							elseif($surveillancePreviousState == "chooseEquipmentToPlayOnYourTurn")
 							{ // player was investigated from an equipment used on a player's turn

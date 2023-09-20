@@ -191,7 +191,9 @@ $stats_type = array(
 			       1 => totranslate("Crooked"),
 			       2 => totranslate("Zombie"),
              3 => totranslate("Bomber"),
-             4 => totranslate("Traitor")
+             4 => totranslate("Traitor"),
+             5 => totranslate("Solo"),
+             6 => totranslate("Bomber and Traitor")
 		    ),
     )
 
