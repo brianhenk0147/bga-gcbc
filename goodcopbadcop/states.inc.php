@@ -256,7 +256,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('${you} may use Equipment at the end of this player turn.'),
         "type" => "multipleactiveplayer",
         "possibleactions" => array( "clickPassOnUseEquipmentButton", "clickUseEquipmentButton", "clickEquipmentCard" ),
-        "transitions" => array( "allPassedOnReactions" => 30, "endTurnReaction" => 29, "useEquipment" => 16, "askShootReaction" => 8, "askDiscardOutOfTurn" => 35 )
+        "transitions" => array( "allPassedOnReactions" => 30, "endTurnReaction" => 29, "useEquipment" => 16, "askShootReaction" => 8, "askDiscardOutOfTurn" => 35, "playerTurn" => 60 )
     ),
 
     30 => array(
@@ -481,7 +481,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "determineActivePlayerAfterTurnAction",
         "updateGameProgression" => false,
-        "transitions" => array( "discardEquipment" => 12, "askDiscardOutOfTurn" => 35, "choosePlayer" => 41, "askAimMustReaim" => 26, "askAim" => 27, "endTurnReaction" => 29, "chooseCardToRevealToReturnEquipmentToHand" => 62 )
+        "transitions" => array( "discardEquipment" => 12, "askDiscardOutOfTurn" => 35, "choosePlayer" => 41, "askAimMustReaim" => 26, "askAim" => 27, "endTurnReaction" => 29, "chooseCardToRevealToReturnEquipmentToHand" => 62, "chooseAnotherPlayerNoCancel" => 48 )
     ),
 
     64 => array(
