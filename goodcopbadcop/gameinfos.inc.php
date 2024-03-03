@@ -107,7 +107,7 @@ $gameinfos = array(
 
 // When doing a rematch, the player order is swapped using a "rotation" so the starting player is not the same
 // If you want to disable this, set this to true
-'disable_player_order_swap_on_rematch' => false,
+'disable_player_order_swap_on_rematch' => true,
 
 // Game interface width range (pixels)
 // Note: game interface = space on the left side, without the column on the right
@@ -145,8 +145,8 @@ $gameinfos = array(
 'tags' => array( 2,11,25,200,205,217 ),
 
 'custom_buy_button' => array(
-   'url' => 'https://t2m.io/Hao1jrCh',
-   'label' => 'Amazon'
+   'url' => 'https://www.kickstarter.com/projects/overworldgames/good-cop-bad-cop-4th-edition-and-zombies-expansion?ref=cdggeg',
+   'label' => 'Kickstarter'
 ),
 
 

@@ -293,7 +293,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetGunTargets',
     		"possibleactions" => array( "clickPlayer"),
-    		"transitions" => array( "afterAimedOutOfTurn" => 34, "endTurnReaction" => 29, "askAim" => 27 )
+    		"transitions" => array( "afterAimedOutOfTurn" => 34, "endTurnReaction" => 29, "askAim" => 27, "chooseAnotherPlayerNoCancel" => 48 )
     ),
 
     34 => array(
