@@ -93,7 +93,7 @@ class goodcopbadcop extends Table
             $color = array_shift( $default_colors );
             $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."')";
         }
-        $sql .= implode( $values, ',' );
+        $sql .= implode( ',', $values );
         self::DbQuery( $sql );
         self::reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );
         self::reloadPlayersBasicInfos();
@@ -392,7 +392,7 @@ class goodcopbadcop extends Table
 						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 65, 'card_location' => 'deck','nbr' => 1)); // Zombie Mask
 						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 66, 'card_location' => 'deck','nbr' => 1)); // Machete
 						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 67, 'card_location' => 'deck','nbr' => 1)); // Weapon Crate
-						array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 68, 'card_location' => 'deck','nbr' => 1)); // Alarm Clock
+						//array_push($equipmentCardsList, array( 'type' => 'equipment', 'type_arg' => 68, 'card_location' => 'deck','nbr' => 1)); // Alarm Clock
 				}
 
 				if($this->getGameStateValue('ZOMBIES_EXPANSION') != 2 && $this->getGameStateValue('USE_EXTRA_EQUIPMENT') == 2)
